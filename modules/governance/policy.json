@@ -1,0 +1,25 @@
+{
+  "revenue_share_default": 0.7,
+  "approval_required": true,
+  "review_cycle_days": 90,
+  "forbidden_apis": [
+    "/auth/root",
+    "/internal/",
+    "/admin/",
+    "/ops/"
+  ],
+  "max_listing_price": 999.99,
+  "min_listing_price": 0,
+  "required_https": true,
+  "webhook_timeout_seconds": 5,
+  "auto_suspend_threshold": {
+    "failed_webhooks": 10,
+    "user_reports": 5,
+    "low_rating": 2.0
+  },
+  "partner_verification_requirements": {
+    "email_verified": true,
+    "webhook_url_required": false,
+    "min_listings": 0
+  }
+}
