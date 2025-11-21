@@ -3,7 +3,6 @@ from jsonschema import validate, ValidationError, FormatChecker
 from time import time
 from uuid import uuid4
 from collections import defaultdict, deque
-import sqlite3
 import json
 import os
 import logging
@@ -41,14 +40,18 @@ try:
 except Exception as e:
     log.warning(f"Scheduler initialization skipped: {e}")
 
+try:
+    from modules.db_wrapper import get_db, execute, commit as db_commit, rollback as db_rollback, execute_query, get_db_type
+    log.info(f"Using database wrapper (type: {get_db_type()})")
+except Exception as e:
+    log.error(f"Failed to import database wrapper: {e}")
+    raise
+
 app = Flask(__name__, 
     static_folder='public',
     static_url_path='/public')
 
 app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 512 * 1024))
-
-DB_PATH = os.environ.get("SQLITE_PATH", os.path.join(os.getcwd(), "levqor.db"))
-_db_connection = None
 
 API_KEYS = set((os.environ.get("API_KEYS") or "").split(",")) - {""}
 API_KEYS_NEXT = set((os.environ.get("API_KEYS_NEXT") or "").split(",")) - {""}
@@ -62,158 +65,6 @@ WINDOW = 60
 _IP_HITS = defaultdict(deque)
 _ALL_HITS = deque()
 _PROTECTED_PATH_HITS = defaultdict(deque)
-
-def get_db():
-    global _db_connection
-    if _db_connection is None:
-        db_dir = os.path.dirname(DB_PATH)
-        if db_dir and not os.path.exists(db_dir):
-            os.makedirs(db_dir, exist_ok=True)
-        _db_connection = sqlite3.connect(DB_PATH, check_same_thread=False)
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS users(
-            id TEXT PRIMARY KEY,
-            email TEXT UNIQUE NOT NULL,
-            name TEXT,
-            locale TEXT,
-            currency TEXT,
-            meta TEXT,
-            created_at REAL,
-            updated_at REAL
-          )
-        """)
-        _db_connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)")
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS referrals(
-            id TEXT PRIMARY KEY,
-            user_id TEXT,
-            email TEXT,
-            source TEXT NOT NULL,
-            campaign TEXT,
-            medium TEXT,
-            created_at REAL,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
-        """)
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_referrals_user_id ON referrals(user_id)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_referrals_source ON referrals(source)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_referrals_created_at ON referrals(created_at)")
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS analytics_aggregates(
-            day DATE PRIMARY KEY,
-            dau INTEGER NOT NULL DEFAULT 0,
-            wau INTEGER NOT NULL DEFAULT 0,
-            mau INTEGER NOT NULL DEFAULT 0,
-            computed_at TEXT NOT NULL
-          )
-        """)
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS developer_keys(
-            id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            key_hash TEXT UNIQUE NOT NULL,
-            key_prefix TEXT NOT NULL,
-            tier TEXT NOT NULL DEFAULT 'sandbox',
-            is_active INTEGER NOT NULL DEFAULT 1,
-            calls_used INTEGER NOT NULL DEFAULT 0,
-            calls_limit INTEGER NOT NULL DEFAULT 1000,
-            reset_at REAL NOT NULL,
-            created_at REAL NOT NULL,
-            last_used_at REAL,
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
-        """)
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_developer_keys_user_id ON developer_keys(user_id)")
-        _db_connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_developer_keys_key_hash ON developer_keys(key_hash)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_developer_keys_tier ON developer_keys(tier)")
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS api_usage_log(
-            id TEXT PRIMARY KEY,
-            key_id TEXT NOT NULL,
-            user_id TEXT NOT NULL,
-            endpoint TEXT NOT NULL,
-            method TEXT NOT NULL,
-            status_code INTEGER NOT NULL,
-            response_time_ms INTEGER,
-            created_at REAL NOT NULL,
-            FOREIGN KEY (key_id) REFERENCES developer_keys(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
-        """)
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_api_usage_log_key_id ON api_usage_log(key_id)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_api_usage_log_created_at ON api_usage_log(created_at)")
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS partners(
-            id TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL,
-            webhook_url TEXT,
-            revenue_share REAL NOT NULL DEFAULT 0.7,
-            is_verified INTEGER NOT NULL DEFAULT 0,
-            is_active INTEGER NOT NULL DEFAULT 1,
-            stripe_connect_id TEXT,
-            created_at REAL NOT NULL,
-            updated_at REAL NOT NULL,
-            metadata TEXT
-          )
-        """)
-        _db_connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_partners_email ON partners(email)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_partners_verified ON partners(is_verified)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_partners_active ON partners(is_active)")
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS listings(
-            id TEXT PRIMARY KEY,
-            partner_id TEXT NOT NULL,
-            name TEXT NOT NULL,
-            description TEXT,
-            category TEXT,
-            price_cents INTEGER NOT NULL DEFAULT 0,
-            is_verified INTEGER NOT NULL DEFAULT 0,
-            is_active INTEGER NOT NULL DEFAULT 1,
-            downloads INTEGER NOT NULL DEFAULT 0,
-            rating REAL,
-            created_at REAL NOT NULL,
-            updated_at REAL NOT NULL,
-            metadata TEXT,
-            FOREIGN KEY (partner_id) REFERENCES partners(id)
-          )
-        """)
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_listings_partner_id ON listings(partner_id)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_listings_verified ON listings(is_verified)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_listings_category ON listings(category)")
-        
-        _db_connection.execute("""
-          CREATE TABLE IF NOT EXISTS marketplace_orders(
-            id TEXT PRIMARY KEY,
-            listing_id TEXT NOT NULL,
-            partner_id TEXT NOT NULL,
-            user_id TEXT,
-            amount_cents INTEGER NOT NULL,
-            partner_share_cents INTEGER NOT NULL,
-            platform_fee_cents INTEGER NOT NULL,
-            status TEXT NOT NULL DEFAULT 'pending',
-            stripe_payment_intent_id TEXT,
-            created_at REAL NOT NULL,
-            completed_at REAL,
-            FOREIGN KEY (listing_id) REFERENCES listings(id),
-            FOREIGN KEY (partner_id) REFERENCES partners(id),
-            FOREIGN KEY (user_id) REFERENCES users(id)
-          )
-        """)
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_marketplace_orders_listing_id ON marketplace_orders(listing_id)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_marketplace_orders_partner_id ON marketplace_orders(partner_id)")
-        _db_connection.execute("CREATE INDEX IF NOT EXISTS idx_marketplace_orders_status ON marketplace_orders(status)")
-        
-        _db_connection.execute("PRAGMA journal_mode=WAL")
-        _db_connection.execute("PRAGMA synchronous=NORMAL")
-        _db_connection.commit()
-    return _db_connection
 
 def require_key():
     key = request.headers.get("X-Api-Key")
@@ -491,11 +342,11 @@ def row_to_user(row):
     }
 
 def fetch_user_by_email(email):
-    cur = get_db().execute("SELECT id,email,name,locale,currency,meta,created_at,updated_at FROM users WHERE email = ?", (email,))
+    cur = execute("SELECT id,email,name,locale,currency,meta,created_at,updated_at FROM users WHERE email = ?", (email,))
     return row_to_user(cur.fetchone())
 
 def fetch_user_by_id(uid):
-    cur = get_db().execute("SELECT id,email,name,locale,currency,meta,created_at,updated_at FROM users WHERE id = ?", (uid,))
+    cur = execute("SELECT id,email,name,locale,currency,meta,created_at,updated_at FROM users WHERE id = ?", (uid,))
     return row_to_user(cur.fetchone())
 
 @app.post("/api/v1/intake")
@@ -598,19 +449,19 @@ def users_upsert():
 
     existing = fetch_user_by_email(email)
     if existing:
-        get_db().execute(
+        execute(
             "UPDATE users SET name=?, locale=?, currency=?, meta=?, updated_at=? WHERE email=?",
             (name, locale, currency, meta, now, email)
         )
-        get_db().commit()
+        db_commit()
         return jsonify({"updated": True, "user": fetch_user_by_email(email)}), 200
     else:
         uid = uuid4().hex
-        get_db().execute(
+        execute(
             "INSERT INTO users(id,email,name,locale,currency,meta,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",
             (uid, email, name, locale, currency, meta, now, now)
         )
-        get_db().commit()
+        db_commit()
         return jsonify({"created": True, "user": fetch_user_by_id(uid)}), 201
 
 @app.patch("/api/v1/users/<user_id>")
@@ -639,11 +490,11 @@ def users_patch(user_id):
     currency = body.get("currency", u["currency"])
     meta = u["meta"].copy()
     meta.update(body.get("meta", {}))
-    get_db().execute(
+    execute(
         "UPDATE users SET name=?, locale=?, currency=?, meta=?, updated_at=? WHERE id=?",
         (name, locale, currency, json.dumps(meta), time(), user_id)
     )
-    get_db().commit()
+    db_commit()
     return jsonify({"updated": True, "user": fetch_user_by_id(user_id)}), 200
 
 @app.get("/api/v1/users/<user_id>")
@@ -678,11 +529,11 @@ def track_referral():
     referral_id = uuid4().hex
     now = time()
     
-    get_db().execute(
+    execute(
         "INSERT INTO referrals(id, user_id, email, source, campaign, medium, created_at) VALUES (?,?,?,?,?,?,?)",
         (referral_id, user_id, email, source, campaign, medium, now)
     )
-    get_db().commit()
+    db_commit()
     
     return jsonify({"ok": True, "referral_id": referral_id}), 201
 
@@ -701,18 +552,16 @@ def admin_analytics():
     seven_days_ago = now - (7 * 24 * 60 * 60)
     thirty_days_ago = now - (30 * 24 * 60 * 60)
     
-    db = get_db()
-    
-    cursor = db.execute("SELECT COUNT(*) FROM users")
+    cursor = execute("SELECT COUNT(*) FROM users")
     total_users = cursor.fetchone()[0]
     
-    cursor = db.execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (seven_days_ago,))
+    cursor = execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (seven_days_ago,))
     new_users_7d = cursor.fetchone()[0]
     
-    cursor = db.execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (thirty_days_ago,))
+    cursor = execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (thirty_days_ago,))
     new_users_30d = cursor.fetchone()[0]
     
-    cursor = db.execute("""
+    cursor = execute("""
         SELECT source, COUNT(*) as count 
         FROM referrals 
         WHERE created_at >= ? 
@@ -722,10 +571,10 @@ def admin_analytics():
     """, (thirty_days_ago,))
     top_referrals = [{"source": row[0], "count": row[1]} for row in cursor.fetchall()]
     
-    cursor = db.execute("SELECT COUNT(*) FROM referrals WHERE created_at >= ?", (seven_days_ago,))
+    cursor = execute("SELECT COUNT(*) FROM referrals WHERE created_at >= ?", (seven_days_ago,))
     referrals_7d = cursor.fetchone()[0]
     
-    cursor = db.execute("SELECT COUNT(*) FROM referrals WHERE created_at >= ?", (thirty_days_ago,))
+    cursor = execute("SELECT COUNT(*) FROM referrals WHERE created_at >= ?", (thirty_days_ago,))
     referrals_30d = cursor.fetchone()[0]
     
     return jsonify({
