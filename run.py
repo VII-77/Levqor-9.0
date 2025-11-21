@@ -330,13 +330,28 @@ def row_to_user(row):
     if not row:
         return None
     (id_, email, name, locale, currency, meta, created_at, updated_at) = row
+    
+    # Handle meta field - might be JSON string, dict, or None
+    parsed_meta = {}
+    if meta:
+        if isinstance(meta, dict):
+            parsed_meta = meta
+        elif isinstance(meta, str) and meta.strip():
+            try:
+                parsed_meta = json.loads(meta)
+            except json.JSONDecodeError as e:
+                log.error(f"Failed to parse meta JSON: {repr(meta)} - Error: {e}")
+                parsed_meta = {}
+        else:
+            parsed_meta = {}
+    
     return {
         "id": id_,
         "email": email,
         "name": name,
         "locale": locale,
         "currency": currency,
-        "meta": json.loads(meta) if meta else {},
+        "meta": parsed_meta,
         "created_at": created_at,
         "updated_at": updated_at
     }
