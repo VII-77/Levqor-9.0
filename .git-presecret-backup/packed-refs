@@ -1,0 +1,8 @@
+# pack-refs with: peeled fully-peeled sorted 
+53ddc61171ce1b9022c07093ab7ca6d21d18f713 refs/heads/main
+53ddc61171ce1b9022c07093ab7ca6d21d18f713 refs/heads/replit-agent
+8418e68f54cb7e6841dd0aada969f1287bab0e9c refs/notes/commits
+53ddc61171ce1b9022c07093ab7ca6d21d18f713 refs/remotes/gitsafe-backup/main
+53ddc61171ce1b9022c07093ab7ca6d21d18f713 refs/replit/agent-ledger
+53ddc61171ce1b9022c07093ab7ca6d21d18f713 refs/tags/pre-secret-cleanup-20251121172439
+53ddc61171ce1b9022c07093ab7ca6d21d18f713 refs/tags/pre-secret-cleanup-20251121174351

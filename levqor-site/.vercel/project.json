@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_0uD8XkWsrf6z7F9DHlUvyfDinas5",
+  "orgId": "team_brpiJYLXLxoOUdPwhMJ2TJ6e",
+  "projectName": "levqor-site",
+  "settings": {
+    "createdAt": 1762455888307,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "outputDirectory": ".next",
+    "rootDirectory": "levqor-site",
+    "directoryListing": true,
+    "nodeVersion": "20.x"
+  }
+}

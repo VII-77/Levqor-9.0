@@ -1,0 +1,9 @@
+Clean up repository to remove sensitive information from history
+
+Add scripts and documentation to facilitate manual cleanup of Git history using git-filter-repo, and update .gitignore to prevent future secret leaks.
+
+Replit-Commit-Author: Agent
+Replit-Commit-Session-Id: f05c69db-058e-4b97-a0fc-398474bf9370
+Replit-Commit-Checkpoint-Type: full_checkpoint
+Replit-Commit-Event-Id: 48482c4c-e258-4bd0-bd33-c3a66e67f3ac
+Replit-Commit-Screenshot-Url: https://storage.googleapis.com/screenshot-production-us-central1/8926134e-3060-49c1-80a0-a72a22cd9b37/f05c69db-058e-4b97-a0fc-398474bf9370/XpTSaCP
