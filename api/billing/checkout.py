@@ -1,6 +1,6 @@
 """
 Stripe Checkout Session Creation
-Creates checkout sessions for Developer Portal tier upgrades
+Creates checkout sessions for Levqor tier upgrades
 Uses Replit Stripe connector for automatic credential management
 """
 import os
@@ -28,12 +28,31 @@ except ImportError as e:
     log.error(f"Stripe SDK not available: {e}")
     STRIPE_AVAILABLE = False
 
+
 def get_price_map():
-    """Get price IDs from environment"""
+    """Get price IDs from environment - supports all Levqor tiers"""
     return {
-        "pro": os.environ.get("STRIPE_PRICE_DEV_PRO", "").strip(),
-        "enterprise": os.environ.get("STRIPE_PRICE_DEV_ENTERPRISE", "").strip(),
+        # Standard tiers
+        "starter": os.environ.get("STRIPE_PRICE_STARTER", "").strip(),
+        "starter_year": os.environ.get("STRIPE_PRICE_STARTER_YEAR", "").strip(),
+        "launch": os.environ.get("STRIPE_PRICE_LAUNCH", "").strip(),
+        "launch_year": os.environ.get("STRIPE_PRICE_LAUNCH_YEAR", "").strip(),
+        "growth": os.environ.get("STRIPE_PRICE_GROWTH", "").strip(),
+        "growth_year": os.environ.get("STRIPE_PRICE_GROWTH_YEAR", "").strip(),
+        "scale": os.environ.get("STRIPE_PRICE_SCALE", "").strip(),
+        "scale_year": os.environ.get("STRIPE_PRICE_SCALE_YEAR", "").strip(),
+        "business": os.environ.get("STRIPE_PRICE_BUSINESS", "").strip(),
+        "business_year": os.environ.get("STRIPE_PRICE_BUSINESS_YEAR", "").strip(),
+        # DFY tiers
+        "dfy_starter": os.environ.get("STRIPE_PRICE_DFY_STARTER", "").strip(),
+        "dfy_professional": os.environ.get("STRIPE_PRICE_DFY_PROFESSIONAL", "").strip(),
+        "dfy_enterprise": os.environ.get("STRIPE_PRICE_DFY_ENTERPRISE", "").strip(),
+        # Add-ons
+        "addon_priority_support": os.environ.get("STRIPE_PRICE_ADDON_PRIORITY_SUPPORT", "").strip(),
+        "addon_sla_99_9": os.environ.get("STRIPE_PRICE_ADDON_SLA_99_9", "").strip(),
+        "addon_white_label": os.environ.get("STRIPE_PRICE_ADDON_WHITE_LABEL", "").strip(),
     }
+
 
 @bp.post("/checkout")
 def create_checkout_session():
@@ -42,28 +61,51 @@ def create_checkout_session():
     
     Request body:
     {
-      "tier": "pro" | "enterprise"
+      "tier": "starter" | "launch" | "growth" | "scale" | "business" | etc,
+      "billing_interval": "month" | "year" (optional, defaults to month)
     }
     
     Response:
     {
-      "url": "https://checkout.stripe.com/..."
+      "ok": true,
+      "url": "https://checkout.stripe.com/...",
+      "session_id": "cs_..."
     }
     """
     if not STRIPE_AVAILABLE:
+        log.error("Stripe not available")
         return jsonify({"error": "stripe_not_configured"}), 500
     
     try:
         data = request.get_json() or {}
-        tier = data.get("tier", "")
+        tier = data.get("tier", "").lower().strip()
+        billing_interval = data.get("billing_interval", "month").lower().strip()
+        
+        # Support both "tier" and "tier_year" formats
+        if billing_interval == "year":
+            price_key = f"{tier}_year"
+        else:
+            price_key = tier
         
         price_map = get_price_map()
-        if tier not in price_map:
-            return jsonify({"error": "invalid_tier"}), 400
         
-        price_id = price_map.get(tier, "")
+        # Validate tier exists
+        if price_key not in price_map:
+            log.warning(f"Invalid tier requested: {price_key}")
+            return jsonify({
+                "error": "invalid_tier",
+                "available_tiers": list(price_map.keys())
+            }), 400
+        
+        price_id = price_map.get(price_key, "").strip()
+        
+        # Validate price ID is configured
         if not price_id:
-            return jsonify({"error": "price_not_configured"}), 500
+            log.error(f"Price ID not configured for tier: {price_key}")
+            return jsonify({
+                "error": "price_not_configured",
+                "tier": price_key
+            }), 500
         
         # Get success/cancel URLs from env or use defaults
         site_url = os.environ.get("SITE_URL", "https://levqor.ai").strip()
@@ -91,9 +133,12 @@ def create_checkout_session():
             billing_address_collection="auto",
             metadata={
                 "tier": tier,
+                "billing_interval": billing_interval,
                 "source": "developer_portal"
             }
         )
+        
+        log.info(f"Created checkout session for tier={tier}, interval={billing_interval}")
         
         return jsonify({
             "ok": True,
@@ -101,7 +146,12 @@ def create_checkout_session():
             "session_id": session.id
         }), 200
         
+    except stripe.error.InvalidRequestError as e:
+        log.error(f"Stripe InvalidRequestError: {e}")
+        return jsonify({"error": str(e)}), 400
+    except stripe.error.AuthenticationError as e:
+        log.error(f"Stripe authentication failed: {e}")
+        return jsonify({"error": "stripe_auth_failed"}), 401
     except Exception as e:
-        if "stripe" in str(type(e)).lower():
-            return jsonify({"error": "stripe_error", "message": str(e)}), 500
-        return jsonify({"error": "internal_error", "message": str(e)}), 500
+        log.error(f"Checkout error: {e}", exc_info=True)
+        return jsonify({"error": "checkout_failed", "message": str(e)}), 500
