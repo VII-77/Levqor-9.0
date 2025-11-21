@@ -1,6 +1,7 @@
 modules = ["python-3.11", "nodejs-20", "postgresql-16"]
 [agent]
 expertMode = true
+integrations = ["stripe:1.0.0"]
 
 [workflows]
 runButton = "Project"
@@ -52,3 +53,4 @@ externalPort = 8000
 
 [nix]
 channel = "stable-25_05"
+packages = ["freetype", "glibcLocales"]

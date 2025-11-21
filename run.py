@@ -658,21 +658,39 @@ def ops_queue_health():
 
 @app.get("/billing/health")
 def billing_health():
-    """Public endpoint to verify Stripe integration health"""
-    stripe_key = os.environ.get("STRIPE_SECRET_KEY", "")
-    stripe_webhook = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
-    
-    has_stripe_key = bool(stripe_key and stripe_key.startswith("sk_"))
-    has_webhook_secret = bool(stripe_webhook and len(stripe_webhook) > 10)
-    
-    healthy = has_stripe_key and has_webhook_secret
-    
-    return jsonify({
-        "healthy": healthy,
-        "stripe_key_configured": has_stripe_key,
-        "webhook_secret_configured": has_webhook_secret,
-        "timestamp": int(time())
-    }), 200 if healthy else 503
+    """Public endpoint to verify Stripe integration health (uses Replit connector)"""
+    try:
+        from modules.stripe_connector import is_stripe_configured, get_stripe_webhook_secret
+        
+        has_stripe_key = is_stripe_configured()
+        webhook_secret = get_stripe_webhook_secret()
+        has_webhook_secret = bool(webhook_secret and len(webhook_secret) > 10)
+        
+        healthy = has_stripe_key and has_webhook_secret
+        
+        return jsonify({
+            "healthy": healthy,
+            "stripe_key_configured": has_stripe_key,
+            "webhook_secret_configured": has_webhook_secret,
+            "connector_enabled": True,
+            "timestamp": int(time())
+        }), 200 if healthy else 503
+    except Exception as e:
+        # Fallback to environment variable check
+        stripe_key = os.environ.get("STRIPE_SECRET_KEY", "")
+        stripe_webhook = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+        
+        has_stripe_key = bool(stripe_key and stripe_key.startswith("sk_"))
+        has_webhook_secret = bool(stripe_webhook and len(stripe_webhook) > 10)
+        
+        return jsonify({
+            "healthy": has_stripe_key and has_webhook_secret,
+            "stripe_key_configured": has_stripe_key,
+            "webhook_secret_configured": has_webhook_secret,
+            "connector_enabled": False,
+            "connector_error": str(e),
+            "timestamp": int(time())
+        }), 200 if (has_stripe_key and has_webhook_secret) else 503
 
 @app.get("/ops/autoscale/dryrun")
 def autoscale_dryrun():
@@ -805,6 +823,7 @@ from api.admin.growth import bp as growth_bp
 from api.billing.pricing import bp as pricing_bp
 from api.billing.discounts import bp as discounts_bp
 from api.billing.checkout import bp as billing_checkout_bp
+from api.billing.webhooks import bp as billing_webhooks_bp
 from api.admin.insights import bp as admin_insights_bp
 from api.admin.runbooks import bp as admin_runbooks_bp
 from api.admin.postmortem import bp as admin_postmortem_bp
@@ -826,6 +845,7 @@ app.register_blueprint(growth_bp)
 app.register_blueprint(pricing_bp)
 app.register_blueprint(discounts_bp)
 app.register_blueprint(billing_checkout_bp)
+app.register_blueprint(billing_webhooks_bp)
 app.register_blueprint(admin_insights_bp)
 app.register_blueprint(admin_runbooks_bp)
 app.register_blueprint(admin_postmortem_bp)

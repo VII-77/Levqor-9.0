@@ -1,17 +1,31 @@
 """
 Stripe Checkout Session Creation
 Creates checkout sessions for Developer Portal tier upgrades
+Uses Replit Stripe connector for automatic credential management
 """
 import os
+import logging
 from flask import Blueprint, request, jsonify
 
 bp = Blueprint("billing_checkout", __name__, url_prefix="/api/billing")
+log = logging.getLogger("levqor.checkout")
 
 try:
     import stripe
-    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
-    STRIPE_AVAILABLE = True
-except ImportError:
+    from modules.stripe_connector import get_stripe_secret_key, is_stripe_configured
+    
+    # Initialize Stripe with connector credentials
+    try:
+        stripe.api_key = get_stripe_secret_key()
+        STRIPE_AVAILABLE = True
+        log.info("Stripe initialized with connector credentials")
+    except Exception as e:
+        log.warning(f"Stripe connector failed, falling back to env: {e}")
+        # Fallback to environment variable if connector fails
+        stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+        STRIPE_AVAILABLE = bool(stripe.api_key and stripe.api_key.startswith("sk_"))
+except ImportError as e:
+    log.error(f"Stripe SDK not available: {e}")
     STRIPE_AVAILABLE = False
 
 def get_price_map():
