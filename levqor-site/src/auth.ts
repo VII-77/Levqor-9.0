@@ -1,5 +1,4 @@
 import NextAuth, { NextAuthConfig } from "next-auth"
-import Resend from "next-auth/providers/resend"
 import Google from "next-auth/providers/google"
 import AzureAD from "next-auth/providers/azure-ad"
 
@@ -25,10 +24,6 @@ async function sendAuditEvent(event: string, email: string, userAgent?: string, 
 
 export const authOptions: NextAuthConfig = {
   providers: [
-    Resend({
-      apiKey: process.env.RESEND_API_KEY,
-      from: process.env.AUTH_FROM_EMAIL || "no-reply@levqor.ai",
-    }),
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
