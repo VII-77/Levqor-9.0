@@ -10,8 +10,11 @@ from typing import Optional, Any, Tuple, List
 
 log = logging.getLogger("levqor.db")
 
-_db_connection = None
+import threading
+
+_thread_local = threading.local()
 _db_type = None
+_schema_initialized = False
 
 def get_db_type() -> str:
     """Detect which database to use"""
@@ -24,26 +27,33 @@ def get_db_type() -> str:
 def get_db():
     """
     Get database connection - automatically uses PostgreSQL if DATABASE_URL is set
+    Thread-safe: Returns one connection per thread for PostgreSQL
     Returns a connection object compatible with both SQLite and PostgreSQL
     """
-    global _db_connection
+    global _schema_initialized
     
     db_type = get_db_type()
     
-    if _db_connection is not None:
-        return _db_connection
+    # Use thread-local storage for PostgreSQL to ensure thread safety
+    if hasattr(_thread_local, 'connection') and _thread_local.connection is not None:
+        return _thread_local.connection
     
     if db_type == 'postgresql':
-        log.info("Initializing PostgreSQL connection")
         import psycopg2
         
-        _db_connection = psycopg2.connect(
+        # Create new connection for this thread
+        conn = psycopg2.connect(
             os.environ.get("DATABASE_URL")
         )
-        _db_connection.autocommit = False  # Manual transaction control
+        conn.autocommit = False  # Manual transaction control
         
-        # Initialize schema for PostgreSQL
-        _init_postgresql_schema(_db_connection)
+        # Initialize schema once globally
+        if not _schema_initialized:
+            log.info("Initializing PostgreSQL schema")
+            _init_postgresql_schema(conn)
+            _schema_initialized = True
+        
+        _thread_local.connection = conn
         
     else:
         log.info("Initializing SQLite connection")
@@ -52,13 +62,17 @@ def get_db():
         if db_dir and not os.path.exists(db_dir):
             os.makedirs(db_dir, exist_ok=True)
             
-        _db_connection = sqlite3.connect(db_path, check_same_thread=False)
-        _db_connection.row_factory = sqlite3.Row  # Dict-like rows
+        conn = sqlite3.connect(db_path, check_same_thread=False)
+        conn.row_factory = sqlite3.Row  # Dict-like rows
         
-        # Initialize schema for SQLite
-        _init_sqlite_schema(_db_connection)
+        # Initialize schema once
+        if not _schema_initialized:
+            _init_sqlite_schema(conn)
+            _schema_initialized = True
+        
+        _thread_local.connection = conn
     
-    return _db_connection
+    return _thread_local.connection
 
 def convert_query_placeholders(query: str, db_type: str) -> str:
     """
@@ -100,15 +114,21 @@ def execute_query(query: str, params: Optional[Tuple] = None, fetch: str = 'all'
             result = cursor.fetchall()
             # Convert to list of dicts for consistency
             if db_type == 'postgresql':
-                return result  # Already dict-like with RealDictCursor
+                # Manually convert tuples to dicts using cursor.description
+                columns = [desc[0] for desc in cursor.description]
+                return [dict(zip(columns, row)) for row in result]
             else:
                 return [dict(row) for row in result]
         elif fetch == 'one':
             result = cursor.fetchone()
+            if result is None:
+                return None
             if db_type == 'postgresql':
-                return result
+                # Manually convert tuple to dict using cursor.description
+                columns = [desc[0] for desc in cursor.description]
+                return dict(zip(columns, result))
             else:
-                return dict(result) if result else None
+                return dict(result)
         else:
             return None
             
