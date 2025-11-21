@@ -59,7 +59,7 @@ PRICING_TIERS = [
 ]
 
 
-def activate_prices(stripe_client):
+def activate_prices():
     """Activate all prices for all tiers"""
     print("=" * 60)
     print("Stripe Price Activation via Replit Integration")
@@ -84,12 +84,12 @@ def activate_prices(stripe_client):
             price_id = os.environ.get(env_key)
             
             if not price_id:
-                print(f"  ⚠️ {interval}: Price ID not found in {env_key}")
+                print(f"  ⚠️  {interval}: Price ID not found in {env_key}")
                 continue
             
             try:
                 # Fetch the price to check status
-                price = stripe_client.prices.retrieve(price_id)
+                price = stripe.Price.retrieve(price_id)
                 
                 if price.active:
                     print(f"  ✓ {interval}: Already active ({price_id})")
@@ -101,7 +101,7 @@ def activate_prices(stripe_client):
                     })
                 else:
                     # Activate the price
-                    updated_price = stripe_client.prices.update(price_id, active=True)
+                    updated_price = stripe.Price.modify(price_id, active=True)
                     print(f"  ✓ {interval}: Activated ({price_id})")
                     results["active"].append({
                         "tier": tier_name,
@@ -175,14 +175,14 @@ def main():
     
     try:
         api_key = get_stripe_secret_key()
-        stripe_client = stripe.Stripe(api_key=api_key)
+        stripe.api_key = api_key
         print("✓ Connected to Stripe using Replit integration")
         print()
     except Exception as e:
         print(f"✗ Failed to connect to Stripe: {e}")
         sys.exit(1)
     
-    activate_prices(stripe_client)
+    activate_prices()
 
 
 if __name__ == "__main__":
