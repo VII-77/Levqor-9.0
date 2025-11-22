@@ -10,8 +10,8 @@ function readEnv() {
     SITE_URL: process.env.SITE_URL || "",
     STARTER_M: process.env.STRIPE_PRICE_STARTER,
     STARTER_Y: process.env.STRIPE_PRICE_STARTER_YEAR,
-    PRO_M:     process.env.STRIPE_PRICE_PRO,
-    PRO_Y:     process.env.STRIPE_PRICE_PRO_YEAR,
+    LAUNCH_M:  process.env.STRIPE_PRICE_LAUNCH,
+    LAUNCH_Y:  process.env.STRIPE_PRICE_LAUNCH_YEAR,
     BIZ_M:     process.env.STRIPE_PRICE_BUSINESS,
     BIZ_Y:     process.env.STRIPE_PRICE_BUSINESS_YEAR,
     ADDON_SUPPORT: process.env.STRIPE_PRICE_ADDON_PRIORITY_SUPPORT,
@@ -36,7 +36,7 @@ export async function GET() {
 }
 
 type Body = {
-  plan: "starter"|"pro"|"business",
+  plan: "starter"|"launch"|"business",
   term: "monthly"|"yearly",
   addons?: ("PRIORITY_SUPPORT"|"SLA_99_9"|"WHITE_LABEL")[]
 };
@@ -52,8 +52,8 @@ export async function POST(req: Request) {
     const coreMap: Record<string,string> = {
       "starter:monthly": String(env.STARTER_M),
       "starter:yearly":  String(env.STARTER_Y),
-      "pro:monthly":     String(env.PRO_M),
-      "pro:yearly":      String(env.PRO_Y),
+      "launch:monthly":  String(env.LAUNCH_M),
+      "launch:yearly":   String(env.LAUNCH_Y),
       "business:monthly":String(env.BIZ_M),
       "business:yearly": String(env.BIZ_Y),
     };
