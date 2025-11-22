@@ -1,0 +1,343 @@
+Here’s the exact AI-agent prompt you want.
+This will do a deep, read-only check of sign-in, pricing, links, and routing, and then tell us what’s actually miswired before we touch anything.
+
+Copy-paste this whole thing into the agent:
+
+# LEVQOR AI AGENT — LIVE ROUTING & CHECKOUT FAILURE DIAGNOSTIC (READ-ONLY)
+
+User symptoms in production:
+- Domain now resolves and site loads.
+- Sign-in page shows, but after clicking “Sign in” / continuing, user is redirected to a **404 “workflow took a wrong turn”** page.
+- Pricing page loads, but **checkout buttons and links don’t work** (no usable checkout).
+- Static pages like About, Help, FAQ seem mostly fine.
+
+Your job: **do not change any files.**  
+Perform a FULL, READ-ONLY audit of:
+
+1. Auth/sign-in routing and redirects  
+2. Pricing page checkout wiring  
+3. Navbar/footer links (About, Help, etc.)  
+4. Environment variable usage related to these paths  
+
+Then produce a blunt report of what’s misconfigured and what code needs changing (but don’t change it yourself).
+
+---
+
+## 0. PRE-CHECKS
+
+### 0.1 Repository root
+
+1. From shell, run:
+   - `pwd`
+   - `ls -la`
+
+2. Confirm:
+   - Git root: `/home/runner/workspace` with `.git` present.
+   - Frontend: `/home/runner/workspace/levqor-site` with `package.json`, `src/app/`, `docs/`, `scripts/`, `.github/`.
+
+If this is wrong → STOP and report what you see.
+
+### 0.2 Git sanity
+
+From `/home/runner/workspace`:
+
+- Run `git status`
+- If index.lock appears:
+  - `rm -f .git/index.lock`
+  - `git status` again
+
+Do NOT run `git init`.  
+Do NOT commit.
+
+### 0.3 Remote sanity
+
+From `/home/runner/workspace`:
+
+- `git remote -v`
+
+Expected:
+- origin → `https://github.com/VII-77/Levqor-9.0` (fetch/push)
+
+If different, note it in your final report.
+
+If all pre-checks OK, print:
+
+> PRE-CHECKS PASSED — STARTING LIVE ROUTING DIAGNOSTIC (READ-ONLY)
+
+---
+
+## 1. SIGN-IN / AUTH FLOW — WHY DOES IT END IN 404?
+
+### 1.1 Locate auth config and routes
+
+Inside `levqor-site`:
+
+1. `cd /home/runner/workspace/levqor-site`
+2. List key files:
+   - `ls -R src/app | head -200`
+3. Open and briefly summarize:
+   - `src/app/(auth)/signin/page.*` or equivalent sign-in route.
+   - `src/app/api/auth/[...nextauth]/route.*` (NextAuth handler).
+   - Any `auth.config.*`, `auth.ts`, or `next-auth.config.*`.
+
+Questions to answer (in your summary):
+- What is the actual sign-in route path? (`/signin`, `/auth/signin`, etc.)
+- What is the **default redirect** after successful sign-in? (e.g. `/dashboard`, `/dashboard/v2`, `/`, etc.)
+- Are there any hard-coded `redirect()` calls in sign-in that point to a specific path?
+
+### 1.2 Check that the post-login redirect path exists
+
+From `levqor-site/src/app`:
+
+1. List directories:
+   - `ls -R . | sed -n '1,200p'`
+2. Confirm whether the path used as post-login redirect (from 1.1) actually exists as an app route:
+   - For example, if redirect is to `/dashboard`, confirm there is a `src/app/dashboard/page.tsx`.
+   - If it’s `/dashboard/v2`, confirm corresponding layout/page.
+
+If the redirect path does **not** exist, that explains “404 after login”.  
+Write this explicitly in the report.
+
+### 1.3 Middleware auth logic
+
+Open `src/middleware.ts`:
+
+- Identify:
+  - Which paths are considered “protected”.
+  - What happens when user is not authenticated.
+  - What URL it redirects authenticated users *to* by default (if any).
+
+Check for cases where:
+- Middleware redirects to a path that doesn’t exist.
+- Middleware sends the user to `/signin` and then the sign-in page itself redirects incorrectly.
+
+Summarise:
+- “Sign-in route is X”
+- “After login user is sent to Y (exists/doesn't exist).”
+- “Middleware protects Z paths and redirects to W.”
+
+### 1.4 NEXTAUTH_URL / callback domain
+
+Search for env usage:
+
+```bash
+grep -R "NEXTAUTH_URL" -n .
+grep -R "NEXTAUTH_SECRET" -n .
+
+Report:
+
+Whether NEXTAUTH_URL is assumed to be https://www.levqor.ai or https://levqor.ai.
+
+Any hard-coded callback URLs that might mismatch the configured domain.
+
+
+You cannot see real env values, but you can spot obvious mis-matches (e.g. code assuming www. but docs using naked domain).
+
+
+---
+
+2. PRICING PAGE CHECKOUT BUTTONS — WHY DO THEY FAIL?
+
+2.1 Inspect pricing page component
+
+Open:
+
+src/app/pricing/page.*
+
+
+Answer these:
+
+How many checkout buttons are on the page?
+
+For each button (subscriptions, DFY, add-ons):
+
+Is it using fetch(...) / axios to call an API, or Link to an URL?
+
+What exact URL does it hit? e.g.:
+
+/api/checkout
+
+${API_BASE}/api/billing/checkout
+
+something else
+
+
+
+
+Show the actual code snippet for the main Launch monthly/yearly buttons.
+
+2.2 API base URL resolution
+
+Search:
+
+grep -R "NEXT_PUBLIC_API_URL" -n src || true
+grep -R "NEXT_PUBLIC_API_BASE" -n src || true
+grep -R "api.levqor.ai" -n src || true
+
+Determine:
+
+Where API_BASE (or similar) is defined.
+
+What fallback it uses if env var is missing (e.g. 'https://api.levqor.ai').
+
+Whether the pricing page uses the same base as other parts of the app.
+
+
+Flag any of these problems:
+
+Pricing still calling the old Next.js /api/checkout route instead of https://api.levqor.ai/api/billing/checkout.
+
+Inconsistent env references (NEXT_PUBLIC_API_URL vs NEXT_PUBLIC_API_BASE) leading to undefined URLs.
+
+
+2.3 Match frontend payloads to backend expectations
+
+In backend (e.g. api/billing/checkout.py):
+
+Re-confirm expected JSON payloads for:
+
+purchase_type: "subscription" (required fields: tier, billing_interval, etc.)
+
+purchase_type: "dfy" (field dfy_pack)
+
+purchase_type: "addons" (field addons)
+
+
+
+Verify the pricing page code actually sends these exact fields and values.
+
+Report any mismatches like:
+
+Sending plan instead of tier
+
+Sending term instead of billing_interval
+
+Forgetting purchase_type
+
+
+
+---
+
+3. NAVBAR / FOOTER LINKS (ABOUT, HELP, ROADMAP, ETC.)
+
+3.1 Identify navigation components
+
+Search:
+
+grep -R "<Link" -n src/app | head -200
+grep -R "Footer" -n src || true
+grep -R "FAQ" -n src || true
+
+Open the main layout / nav components, e.g.:
+
+src/app/layout.tsx
+
+src/components/navbar.*
+
+src/components/footer.* (or similar)
+
+
+List:
+
+All top-nav links and their hrefs (e.g. /pricing, /about, /help, /roadmap).
+
+All footer links (FAQ, Get Help, LabCorp X, Roadmap, etc.).
+
+
+3.2 Verify target routes exist
+
+For each link href found:
+
+Check if there is a corresponding route directory under src/app:
+
+/about → src/app/about/page.tsx?
+
+/help → src/app/help/page.tsx?
+
+/faq → src/app/faq/page.tsx?
+
+/roadmap → src/app/roadmap/page.tsx?
+
+
+
+If links point to paths with no route, those will be 404 in production — list them explicitly.
+
+
+---
+
+4. FINAL DIAGNOSTIC REPORT (THIS IS WHAT THE USER CARES ABOUT)
+
+At the end, produce a clear, structured report with these sections:
+
+4.1 Sign-in Flow Verdict
+
+Actual sign-in route path.
+
+Actual post-login redirect path.
+
+Does that redirect path exist as a route? YES/NO.
+
+Any middleware redirect weirdness.
+
+Your conclusion in one line, e.g.:
+
+“Login ends on 404 because after sign-in it redirects to /dashboard but only /dashboard/v2 exists.”
+
+or “Sign-in posts to /auth/callback which is not registered, causing 404.”
+
+
+
+4.2 Pricing & Checkout Verdict
+
+Which endpoint each pricing button calls.
+
+Whether the URL and payload match the backend.
+
+Are they still pointing at the old /api/checkout route anywhere?
+
+Anything that would obviously cause:
+
+404 (wrong path)
+
+500 (missing payload fields)
+
+Network error (undefined base URL).
+
+
+
+4.3 Nav/Footer Links Verdict
+
+List of all nav/footer links that are currently pointing to non-existent routes.
+
+For each, say: “Link points to X, but there is no src/app/X/page.tsx”.
+
+
+4.4 Environment / Domain Consistency
+
+Summarise any mismatch between:
+
+NEXTAUTH_URL assumption vs actual domain.
+
+NEXT_PUBLIC_API_URL vs NEXT_PUBLIC_API_BASE.
+
+
+Flag anything that would matter specifically for production at https://levqor.ai and https://www.levqor.ai.
+
+
+4.5 Blocking vs Non-blocking Issues
+
+Classify findings into:
+
+BLOCKING (must fix for sign-in / pricing to work)
+e.g. redirecting to route that doesn’t exist, pricing calling wrong endpoint.
+
+NON-BLOCKING (nice to fix, but not why user sees 404 or dead buttons)
+e.g. duplicate env var names, unused legacy route.
+
+
+Do NOT change code.
+Do NOT commit.
+
+Your output should be a diagnostic report only, so the user can then apply very targeted fixes.
+
+0
