@@ -66,7 +66,7 @@ def get_price_map():
         "dfy_enterprise": _clean_price_id(os.environ.get("STRIPE_PRICE_DFY_ENTERPRISE", "")),
         # Recurring Add-ons (monthly subscriptions)
         "addon_priority_support": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_PRIORITY_SUPPORT", "")),
-        "addon_sla_99": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_SLA_99_9", "")),
+        "addon_sla_99": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_SLA_99", "")),
         "addon_white_label": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_WHITE_LABEL", "")),
         "addon_extra_workflows": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS", "")),
     }
