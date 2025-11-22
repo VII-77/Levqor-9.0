@@ -55,10 +55,6 @@ externalPort = 8000
 localPort = 39229
 externalPort = 3000
 
-[[ports]]
-localPort = 42275
-externalPort = 3001
-
 [nix]
 channel = "stable-25_05"
 packages = ["freetype", "glibcLocales"]
