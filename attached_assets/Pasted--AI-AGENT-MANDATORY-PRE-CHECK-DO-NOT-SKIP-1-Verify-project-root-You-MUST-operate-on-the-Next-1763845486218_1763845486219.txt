@@ -1,0 +1,72 @@
+# AI AGENT MANDATORY PRE-CHECK — DO NOT SKIP
+
+## 1. Verify project root
+You MUST operate on the Next.js frontend inside the monorepo.
+
+- Expected project path for the frontend: `/home/runner/workspace/levqor-site`
+- Root Git repo path: `/home/runner/workspace`
+
+Steps:
+- Run `pwd`
+- Run `ls -la`
+- Confirm that:
+  - At `/home/runner/workspace` there is a `.git` directory
+  - At `/home/runner/workspace/levqor-site` there are: `package.json`, `src/app/`, `docs/`, `scripts/`, `.github/`
+
+If this structure is not found → STOP and report the problem.
+
+## 2. Verify Git status (from repo root)
+From `/home/runner/workspace` run:
+
+- `git status`
+
+If you see an index.lock error:
+- Run: `rm -f .git/index.lock`
+- Then run `git status` again.
+
+If Git is not initialized or there is any other fatal error → STOP and explain.
+
+## 3. Verify remotes
+From `/home/runner/workspace` run:
+
+- `git remote -v`
+
+Expected (at minimum):
+
+- `origin  https://github.com/VII-77/Levqor-9.0 (fetch)`
+- `origin  https://github.com/VII-77/Levqor-9.0 (push)`
+
+A secondary remote `gitsafe-backup` is allowed.
+
+If `origin` is anything else → STOP and report mismatch, do NOT change it yourself.
+
+## 4. Check working tree
+From `/home/runner/workspace` run:
+
+- `git status`
+
+Show:
+- Current branch (expected: `main`)
+- Any modified/untracked files
+
+Do NOT commit anything yet. Only proceed once Git is in a good state.
+
+# ---------------------------------------------------------
+# AFTER ALL CHECKS PASS → perform the requested task.
+# ---------------------------------------------------------
+
+## TASK EXECUTION RULES (INSIDE levqor-site)
+
+- Work inside `/home/runner/workspace/levqor-site` for frontend files.
+- NEVER run `git init`.
+- NEVER change `git remote` URLs.
+- Show diffs for any file you modify (`git diff`).
+- After finishing changes:
+  - From `/home/runner/workspace`:
+    - `git add levqor-site/<paths-you-changed>`
+    - `git commit -m "<clear, descriptive message>"`
+    - `git push origin main`
+- Print:
+  - List of changed files
+  - Final `git status`
+  - Last commit hash
