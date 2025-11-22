@@ -2,7 +2,7 @@
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform with Done-For-You (DFY) service tiers. The project consists of a Python Flask backend API, a Next.js frontend, PostgreSQL database, and Stripe billing integration. Currently configured for development with TEST mode Stripe credentials, ready for production deployment.
+Levqor X is a comprehensive data backup and retention management platform with Done-For-You (DFY) service tiers. The project consists of a Python Flask backend API, a Next.js frontend, PostgreSQL database, and Stripe billing integration. Currently configured for production with LIVE Stripe credentials and automatic Vercel deployments.
 
 ## User Preferences
 
@@ -10,12 +10,24 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (November 2025)
 
+### Dashboard V2 SEO Configuration - COMPLETED ✅
+- **Created**: `/dashboard/v2` route with protected access
+- **SEO Lockdown**: Added noindex, nofollow, nocache meta tags
+- **Deployment**: Pushed to GitHub, Vercel auto-deployed
+- **Status**: Excluded from search engines, production-ready
+
 ### DFY Pricing Realignment - COMPLETED ✅
 - **New Pricing Tiers**: Starter (£9/£90), Launch (£29/£290), Growth (£59/£590), Agency (£149/£1490)
 - **Backend**: Updated checkout API to support new tiers with Stripe connector integration
 - **Frontend**: Pricing page rebuilt with new tier structure
-- **Stripe**: All 8 checkout endpoints working in TEST mode
-- **Security**: Removed conflicting environment variables, using Replit Stripe connector exclusively
+- **Stripe**: All 8 checkout endpoints working with LIVE credentials
+- **Security**: Using Replit Stripe connector exclusively with automatic secret rotation
+
+### DNS Configuration - COMPLETED ✅
+- **Cloudflare Integration**: Automated DNS setup via API
+- **Backend**: `api.levqor.ai` → Replit Autoscale deployment (A + TXT records)
+- **Frontend**: `www.levqor.ai` & root domain → Vercel (CNAME + A records)
+- **SSL**: Auto-issued by Replit & Vercel with proper DNS proxy settings
 
 ## System Architecture
 
@@ -25,11 +37,13 @@ Preferred communication style: Simple, everyday language.
 - **Rationale**: Next.js App Router provides server-side rendering, optimal performance, and modern React patterns
 - **Styling**: Tailwind CSS with a dark theme (slate color palette)
 - **TypeScript**: Fully typed for type safety and developer experience
+- **Protected Routes**: `/dashboard`, `/dashboard/v2` require NextAuth authentication
 
 **Component Structure**
 - Page-based routing using Next.js 13+ App Router convention
 - Client-side navigation with Next.js Link components
 - Responsive design with Tailwind utility classes
+- SEO optimization: Public pages indexed, private dashboard excluded
 
 ### Deployment
 
@@ -39,6 +53,8 @@ Preferred communication style: Simple, everyday language.
   - Node.js 20.x runtime
   - Root directory set to `levqor-site`
   - Standard Next.js build process
+  - Auto-deploy on git push to main branch
+- **Custom Domain**: `www.levqor.ai` and `levqor.ai` (CNAME + A records via Cloudflare)
 - **Pros**: Seamless integration with Next.js, automatic previews, global CDN
 - **Cons**: Vendor lock-in, potential cost scaling with traffic
 
@@ -53,20 +69,25 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 
 **Framework**: Python Flask + Gunicorn
-- **API Server**: Flask REST API on port 8000
+- **API Server**: Flask REST API on port 8000 (development) / port 5000 (production)
 - **WSGI Server**: Gunicorn with 2 workers, 4 threads, port reuse enabled
 - **Database**: PostgreSQL (Replit-hosted, development database)
 - **Billing**: Stripe integration via Replit Stripe connector
 - **Scheduler**: APScheduler for background jobs (18 scheduled tasks)
+- **Deployment**: Replit Autoscale (auto-scales based on demand)
+- **Custom Domain**: `api.levqor.ai` (A + TXT records via Cloudflare, Proxy OFF)
 
 **Key Backend Modules**:
-- `api/billing/checkout.py`: Stripe checkout session creation for DFY tiers
-- `modules/stripe_connector.py`: Replit Stripe connector integration (5min credential cache)
+- `api/billing/checkout.py`: Stripe checkout session creation for DFY tiers + add-ons
+- `modules/stripe_connector.py`: Replit Stripe connector integration with automatic credential refresh
 - `server/storage.ts`: Database access layer
 - `shared/schema.ts`: Drizzle ORM schema definitions
 
 **DFY Pricing Configuration**:
-- 8 price IDs stored as secrets (STRIPE_PRICE_STARTER, etc.)
+- 15 LIVE price IDs configured as secrets:
+  - 4 subscription tiers (Starter, Launch, Growth, Agency) × 2 intervals (monthly/yearly) = 8 prices
+  - 3 DFY packages (Starter £149, Professional £299, Enterprise £499)
+  - 4 add-ons (Priority Support, SLA 99.9%, White Label, Extra Workflows)
 - Per-request Stripe credential refresh to avoid caching issues
 - Backward compatibility for legacy tier names (scale→growth, business→agency)
 
@@ -74,19 +95,33 @@ Preferred communication style: Simple, everyday language.
 
 ### Payment Processing
 - **Stripe**: Billing and subscription management
-- **Integration**: Replit Stripe connector (TEST mode for development)
-- **Price IDs**: 8 active GBP prices for DFY tiers (monthly + yearly variants)
+- **Integration**: Replit Stripe connector (LIVE mode for production)
+- **Price IDs**: 15 active GBP prices for all tiers and add-ons
+- **Webhook**: Configured for subscription/payment event handling
 
 ### Hosting & Deployment
-- **Vercel**: Frontend hosting (Next.js application)
-- **Replit**: Backend development environment
+- **Vercel**: Frontend hosting (Next.js application, `www.levqor.ai`)
+- **Replit**: Backend deployment (Flask API, `api.levqor.ai`)
+- **Cloudflare**: DNS management and domain routing
 - **PostgreSQL**: Database (Replit-hosted development database)
 
 ### Framework Dependencies
-- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler
-- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
+- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS, NextAuth
 - **Database**: Drizzle ORM, PostgreSQL driver
 
 ### Authentication & Security
 - **Planned**: NextAuth (OAuth with Google/Microsoft)
-- **Secrets**: Managed via Replit secrets (Stripe keys, webhook secrets, auth credentials)
+- **Secrets**: Managed via Replit secrets (Stripe keys, webhook secrets, API credentials)
+- **Dashboard Protection**: Private routes require authentication, excluded from search engines
+
+## Deployment Checklist
+
+- ✅ Backend deployed to Replit Autoscale
+- ✅ Frontend deployed to Vercel with auto-deployments
+- ✅ Cloudflare DNS configured (api.levqor.ai & www.levqor.ai)
+- ✅ SSL certificates issued for both domains
+- ✅ LIVE Stripe billing active (15 price IDs)
+- ✅ Dashboard V2 created with SEO lockdown
+- ✅ All workflows running and healthy
+- ⏳ Pending: Production Stripe webhook verification
