@@ -68,48 +68,71 @@ def billing_health():
         return jsonify({"status": "failed", "error": "stripe_not_configured"}), 500
     
     price_map = get_price_map()
-    required_prices = [
+    
+    # Check subscription tiers
+    required_subscription_prices = [
         "starter", "starter_year", "launch", "launch_year",
         "growth", "growth_year", "agency", "agency_year"
     ]
     
-    missing_prices = [p for p in required_prices if not price_map.get(p)]
+    # Check DFY packages
+    required_dfy_packages = ["dfy_starter", "dfy_professional", "dfy_enterprise"]
     
-    if missing_prices:
+    missing_subscription = [p for p in required_subscription_prices if not price_map.get(p)]
+    missing_dfy = [p for p in required_dfy_packages if not price_map.get(p)]
+    
+    if missing_subscription:
         return jsonify({
             "status": "failed",
-            "error": f"Missing price IDs: {', '.join(missing_prices)}"
+            "error": f"Missing subscription price IDs: {', '.join(missing_subscription)}"
         }), 500
     
     return jsonify({
         "status": "ok",
         "stripe_configured": True,
-        "prices_configured": len([p for p in required_prices if price_map.get(p)]),
-        "all_required_prices": len(required_prices),
-        "tiers": {
+        "subscription_tiers": {
             "starter": f"{price_map['starter']} (month), {price_map['starter_year']} (year)",
             "launch": f"{price_map['launch']} (month), {price_map['launch_year']} (year)",
             "growth": f"{price_map['growth']} (month), {price_map['growth_year']} (year)",
             "agency": f"{price_map['agency']} (month), {price_map['agency_year']} (year)"
-        }
+        },
+        "dfy_packages": {
+            "dfy_starter": price_map.get('dfy_starter', 'NOT_CONFIGURED'),
+            "dfy_professional": price_map.get('dfy_professional', 'NOT_CONFIGURED'),
+            "dfy_enterprise": price_map.get('dfy_enterprise', 'NOT_CONFIGURED')
+        },
+        "dfy_packages_configured": len([p for p in required_dfy_packages if price_map.get(p)]),
+        "dfy_packages_total": len(required_dfy_packages)
     }), 200
 
 
 @bp.post("/checkout")
 def create_checkout_session():
     """
-    Create a Stripe Checkout session for tier upgrades
+    Create a Stripe Checkout session for tier upgrades or DFY packages
     
-    DFY Pricing Tiers (GBP):
+    Subscription Tiers (GBP):
     - starter: £9/month, £90/year
     - launch: £29/month, £290/year
     - growth: £59/month, £590/year
     - agency: £149/month, £1490/year
     
-    Request body:
+    DFY One-Time Packages (GBP):
+    - dfy_starter: £149
+    - dfy_professional: £299
+    - dfy_enterprise: £499
+    
+    Request body (Subscriptions):
     {
+      "purchase_type": "subscription",
       "tier": "starter" | "launch" | "growth" | "agency",
       "billing_interval": "month" | "year" (optional, defaults to month)
+    }
+    
+    Request body (DFY Packages):
+    {
+      "purchase_type": "dfy",
+      "dfy_pack": "dfy_starter" | "dfy_professional" | "dfy_enterprise"
     }
     
     Response:
@@ -125,6 +148,71 @@ def create_checkout_session():
     
     try:
         data = request.get_json() or {}
+        purchase_type = data.get("purchase_type", "subscription").lower().strip()
+        price_map = get_price_map()
+        
+        # Get success/cancel URLs from env or use defaults
+        site_url = os.environ.get("SITE_URL", "https://levqor.ai").strip()
+        
+        # Handle DFY one-time packages
+        if purchase_type == "dfy":
+            dfy_pack = data.get("dfy_pack", "").lower().strip()
+            
+            if dfy_pack not in ["dfy_starter", "dfy_professional", "dfy_enterprise"]:
+                log.warning(f"Invalid DFY package: {dfy_pack}")
+                return jsonify({
+                    "error": "invalid_dfy_package",
+                    "available_packages": ["dfy_starter", "dfy_professional", "dfy_enterprise"]
+                }), 400
+            
+            price_id = price_map.get(dfy_pack, "").strip()
+            
+            if not price_id:
+                log.error(f"Price ID not configured for DFY package: {dfy_pack}")
+                return jsonify({
+                    "error": "price_not_configured",
+                    "package": dfy_pack
+                }), 500
+            
+            success_url = os.environ.get(
+                "CHECKOUT_SUCCESS_URL",
+                f"{site_url}/dfy/success?package={dfy_pack}"
+            )
+            cancel_url = os.environ.get(
+                "CHECKOUT_CANCEL_URL",
+                f"{site_url}/pricing?canceled=1"
+            )
+            
+            # Create one-time payment session
+            session = stripe.checkout.Session.create(
+                mode="payment",
+                line_items=[
+                    {
+                        "price": price_id,
+                        "quantity": 1,
+                    }
+                ],
+                success_url=success_url,
+                cancel_url=cancel_url,
+                allow_promotion_codes=True,
+                billing_address_collection="required",
+                metadata={
+                    "purchase_type": "dfy",
+                    "package": dfy_pack,
+                    "source": "pricing_page"
+                }
+            )
+            
+            log.info(f"Created DFY checkout session for package={dfy_pack}")
+            
+            return jsonify({
+                "ok": True,
+                "url": session.url,
+                "session_id": session.id,
+                "purchase_type": "dfy"
+            }), 200
+        
+        # Handle subscription tiers (existing logic)
         tier = data.get("tier", "").lower().strip()
         billing_interval = data.get("billing_interval", "month").lower().strip()
         
@@ -133,8 +221,6 @@ def create_checkout_session():
             price_key = f"{tier}_year"
         else:
             price_key = tier
-        
-        price_map = get_price_map()
         
         # Validate tier exists
         if price_key not in price_map:
@@ -154,8 +240,6 @@ def create_checkout_session():
                 "tier": price_key
             }), 500
         
-        # Get success/cancel URLs from env or use defaults
-        site_url = os.environ.get("SITE_URL", "https://levqor.ai").strip()
         success_url = os.environ.get(
             "CHECKOUT_SUCCESS_URL",
             f"{site_url}/developer/keys?success=1"
@@ -165,7 +249,7 @@ def create_checkout_session():
             f"{site_url}/developer?canceled=1"
         )
         
-        # Create Stripe Checkout Session
+        # Create subscription checkout session
         session = stripe.checkout.Session.create(
             mode="subscription",
             line_items=[
@@ -179,18 +263,20 @@ def create_checkout_session():
             allow_promotion_codes=True,
             billing_address_collection="auto",
             metadata={
+                "purchase_type": "subscription",
                 "tier": tier,
                 "billing_interval": billing_interval,
                 "source": "developer_portal"
             }
         )
         
-        log.info(f"Created checkout session for tier={tier}, interval={billing_interval}")
+        log.info(f"Created subscription checkout session for tier={tier}, interval={billing_interval}")
         
         return jsonify({
             "ok": True,
             "url": session.url,
-            "session_id": session.id
+            "session_id": session.id,
+            "purchase_type": "subscription"
         }), 200
         
     except stripe.error.InvalidRequestError as e:
