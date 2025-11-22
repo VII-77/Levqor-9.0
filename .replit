@@ -51,10 +51,6 @@ externalPort = 80
 localPort = 8000
 externalPort = 8000
 
-[[ports]]
-localPort = 32975
-externalPort = 3000
-
 [nix]
 channel = "stable-25_05"
 packages = ["freetype", "glibcLocales"]
@@ -74,4 +70,4 @@ STRIPE_PRICE_ADDON_WHITE_LABEL = "price_1SW5zpBNwdcDOF995naLMZD8"
 
 [deployment]
 deploymentTarget = "autoscale"
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "30", "--log-level", "info", "run:app"]
+run = ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "30", "--graceful-timeout", "20", "--reuse-port", "--log-level", "info", "run:app"]
