@@ -68,6 +68,61 @@ const comingSoonConnectors = [
   { name: "MS Teams", eta: "Q1 2026" }
 ];
 
+function DFYCard({
+  pack, title, price, features, badge
+}: { pack: string; title: string; price: number; features: string[]; badge?: string }) {
+  
+  const handleClick = async () => {
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ 
+          purchase_type: "dfy",
+          dfy_pack: pack
+        })
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        console.error("DFY Checkout error:", data.error);
+        alert("Checkout failed. Please try again or contact support.");
+      }
+    } catch (err) {
+      console.error("DFY Checkout error:", err);
+      alert("Checkout failed. Please try again or contact support.");
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border p-6 shadow grid gap-4 bg-gradient-to-br from-blue-50 to-white hover:shadow-lg transition-shadow">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold">{title}</h3>
+        {badge && <span className="text-xs rounded-full px-3 py-1 bg-blue-600 text-white font-medium">{badge}</span>}
+      </div>
+      <div className="text-3xl font-bold text-blue-600">
+        £{price}
+        <span className="text-base font-normal text-gray-600"> one-time</span>
+      </div>
+      <ul className="text-sm space-y-2 flex-1">
+        {features.map((f, i) => (
+          <li key={i} className="flex items-start gap-2">
+            <span className="text-blue-600">✓</span>
+            <span>{f}</span>
+          </li>
+        ))}
+      </ul>
+      <button
+        onClick={handleClick}
+        className="rounded-xl border border-blue-600 bg-blue-600 text-white px-4 py-2 hover:bg-blue-700 transition-colors font-medium"
+      >
+        Purchase Now
+      </button>
+    </div>
+  );
+}
+
 function Card({
   tier, title, price, per, features, badge, trial, term
 }: { tier: Tier; title: string; price: number; per: string; features: string[]; badge?: string; trial?: boolean; term: Term }) {
@@ -78,6 +133,7 @@ function Card({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 
+          purchase_type: "subscription",
           tier: tier, 
           billing_interval: term === "yearly" ? "year" : "month"
         })
@@ -224,44 +280,95 @@ export default function PricingPage() {
         )}
       </div>
 
-      {/* Pricing Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
-        <Card
-          tier="starter"
-          title="Starter"
-          price={term === "yearly" ? plans.starter.yearly : plans.starter.monthly}
-          per={term === "yearly" ? "yr" : "mo"}
-          features={plans.starter.features}
-          term={term}
-        />
-        <Card
-          tier="launch"
-          title="Launch"
-          price={term === "yearly" ? plans.launch.yearly : plans.launch.monthly}
-          per={term === "yearly" ? "yr" : "mo"}
-          features={plans.launch.features}
-          badge="Most Popular"
-          term={term}
-        />
-        <Card
-          tier="growth"
-          title="Growth"
-          price={term === "yearly" ? plans.growth.yearly : plans.growth.monthly}
-          per={term === "yearly" ? "yr" : "mo"}
-          features={plans.growth.features}
-          trial={plans.growth.trial}
-          term={term}
-        />
-        <Card
-          tier="agency"
-          title="Agency"
-          price={term === "yearly" ? plans.agency.yearly : plans.agency.monthly}
-          per={term === "yearly" ? "yr" : "mo"}
-          features={plans.agency.features}
-          badge="Best Value"
-          trial={plans.agency.trial}
-          term={term}
-        />
+      {/* Subscription Pricing Cards */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold mb-6 text-center">Subscription Plans</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card
+            tier="starter"
+            title="Starter"
+            price={term === "yearly" ? plans.starter.yearly : plans.starter.monthly}
+            per={term === "yearly" ? "yr" : "mo"}
+            features={plans.starter.features}
+            term={term}
+          />
+          <Card
+            tier="launch"
+            title="Launch"
+            price={term === "yearly" ? plans.launch.yearly : plans.launch.monthly}
+            per={term === "yearly" ? "yr" : "mo"}
+            features={plans.launch.features}
+            badge="Most Popular"
+            term={term}
+          />
+          <Card
+            tier="growth"
+            title="Growth"
+            price={term === "yearly" ? plans.growth.yearly : plans.growth.monthly}
+            per={term === "yearly" ? "yr" : "mo"}
+            features={plans.growth.features}
+            trial={plans.growth.trial}
+            term={term}
+          />
+          <Card
+            tier="agency"
+            title="Agency"
+            price={term === "yearly" ? plans.agency.yearly : plans.agency.monthly}
+            per={term === "yearly" ? "yr" : "mo"}
+            features={plans.agency.features}
+            badge="Best Value"
+            trial={plans.agency.trial}
+            term={term}
+          />
+        </div>
+      </div>
+
+      {/* Done-For-You Packages */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold mb-4 text-center">Done-For-You Packages</h2>
+        <p className="text-center text-gray-600 mb-6">One-time payment for complete setup and configuration</p>
+        <div className="grid gap-6 md:grid-cols-3">
+          <DFYCard
+            pack="dfy_starter"
+            title="DFY Starter"
+            price={149}
+            features={[
+              "Complete workflow setup",
+              "Basic automation templates",
+              "Email integration",
+              "1-hour consultation",
+              "2 weeks support"
+            ]}
+          />
+          <DFYCard
+            pack="dfy_professional"
+            title="DFY Professional"
+            price={299}
+            badge="Popular"
+            features={[
+              "Advanced workflow setup",
+              "Custom automation design",
+              "Multiple integrations",
+              "2-hour consultation",
+              "1 month priority support",
+              "Documentation included"
+            ]}
+          />
+          <DFYCard
+            pack="dfy_enterprise"
+            title="DFY Enterprise"
+            price={499}
+            features={[
+              "Enterprise workflow setup",
+              "Complex automation systems",
+              "Unlimited integrations",
+              "4-hour consultation",
+              "3 months premium support",
+              "Full documentation & training",
+              "Dedicated account manager"
+            ]}
+          />
+        </div>
       </div>
 
       {/* Feature Comparison Table */}
