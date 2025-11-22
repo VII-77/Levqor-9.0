@@ -1,0 +1,146 @@
+You are the Replit AI Agent with full access to this workspace and the Stripe connector.
+
+GOAL: Implement recurring add-ons on top of the existing billing system, fully wired end-to-end (backend + frontend + health checks), matching the Levqor blueprint. Do not ask the human any questions.
+
+ADD-ONS TO IMPLEMENT (RECURRING, GBP):
+- addon_priority_support   → "Priority Support"       → £29/month
+- addon_sla_99             → "SLA 99.9%"              → £49/month
+- addon_white_label        → "White Label"            → £99/month
+- addon_extra_workflows    → "Extra Workflow Pack"    → £10/month
+
+===========================================================
+PHASE 1 — STRIPE ADD-ON PRODUCTS & PRICES
+===========================================================
+
+1. Using the Replit Stripe connector (NOT raw env vars), ensure 4 Stripe Products exist in TEST mode:
+   - "Priority Support"
+   - "SLA 99.9%"
+   - "White Label"
+   - "Extra Workflow Pack"
+
+2. For each product, ensure ONE ACTIVE monthly recurring Price in GBP with the exact amounts:
+   - 29, 49, 99, 10
+
+3. For each created/verified price, generate env-style lines:
+
+   STRIPE_PRICE_ADDON_PRIORITY_SUPPORT=price_...
+   STRIPE_PRICE_ADDON_SLA_99=price_...
+   STRIPE_PRICE_ADDON_WHITE_LABEL=price_...
+   STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS=price_...
+
+4. DO NOT touch or break the existing 8 subscription and 3 DFY prices already working.
+
+Output at the end of this phase:
+- The 4 STRIPE_PRICE_ADDON_* lines clearly printed.
+
+===========================================================
+PHASE 2 — BACKEND BILLING LOGIC
+===========================================================
+
+File targets (detect, then modify):
+- The main billing route file that currently handles /api/billing/checkout
+- The /api/billing/health implementation
+
+Requirements:
+
+1. Extend /api/billing/checkout to support add-ons:
+
+   - Accept a new parameter:
+       addons: list or comma-separated string
+       e.g. ?addons=addon_priority_support,addon_extra_workflows
+
+   - For each addon code, map to the correct STRIPE_PRICE_ADDON_* env var.
+
+   - Create Stripe Checkout Sessions that can:
+       - Attach add-on prices alongside the main subscription OR
+       - Create a separate subscription for add-ons if needed.
+     (Choose the simplest valid approach consistent with current billing logic.)
+
+   - Preserve existing behaviour for:
+       - Subscription core tiers (Starter/Launch/Growth/Agency, month/year)
+       - DFY one-time packages via purchase_type / mode="payment"
+
+2. Update /api/billing/health:
+
+   - Add validation for the 4 add-on price IDs:
+       - Check env values exist.
+       - Check the corresponding Stripe prices are ACTIVE and recurring in GBP.
+   - Include add-on status in the JSON health response, similar format to subs + DFY.
+
+3. Maintain backward compatibility:
+   - Do not break any existing query params / behaviour already in use for:
+       - subscription tiers
+       - DFY packs
+
+4. If any missing env var or Stripe price is detected, report clearly in the health JSON but do NOT crash.
+
+===========================================================
+PHASE 3 — FRONTEND PRICING UI
+===========================================================
+
+Target: Pricing page (the same file you already updated with DFY packages).
+
+1. Add a new section under DFY packages called "Add-Ons" (or similar).
+
+2. Create 4 cards for:
+
+   - Priority Support
+     - £29/month
+     - Short bullet: faster replies, higher priority.
+   - SLA 99.9%
+     - £49/month
+     - Short bullet: stronger uptime commitment.
+   - White Label
+     - £99/month
+     - Short bullet: remove Levqor branding / custom brand.
+   - Extra Workflow Pack
+     - £10/month
+     - Short bullet: extra automation capacity.
+
+3. Each card must have a button that calls the existing billing checkout API with ONLY the add-on selected:
+
+   - e.g. /api/billing/checkout?addons=addon_priority_support
+   - Or via your existing frontend helper; the important part is that the backend receives the correct addon code.
+
+4. Visual requirements:
+   - Add-on cards must be visually distinct but consistent with the current design (no ugly placeholders).
+   - Keep styling similar to DFY section (e.g. subtle variation, not a completely different theme).
+
+===========================================================
+PHASE 4 — VERIFICATION
+===========================================================
+
+Perform these tests programmatically:
+
+1. Call /api/billing/health and confirm:
+   - add-ons section present in response.
+   - Each of the 4 add-ons has status OK (env present, Stripe price active).
+
+2. Call /api/billing/checkout for each add-on:
+
+   - addon_priority_support
+   - addon_sla_99
+   - addon_white_label
+   - addon_extra_workflows
+
+   Confirm for each:
+   - HTTP 200 (or 302 if redirect)
+   - Response includes a valid Stripe Checkout URL.
+   - No "price inactive" or "missing price" errors.
+
+3. (Optional but preferred) Confirm that calling the endpoint with a core tier + add-ons together still works if supported by current logic. If not supported, keep it simple: allow add-ons as standalone purchases and document behaviour in the health output.
+
+===========================================================
+OUTPUT SUMMARY (MANDATORY)
+===========================================================
+
+At the end, print a concise summary:
+
+- Created/verified add-on products and prices (names + price IDs).
+- Exact STRIPE_PRICE_ADDON_* env lines.
+- Files modified in backend.
+- Files modified in frontend.
+- /api/billing/health status for add-ons.
+- Checkout test results for 4 add-ons.
+
+Do all of the above. Do NOT ask the human any questions. Fix whatever needs to be fixed to make add-ons fully functional in TEST mode.
