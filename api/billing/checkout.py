@@ -30,20 +30,23 @@ except ImportError as e:
 
 
 def get_price_map():
-    """Get price IDs from environment - supports all Levqor tiers"""
+    """Get price IDs from environment - DFY pricing tiers (Starter £9, Launch £29, Growth £59, Agency £149)"""
     return {
-        # Standard tiers
+        # DFY Core Tiers (GBP pricing)
         "starter": os.environ.get("STRIPE_PRICE_STARTER", "").strip(),
         "starter_year": os.environ.get("STRIPE_PRICE_STARTER_YEAR", "").strip(),
         "launch": os.environ.get("STRIPE_PRICE_LAUNCH", "").strip(),
         "launch_year": os.environ.get("STRIPE_PRICE_LAUNCH_YEAR", "").strip(),
         "growth": os.environ.get("STRIPE_PRICE_GROWTH", "").strip(),
         "growth_year": os.environ.get("STRIPE_PRICE_GROWTH_YEAR", "").strip(),
-        "scale": os.environ.get("STRIPE_PRICE_SCALE", "").strip(),
-        "scale_year": os.environ.get("STRIPE_PRICE_SCALE_YEAR", "").strip(),
-        "business": os.environ.get("STRIPE_PRICE_BUSINESS", "").strip(),
-        "business_year": os.environ.get("STRIPE_PRICE_BUSINESS_YEAR", "").strip(),
-        # DFY tiers
+        "agency": os.environ.get("STRIPE_PRICE_AGENCY", "").strip(),
+        "agency_year": os.environ.get("STRIPE_PRICE_AGENCY_YEAR", "").strip(),
+        # Legacy tier aliases (backward compatibility)
+        "scale": os.environ.get("STRIPE_PRICE_SCALE", os.environ.get("STRIPE_PRICE_GROWTH", "")).strip(),
+        "scale_year": os.environ.get("STRIPE_PRICE_SCALE_YEAR", os.environ.get("STRIPE_PRICE_GROWTH_YEAR", "")).strip(),
+        "business": os.environ.get("STRIPE_PRICE_BUSINESS", os.environ.get("STRIPE_PRICE_AGENCY", "")).strip(),
+        "business_year": os.environ.get("STRIPE_PRICE_BUSINESS_YEAR", os.environ.get("STRIPE_PRICE_AGENCY_YEAR", "")).strip(),
+        # One-time DFY packages (if needed)
         "dfy_starter": os.environ.get("STRIPE_PRICE_DFY_STARTER", "").strip(),
         "dfy_professional": os.environ.get("STRIPE_PRICE_DFY_PROFESSIONAL", "").strip(),
         "dfy_enterprise": os.environ.get("STRIPE_PRICE_DFY_ENTERPRISE", "").strip(),
@@ -59,9 +62,15 @@ def create_checkout_session():
     """
     Create a Stripe Checkout session for tier upgrades
     
+    DFY Pricing Tiers (GBP):
+    - starter: £9/month, £90/year
+    - launch: £29/month, £290/year
+    - growth: £59/month, £590/year
+    - agency: £149/month, £1490/year
+    
     Request body:
     {
-      "tier": "starter" | "launch" | "growth" | "scale" | "business" | etc,
+      "tier": "starter" | "launch" | "growth" | "agency",
       "billing_interval": "month" | "year" (optional, defaults to month)
     }
     

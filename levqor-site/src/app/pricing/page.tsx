@@ -2,58 +2,58 @@
 import { useState } from "react";
 
 type Term = "monthly" | "yearly";
-type Tier = "free" | "starter" | "pro" | "business";
+type Tier = "starter" | "launch" | "growth" | "agency";
 
 const plans = {
-  free: {
-    monthly: 0,
-    yearly: 0,
-    workflows: 2,
-    runs: "200",
+  starter: {
+    monthly: 9,
+    yearly: 90,
+    workflows: 5,
+    runs: "2,000",
     speed: "Standard",
     users: 1,
     connectors: "Core only",
-    aiCredits: "200",
-    support: "Community",
-    features: ["2 workflows", "200 runs/mo", "1 user", "Core connectors", "200 AI credits", "Community support"]
-  },
-  starter: {
-    monthly: 19,
-    yearly: 190,
-    workflows: 10,
-    runs: "5,000",
-    speed: "Fast",
-    users: 1,
-    connectors: "Core + Beta",
-    aiCredits: "2,500",
+    aiCredits: "1,000",
     support: "Email",
-    features: ["10 workflows", "5,000 runs/mo", "1 user", "Core + Beta connectors", "2,500 AI credits", "Email support"]
+    features: ["5 workflows", "2,000 runs/mo", "1 user", "Core connectors", "1,000 AI credits", "Email support"]
   },
-  pro: {
-    monthly: 49,
-    yearly: 490,
-    workflows: 50,
-    runs: "25,000",
-    speed: "Faster",
+  launch: {
+    monthly: 29,
+    yearly: 290,
+    workflows: 20,
+    runs: "10,000",
+    speed: "Fast",
     users: 3,
+    connectors: "Core + Beta",
+    aiCredits: "5,000",
+    support: "Priority Email",
+    features: ["20 workflows", "10,000 runs/mo", "3 users", "Core + Beta connectors", "5,000 AI credits", "Priority email support"]
+  },
+  growth: {
+    monthly: 59,
+    yearly: 590,
+    workflows: 100,
+    runs: "50,000",
+    speed: "Faster",
+    users: 5,
     connectors: "All (incl. Beta)",
-    aiCredits: "10,000",
+    aiCredits: "20,000",
     support: "Priority",
     trial: true,
-    features: ["50 workflows", "25,000 runs/mo", "3 users", "All connectors", "10,000 AI credits", "Priority support", "7-day free trial"]
+    features: ["100 workflows", "50,000 runs/mo", "5 users", "All connectors", "20,000 AI credits", "Priority support", "7-day free trial"]
   },
-  business: {
+  agency: {
     monthly: 149,
     yearly: 1490,
-    workflows: 200,
-    runs: "100,000",
+    workflows: 500,
+    runs: "250,000",
     speed: "Fastest",
-    users: 10,
+    users: 15,
     connectors: "All + SSO",
-    aiCredits: "40,000",
+    aiCredits: "100,000",
     support: "4-hr SLA",
     trial: true,
-    features: ["200 workflows", "100,000 runs/mo", "10 users", "All connectors + SSO", "40,000 AI credits", "4-hour SLA", "7-day free trial"]
+    features: ["500 workflows", "250,000 runs/mo", "15 users", "All connectors + SSO", "100,000 AI credits", "4-hour SLA", "7-day free trial"]
   }
 };
 
@@ -73,23 +73,25 @@ function Card({
 }: { tier: Tier; title: string; price: number; per: string; features: string[]; badge?: string; trial?: boolean; term: Term }) {
   
   const handleClick = async () => {
-    if (tier === "free") {
-      window.location.href = "/dashboard";
-      return;
-    }
-    
     try {
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ plan: tier, term })
+        body: JSON.stringify({ 
+          tier: tier, 
+          billing_interval: term === "yearly" ? "year" : "month"
+        })
       });
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (data.error) {
+        console.error("Checkout error:", data.error);
+        alert("Checkout failed. Please try again or contact support.");
       }
     } catch (err) {
       console.error("Checkout error:", err);
+      alert("Checkout failed. Please try again or contact support.");
     }
   };
 
@@ -116,7 +118,7 @@ function Card({
         onClick={handleClick}
         className="rounded-xl border border-black bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors font-medium"
       >
-        {tier === "free" ? "Start for Free" : trial ? "Start 7-Day Trial" : "Upgrade"}
+        {trial ? "Start 7-Day Trial" : "Get Started"}
       </button>
     </div>
   );
@@ -196,7 +198,7 @@ export default function PricingPage() {
         <h1 className="text-4xl font-bold mb-3">Simple, transparent pricing</h1>
         <p className="text-gray-600 mb-2">Choose the plan that fits your automation needs</p>
         <p className="text-sm">
-          <span className="text-gray-500">14-day free trial on Pro & Business. Cancel anytime. </span>
+          <span className="text-gray-500">7-day free trial on Growth & Agency. Cancel anytime. </span>
           <a href="#faqs" className="text-blue-600 hover:underline">Jump to FAQs →</a>
         </p>
       </div>
@@ -225,14 +227,6 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
         <Card
-          tier="free"
-          title="Free"
-          price={0}
-          per={term === "yearly" ? "yr" : "mo"}
-          features={plans.free.features}
-          term={term}
-        />
-        <Card
           tier="starter"
           title="Starter"
           price={term === "yearly" ? plans.starter.yearly : plans.starter.monthly}
@@ -241,23 +235,31 @@ export default function PricingPage() {
           term={term}
         />
         <Card
-          tier="pro"
-          title="Pro"
-          price={term === "yearly" ? plans.pro.yearly : plans.pro.monthly}
+          tier="launch"
+          title="Launch"
+          price={term === "yearly" ? plans.launch.yearly : plans.launch.monthly}
           per={term === "yearly" ? "yr" : "mo"}
-          features={plans.pro.features}
+          features={plans.launch.features}
           badge="Most Popular"
-          trial={plans.pro.trial}
           term={term}
         />
         <Card
-          tier="business"
-          title="Business"
-          price={term === "yearly" ? plans.business.yearly : plans.business.monthly}
+          tier="growth"
+          title="Growth"
+          price={term === "yearly" ? plans.growth.yearly : plans.growth.monthly}
           per={term === "yearly" ? "yr" : "mo"}
-          features={plans.business.features}
+          features={plans.growth.features}
+          trial={plans.growth.trial}
+          term={term}
+        />
+        <Card
+          tier="agency"
+          title="Agency"
+          price={term === "yearly" ? plans.agency.yearly : plans.agency.monthly}
+          per={term === "yearly" ? "yr" : "mo"}
+          features={plans.agency.features}
           badge="Best Value"
-          trial={plans.business.trial}
+          trial={plans.agency.trial}
           term={term}
         />
       </div>
@@ -269,61 +271,61 @@ export default function PricingPage() {
           <thead className="bg-gray-50">
             <tr>
               <th className="text-left p-4 font-semibold">Feature</th>
-              <th className="text-center p-4 font-semibold">Free</th>
               <th className="text-center p-4 font-semibold">Starter</th>
-              <th className="text-center p-4 font-semibold">Pro</th>
-              <th className="text-center p-4 font-semibold">Business</th>
+              <th className="text-center p-4 font-semibold">Launch</th>
+              <th className="text-center p-4 font-semibold">Growth</th>
+              <th className="text-center p-4 font-semibold">Agency</th>
             </tr>
           </thead>
           <tbody className="divide-y">
             <tr>
               <td className="p-4">Workflows</td>
-              <td className="text-center p-4">{plans.free.workflows}</td>
               <td className="text-center p-4">{plans.starter.workflows}</td>
-              <td className="text-center p-4">{plans.pro.workflows}</td>
-              <td className="text-center p-4">{plans.business.workflows}</td>
+              <td className="text-center p-4">{plans.launch.workflows}</td>
+              <td className="text-center p-4">{plans.growth.workflows}</td>
+              <td className="text-center p-4">{plans.agency.workflows}</td>
             </tr>
             <tr className="bg-gray-50">
               <td className="p-4">Runs per month</td>
-              <td className="text-center p-4">{plans.free.runs}</td>
               <td className="text-center p-4">{plans.starter.runs}</td>
-              <td className="text-center p-4">{plans.pro.runs}</td>
-              <td className="text-center p-4">{plans.business.runs}</td>
+              <td className="text-center p-4">{plans.launch.runs}</td>
+              <td className="text-center p-4">{plans.growth.runs}</td>
+              <td className="text-center p-4">{plans.agency.runs}</td>
             </tr>
             <tr>
               <td className="p-4">Speed</td>
-              <td className="text-center p-4">{plans.free.speed}</td>
               <td className="text-center p-4">{plans.starter.speed}</td>
-              <td className="text-center p-4">{plans.pro.speed}</td>
-              <td className="text-center p-4">{plans.business.speed}</td>
+              <td className="text-center p-4">{plans.launch.speed}</td>
+              <td className="text-center p-4">{plans.growth.speed}</td>
+              <td className="text-center p-4">{plans.agency.speed}</td>
             </tr>
             <tr className="bg-gray-50">
               <td className="p-4">Users</td>
-              <td className="text-center p-4">{plans.free.users}</td>
               <td className="text-center p-4">{plans.starter.users}</td>
-              <td className="text-center p-4">{plans.pro.users}</td>
-              <td className="text-center p-4">{plans.business.users}</td>
+              <td className="text-center p-4">{plans.launch.users}</td>
+              <td className="text-center p-4">{plans.growth.users}</td>
+              <td className="text-center p-4">{plans.agency.users}</td>
             </tr>
             <tr>
               <td className="p-4">Connectors</td>
-              <td className="text-center p-4 text-sm">{plans.free.connectors}</td>
               <td className="text-center p-4 text-sm">{plans.starter.connectors}</td>
-              <td className="text-center p-4 text-sm">{plans.pro.connectors}</td>
-              <td className="text-center p-4 text-sm">{plans.business.connectors}</td>
+              <td className="text-center p-4 text-sm">{plans.launch.connectors}</td>
+              <td className="text-center p-4 text-sm">{plans.growth.connectors}</td>
+              <td className="text-center p-4 text-sm">{plans.agency.connectors}</td>
             </tr>
             <tr className="bg-gray-50">
               <td className="p-4">AI Credits</td>
-              <td className="text-center p-4">{plans.free.aiCredits}</td>
               <td className="text-center p-4">{plans.starter.aiCredits}</td>
-              <td className="text-center p-4">{plans.pro.aiCredits}</td>
-              <td className="text-center p-4">{plans.business.aiCredits}</td>
+              <td className="text-center p-4">{plans.launch.aiCredits}</td>
+              <td className="text-center p-4">{plans.growth.aiCredits}</td>
+              <td className="text-center p-4">{plans.agency.aiCredits}</td>
             </tr>
             <tr>
               <td className="p-4">Support</td>
-              <td className="text-center p-4">{plans.free.support}</td>
               <td className="text-center p-4">{plans.starter.support}</td>
-              <td className="text-center p-4">{plans.pro.support}</td>
-              <td className="text-center p-4">{plans.business.support}</td>
+              <td className="text-center p-4">{plans.launch.support}</td>
+              <td className="text-center p-4">{plans.growth.support}</td>
+              <td className="text-center p-4">{plans.agency.support}</td>
             </tr>
           </tbody>
         </table>
@@ -368,7 +370,7 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-blue-600">✓</span>
-            <span>7-day trial on Pro & Business</span>
+            <span>7-day trial on Growth & Agency</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-blue-600">✓</span>
@@ -380,7 +382,7 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-blue-600">✓</span>
-            <span>SLA on Business plan</span>
+            <span>SLA on Agency plan</span>
           </div>
         </div>
       </div>
@@ -390,15 +392,9 @@ export default function PricingPage() {
         <h2 className="text-2xl font-bold mb-6 text-center">Frequently Asked Questions</h2>
         <div className="space-y-4 max-w-3xl mx-auto">
           <details className="bg-white rounded-xl p-4 shadow">
-            <summary className="cursor-pointer font-medium">Do you offer a free plan?</summary>
-            <p className="mt-2 text-sm text-gray-600">
-              Yes! The Free plan includes 200 runs/month, 2 workflows, and core connectors. Perfect for hobby projects and trying out Levqor.
-            </p>
-          </details>
-          <details className="bg-white rounded-xl p-4 shadow">
             <summary className="cursor-pointer font-medium">What happens after the trial?</summary>
             <p className="mt-2 text-sm text-gray-600">
-              Pro and Business plans include a 7-day free trial. You won't be charged until the trial ends. No credit card required for signup if configured. Cancel anytime during the trial with no charge.
+              Growth and Agency plans include a 7-day free trial. You won't be charged until the trial ends. Cancel anytime during the trial with no charge.
             </p>
           </details>
           <details className="bg-white rounded-xl p-4 shadow">
@@ -416,7 +412,7 @@ export default function PricingPage() {
           <details className="bg-white rounded-xl p-4 shadow">
             <summary className="cursor-pointer font-medium">Where is my data stored?</summary>
             <p className="mt-2 text-sm text-gray-600">
-              Data is stored in EU/UK regions by default for GDPR compliance. US region hosting is available on request for Business plans.
+              Data is stored in EU/UK regions by default for GDPR compliance. US region hosting is available on request for Agency plans.
             </p>
           </details>
           <details className="bg-white rounded-xl p-4 shadow">
