@@ -54,10 +54,11 @@ def get_price_map():
         "dfy_starter": os.environ.get("STRIPE_PRICE_DFY_STARTER", "").strip(),
         "dfy_professional": os.environ.get("STRIPE_PRICE_DFY_PROFESSIONAL", "").strip(),
         "dfy_enterprise": os.environ.get("STRIPE_PRICE_DFY_ENTERPRISE", "").strip(),
-        # Add-ons
+        # Recurring Add-ons (monthly subscriptions)
         "addon_priority_support": os.environ.get("STRIPE_PRICE_ADDON_PRIORITY_SUPPORT", "").strip(),
-        "addon_sla_99_9": os.environ.get("STRIPE_PRICE_ADDON_SLA_99_9", "").strip(),
+        "addon_sla_99": os.environ.get("STRIPE_PRICE_ADDON_SLA_99_9", "").strip(),
         "addon_white_label": os.environ.get("STRIPE_PRICE_ADDON_WHITE_LABEL", "").strip(),
+        "addon_extra_workflows": os.environ.get("STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS", "").strip(),
     }
 
 
@@ -78,8 +79,12 @@ def billing_health():
     # Check DFY packages
     required_dfy_packages = ["dfy_starter", "dfy_professional", "dfy_enterprise"]
     
+    # Check Add-ons
+    required_addons = ["addon_priority_support", "addon_sla_99", "addon_white_label", "addon_extra_workflows"]
+    
     missing_subscription = [p for p in required_subscription_prices if not price_map.get(p)]
     missing_dfy = [p for p in required_dfy_packages if not price_map.get(p)]
+    missing_addons = [p for p in required_addons if not price_map.get(p)]
     
     if missing_subscription:
         return jsonify({
@@ -102,14 +107,22 @@ def billing_health():
             "dfy_enterprise": price_map.get('dfy_enterprise', 'NOT_CONFIGURED')
         },
         "dfy_packages_configured": len([p for p in required_dfy_packages if price_map.get(p)]),
-        "dfy_packages_total": len(required_dfy_packages)
+        "dfy_packages_total": len(required_dfy_packages),
+        "addons": {
+            "addon_priority_support": price_map.get('addon_priority_support', 'NOT_CONFIGURED'),
+            "addon_sla_99": price_map.get('addon_sla_99', 'NOT_CONFIGURED'),
+            "addon_white_label": price_map.get('addon_white_label', 'NOT_CONFIGURED'),
+            "addon_extra_workflows": price_map.get('addon_extra_workflows', 'NOT_CONFIGURED')
+        },
+        "addons_configured": len([p for p in required_addons if price_map.get(p)]),
+        "addons_total": len(required_addons)
     }), 200
 
 
 @bp.post("/checkout")
 def create_checkout_session():
     """
-    Create a Stripe Checkout session for tier upgrades or DFY packages
+    Create a Stripe Checkout session for tier upgrades, DFY packages, or add-ons
     
     Subscription Tiers (GBP):
     - starter: £9/month, £90/year
@@ -122,6 +135,12 @@ def create_checkout_session():
     - dfy_professional: £299
     - dfy_enterprise: £499
     
+    Add-ons (Recurring Monthly, GBP):
+    - addon_priority_support: £29/month
+    - addon_sla_99: £49/month
+    - addon_white_label: £99/month
+    - addon_extra_workflows: £10/month
+    
     Request body (Subscriptions):
     {
       "purchase_type": "subscription",
@@ -133,6 +152,15 @@ def create_checkout_session():
     {
       "purchase_type": "dfy",
       "dfy_pack": "dfy_starter" | "dfy_professional" | "dfy_enterprise"
+    }
+    
+    Request body (Add-ons):
+    {
+      "addons": "addon_priority_support,addon_sla_99" (comma-separated or single value)
+    }
+    OR
+    {
+      "addons": ["addon_priority_support", "addon_sla_99"]
     }
     
     Response:
@@ -153,6 +181,77 @@ def create_checkout_session():
         
         # Get success/cancel URLs from env or use defaults
         site_url = os.environ.get("SITE_URL", "https://levqor.ai").strip()
+        
+        # Handle Add-ons (standalone checkout for add-on subscriptions)
+        addons_param = data.get("addons")
+        if addons_param:
+            # Parse addons (can be string "addon1,addon2" or list ["addon1", "addon2"])
+            if isinstance(addons_param, str):
+                addon_codes = [a.strip() for a in addons_param.split(",") if a.strip()]
+            elif isinstance(addons_param, list):
+                addon_codes = [str(a).strip() for a in addons_param if a]
+            else:
+                return jsonify({"error": "invalid_addons_format"}), 400
+            
+            if not addon_codes:
+                return jsonify({"error": "no_addons_specified"}), 400
+            
+            # Validate and collect price IDs for requested add-ons
+            line_items = []
+            addon_names = []
+            valid_addon_codes = ["addon_priority_support", "addon_sla_99", "addon_white_label", "addon_extra_workflows"]
+            
+            for addon_code in addon_codes:
+                if addon_code not in valid_addon_codes:
+                    return jsonify({
+                        "error": "invalid_addon",
+                        "addon": addon_code,
+                        "valid_addons": valid_addon_codes
+                    }), 400
+                
+                price_id = price_map.get(addon_code, "").strip()
+                if not price_id:
+                    return jsonify({
+                        "error": "addon_not_configured",
+                        "addon": addon_code
+                    }), 500
+                
+                line_items.append({"price": price_id, "quantity": 1})
+                addon_names.append(addon_code)
+            
+            success_url = os.environ.get(
+                "CHECKOUT_SUCCESS_URL",
+                f"{site_url}/dashboard?addons_added=1"
+            )
+            cancel_url = os.environ.get(
+                "CHECKOUT_CANCEL_URL",
+                f"{site_url}/pricing?canceled=1"
+            )
+            
+            # Create subscription checkout for add-ons
+            session = stripe.checkout.Session.create(
+                mode="subscription",
+                line_items=line_items,
+                success_url=success_url,
+                cancel_url=cancel_url,
+                allow_promotion_codes=True,
+                billing_address_collection="auto",
+                metadata={
+                    "purchase_type": "addons",
+                    "addons": ",".join(addon_names),
+                    "source": "pricing_page"
+                }
+            )
+            
+            log.info(f"Created add-on checkout session for addons={','.join(addon_names)}")
+            
+            return jsonify({
+                "ok": True,
+                "url": session.url,
+                "session_id": session.id,
+                "purchase_type": "addons",
+                "addons": addon_names
+            }), 200
         
         # Handle DFY one-time packages
         if purchase_type == "dfy":
