@@ -568,13 +568,16 @@ def admin_analytics():
     thirty_days_ago = now - (30 * 24 * 60 * 60)
     
     cursor = execute("SELECT COUNT(*) FROM users")
-    total_users = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    total_users = result[0] if result else 0
     
     cursor = execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (seven_days_ago,))
-    new_users_7d = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    new_users_7d = result[0] if result else 0
     
     cursor = execute("SELECT COUNT(*) FROM users WHERE created_at >= ?", (thirty_days_ago,))
-    new_users_30d = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    new_users_30d = result[0] if result else 0
     
     cursor = execute("""
         SELECT source, COUNT(*) as count 
@@ -587,10 +590,12 @@ def admin_analytics():
     top_referrals = [{"source": row[0], "count": row[1]} for row in cursor.fetchall()]
     
     cursor = execute("SELECT COUNT(*) FROM referrals WHERE created_at >= ?", (seven_days_ago,))
-    referrals_7d = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    referrals_7d = result[0] if result else 0
     
     cursor = execute("SELECT COUNT(*) FROM referrals WHERE created_at >= ?", (thirty_days_ago,))
-    referrals_30d = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    referrals_30d = result[0] if result else 0
     
     return jsonify({
         "users": {
