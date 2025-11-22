@@ -61,6 +61,40 @@ def get_price_map():
     }
 
 
+@bp.get("/health")
+def billing_health():
+    """Health check endpoint - verify LIVE billing configuration"""
+    if not ensure_stripe_configured():
+        return jsonify({"status": "failed", "error": "stripe_not_configured"}), 500
+    
+    price_map = get_price_map()
+    required_prices = [
+        "starter", "starter_year", "launch", "launch_year",
+        "growth", "growth_year", "agency", "agency_year"
+    ]
+    
+    missing_prices = [p for p in required_prices if not price_map.get(p)]
+    
+    if missing_prices:
+        return jsonify({
+            "status": "failed",
+            "error": f"Missing price IDs: {', '.join(missing_prices)}"
+        }), 500
+    
+    return jsonify({
+        "status": "ok",
+        "stripe_configured": True,
+        "prices_configured": len([p for p in required_prices if price_map.get(p)]),
+        "all_required_prices": len(required_prices),
+        "tiers": {
+            "starter": f"{price_map['starter']} (month), {price_map['starter_year']} (year)",
+            "launch": f"{price_map['launch']} (month), {price_map['launch_year']} (year)",
+            "growth": f"{price_map['growth']} (month), {price_map['growth_year']} (year)",
+            "agency": f"{price_map['agency']} (month), {price_map['agency_year']} (year)"
+        }
+    }), 200
+
+
 @bp.post("/checkout")
 def create_checkout_session():
     """
