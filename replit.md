@@ -1,12 +1,21 @@
-# Levqor Site
+# Levqor X 9.0
 
 ## Overview
 
-Levqor Site is a Next.js-based web application providing information about data backup and retention policies. The project is deployed on Vercel and uses modern React/Next.js patterns with TypeScript. The application appears to be a customer-facing informational site, likely part of a larger SaaS platform focused on data management and compliance.
+Levqor X is a comprehensive data backup and retention management platform with Done-For-You (DFY) service tiers. The project consists of a Python Flask backend API, a Next.js frontend, PostgreSQL database, and Stripe billing integration. Currently configured for development with TEST mode Stripe credentials, ready for production deployment.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+## Recent Changes (November 2025)
+
+### DFY Pricing Realignment - COMPLETED ✅
+- **New Pricing Tiers**: Starter (£9/£90), Launch (£29/£290), Growth (£59/£590), Agency (£149/£1490)
+- **Backend**: Updated checkout API to support new tiers with Stripe connector integration
+- **Frontend**: Pricing page rebuilt with new tier structure
+- **Stripe**: All 8 checkout endpoints working in TEST mode
+- **Security**: Removed conflicting environment variables, using Replit Stripe connector exclusively
 
 ## System Architecture
 
@@ -41,19 +50,43 @@ Preferred communication style: Simple, everyday language.
 - **Pros**: Consistent design system, small bundle size with purging, highly customizable
 - **Cons**: Verbose class names, learning curve for new developers
 
+### Backend Architecture
+
+**Framework**: Python Flask + Gunicorn
+- **API Server**: Flask REST API on port 8000
+- **WSGI Server**: Gunicorn with 2 workers, 4 threads, port reuse enabled
+- **Database**: PostgreSQL (Replit-hosted, development database)
+- **Billing**: Stripe integration via Replit Stripe connector
+- **Scheduler**: APScheduler for background jobs (18 scheduled tasks)
+
+**Key Backend Modules**:
+- `api/billing/checkout.py`: Stripe checkout session creation for DFY tiers
+- `modules/stripe_connector.py`: Replit Stripe connector integration (5min credential cache)
+- `server/storage.ts`: Database access layer
+- `shared/schema.ts`: Drizzle ORM schema definitions
+
+**DFY Pricing Configuration**:
+- 8 price IDs stored as secrets (STRIPE_PRICE_STARTER, etc.)
+- Per-request Stripe credential refresh to avoid caching issues
+- Backward compatibility for legacy tier names (scale→growth, business→agency)
+
 ## External Dependencies
 
-### Hosting & Deployment
-- **Vercel**: Primary hosting platform for the Next.js application
-- **Project ID**: prj_0uD8XkWsrf6z7F9DHlUvyfDinas5
-- **Organization**: team_brpiJYLXLxoOUdPwhMJ2TJ6e
+### Payment Processing
+- **Stripe**: Billing and subscription management
+- **Integration**: Replit Stripe connector (TEST mode for development)
+- **Price IDs**: 8 active GBP prices for DFY tiers (monthly + yearly variants)
 
-### Development Tools
-- **pytest**: Python testing framework (cache present, suggesting Python backend services may exist alongside the frontend)
+### Hosting & Deployment
+- **Vercel**: Frontend hosting (Next.js application)
+- **Replit**: Backend development environment
+- **PostgreSQL**: Database (Replit-hosted development database)
 
 ### Framework Dependencies
-- **Next.js**: React framework for production
-- **React**: UI library
-- **TypeScript**: Type system for JavaScript
+- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
+- **Database**: Drizzle ORM, PostgreSQL driver
 
-Note: No database, authentication system, or API integrations are visible in the current repository structure. The application appears to be a static/server-rendered informational site without dynamic data requirements at this stage.
+### Authentication & Security
+- **Planned**: NextAuth (OAuth with Google/Microsoft)
+- **Secrets**: Managed via Replit secrets (Stripe keys, webhook secrets, auth credentials)

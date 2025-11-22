@@ -13,20 +13,24 @@ log = logging.getLogger("levqor.checkout")
 try:
     import stripe
     from modules.stripe_connector import get_stripe_secret_key, is_stripe_configured
-    
-    # Initialize Stripe with connector credentials
-    try:
-        stripe.api_key = get_stripe_secret_key()
-        STRIPE_AVAILABLE = True
-        log.info("Stripe initialized with connector credentials")
-    except Exception as e:
-        log.warning(f"Stripe connector failed, falling back to env: {e}")
-        # Fallback to environment variable if connector fails
-        stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "").strip()
-        STRIPE_AVAILABLE = bool(stripe.api_key and stripe.api_key.startswith("sk_"))
+    STRIPE_AVAILABLE = True
 except ImportError as e:
     log.error(f"Stripe SDK not available: {e}")
     STRIPE_AVAILABLE = False
+    stripe = None
+
+
+def ensure_stripe_configured():
+    """Ensure Stripe is configured with fresh credentials from connector"""
+    if not STRIPE_AVAILABLE:
+        return False
+    try:
+        stripe.api_key = get_stripe_secret_key()
+        log.debug("Stripe API key refreshed from connector")
+        return True
+    except Exception as e:
+        log.error(f"Failed to get Stripe credentials from connector: {e}")
+        return False
 
 
 def get_price_map():
@@ -81,8 +85,8 @@ def create_checkout_session():
       "session_id": "cs_..."
     }
     """
-    if not STRIPE_AVAILABLE:
-        log.error("Stripe not available")
+    if not ensure_stripe_configured():
+        log.error("Stripe not configured")
         return jsonify({"error": "stripe_not_configured"}), 500
     
     try:
