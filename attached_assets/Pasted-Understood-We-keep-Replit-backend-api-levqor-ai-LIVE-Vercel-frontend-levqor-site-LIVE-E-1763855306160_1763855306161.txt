@@ -1,0 +1,413 @@
+Understood. We keep:
+
+Replit backend (api.levqor.ai) → LIVE
+
+Vercel frontend (levqor-site) → LIVE
+
+EchoPilot engine on Replit → LIVE
+
+
+We treat the Vercel backend as dead and clean everything around it via the agent.
+
+Here’s a single agent prompt that:
+
+Audits the repo for any Vercel-backend deployment/config references.
+
+Kills all backend-on-Vercel assumptions from code/docs/CI.
+
+Leaves Replit backend + Vercel frontend intact and clearly documented.
+
+
+Copy-paste this into the AI agent:
+
+# LEVQOR AI AGENT — CONSOLIDATE BACKEND ON REPLIT & KILL LEGACY VERCEL BACKEND
+
+Goal:
+- Ensure the ONLY official Levqor backend is the Replit autoscale backend behind https://api.levqor.ai.
+- Remove/neutralise ANY code, config, or docs that imply a backend running on Vercel.
+- Keep the Vercel frontend (levqor-site) 100% intact.
+- Make the architecture explicit in docs so there is no ambiguity.
+
+You are allowed to edit repo files and commit.  
+You are NOT allowed to touch external services (Vercel UI, Cloudflare UI, Replit settings) — user will handle that part.
+
+------------------------------------------------
+0. PRE-CHECKS
+------------------------------------------------
+
+0.1 Repo root & structure
+
+```bash
+cd /home/runner/workspace
+pwd
+ls -la
+
+Confirm:
+
+.git present here.
+
+levqor-site/ present.
+
+Backend code (run.py, api/, etc.) is at repo root.
+
+
+If this is not true, STOP and report.
+
+0.2 Git sanity
+
+git status
+
+If .git/index.lock exists:
+
+rm -f .git/index.lock
+git status
+
+Do NOT run git init.
+Do NOT change remotes.
+
+0.3 Remote
+
+git remote -v
+
+Confirm:
+
+origin → https://github.com/VII-77/Levqor-9.0 (fetch/push).
+
+
+If all OK, print:
+
+> PRE-CHECKS PASSED — STARTING BACKEND CONSOLIDATION
+
+
+
+
+---
+
+1. FIND ANY REFERENCES TO A VERCEL BACKEND
+
+
+
+
+---
+
+We’re looking for any hint the backend is (or was) deployed on Vercel.
+
+1.1 Grep for vercel backend hints
+
+grep -R "vercel.app" -n . || true
+grep -R "vercel" -n .github docs . || true
+grep -R "api.levqor" -n . || true
+grep -R "backend" -n vercel.* .github docs || true
+
+Summarise:
+
+Any URLs like something.vercel.app that are clearly backend endpoints.
+
+Any docs that mention “backend on Vercel”.
+
+Any GitHub Actions that deploy or talk about a backend on Vercel (distinct from levqor-site frontend).
+
+
+
+---
+
+2. VERIFY CURRENT BACKEND ARCHITECTURE
+
+
+
+
+---
+
+We want to make sure the codebase aligns with the real architecture:
+
+Backend: Python/Flask (Replit autoscale)
+
+Frontend: Next.js (Vercel)
+
+
+2.1 Backend entry + health
+
+From repo root:
+
+ls -la
+grep -R "Flask" -n . || true
+grep -R "@app.get(\"/health\"" -n . || true
+
+Confirm:
+
+run.py exists.
+
+/health endpoint is defined.
+
+/api/billing/checkout lives in backend blueprints.
+
+
+2.2 Frontend API usage
+
+From levqor-site:
+
+cd /home/runner/workspace/levqor-site
+grep -R "NEXT_PUBLIC_API_URL" -n src || true
+grep -R "api.levqor.ai" -n src || true
+grep -R "/api/billing/checkout" -n src || true
+
+Confirm:
+
+The frontend uses NEXT_PUBLIC_API_URL (and maybe NEXT_PUBLIC_API_BASE) with fallback https://api.levqor.ai.
+
+Pricing and dashboards call https://api.levqor.ai/api/billing/checkout, not any .vercel.app backend.
+
+
+If any frontend code calls a *.vercel.app URL for backend, note it.
+
+
+---
+
+3. CLEAN UP CI / WORKFLOWS THAT TARGET A VERCEL BACKEND
+
+
+
+
+---
+
+We ONLY want:
+
+Frontend deployments to Vercel (levqor-site).
+
+Health monitoring hitting api.levqor.ai + levqor.ai, not any Vercel backend.
+
+
+3.1 Inspect workflows
+
+From repo root:
+
+ls -R .github
+sed -n '1,200p' .github/workflows/deployment-health.yml 2>/dev/null || true
+grep -R "vercel" -n .github || true
+grep -R "backend" -n .github || true
+
+If you find any workflow that:
+
+Deploys backend to Vercel, or
+
+Pings a *.vercel.app backend URL,
+
+
+then:
+
+Update it so it ONLY refers to:
+
+https://www.levqor.ai/
+
+https://levqor.ai/
+
+https://api.levqor.ai/health
+
+
+Remove/replace any *.vercel.app backend health checks.
+
+
+If there is a separate “backend deploy to Vercel” workflow:
+
+Comment it out OR turn it into a clearly-marked “legacy, disabled” workflow by:
+
+Renaming file to legacy-backend-vercel.yml.disabled, or
+
+Leaving a note in the YAML header and having it do nothing (no on: section), whichever is simplest.
+
+
+
+Be explicit in comments that:
+
+> Backend is now exclusively on Replit (api.levqor.ai). Vercel backend is deprecated and must not be used.
+
+
+
+
+---
+
+4. UPDATE DOCS TO MAKE ARCHITECTURE EXPLICIT
+
+
+
+
+---
+
+We want docs to say clearly:
+
+Frontend: Vercel (levqor-site).
+
+Backend: Replit autoscale (api.levqor.ai).
+
+No backend on Vercel.
+
+
+4.1 Update main backend/frontend docs
+
+Inspect these files (if they exist):
+
+sed -n '1,200p' levqor-site/docs/DEPLOYMENT_COMPLETE.md 2>/dev/null || true
+sed -n '1,200p' levqor-site/docs/HARDENING_CHECKLIST.md 2>/dev/null || true
+sed -n '1,200p' replit.md 2>/dev/null || true
+grep -R "Vercel" -n docs replit.md levqor-site/docs || true
+
+Then:
+
+a) In replit.md (or equivalent backend doc), add a short section like:
+
+> Backend Deployment (Canonical)
+
+Backend: Python/Flask app (run.py) deployed on Replit Autoscale.
+
+Public base URL: https://api.levqor.ai
+
+There is no backend running on Vercel. Any older references to a Vercel backend are deprecated.
+
+
+
+
+b) In levqor-site/docs/DEPLOYMENT_COMPLETE.md and/or HARDENING_CHECKLIST.md, ensure the architecture section says:
+
+> Frontend: Deployed on Vercel (project: levqor-site) with domains levqor.ai / www.levqor.ai.
+
+Backend: Deployed on Replit (Autoscale) behind api.levqor.ai.
+
+No production backend deployment exists on Vercel; any such project is legacy and should remain disabled.
+
+
+
+
+c) If any doc suggests deploying backend to Vercel or mentions a backend *.vercel.app URL, rewrite that paragraph to say the backend is only on Replit.
+
+Do not remove historical notes; just clearly mark them as legacy if needed.
+
+
+---
+
+5. REMOVE / NEUTRALISE ANY BACKEND VERCEL CONFIG FILES
+
+
+
+
+---
+
+We do NOT want a second vercel.json for the backend. We only keep Vercel config that’s clearly for the frontend app.
+
+5.1 Inspect vercel config(s)
+
+From repo root:
+
+find . -maxdepth 3 -name "vercel.json" -print
+
+If there is exactly one vercel.json in levqor-site/ and it configures the Next.js app (frontend), LEAVE IT ALONE.
+
+If there is another vercel.json at root or under a backend directory:
+
+Open it:
+
+sed -n '1,200p' <path-to-vercel.json>
+
+If it clearly defines backend/API deployment:
+
+Either delete that file, or
+
+Rename to vercel.backend.legacy.json and add a comment at the top inside the JSON (if kept) like:
+
+{
+  "//": "LEGACY: Backend is no longer deployed to Vercel. This config is kept only for historical reference."
+}
+
+The goal: ensure there is no accidental Vercel backend deployment config picked up by any CI.
+
+
+
+
+Be careful not to break the frontend vercel.json.
+
+
+---
+
+6. BUILD SANITY CHECK
+
+
+
+
+---
+
+Ensure nothing broke:
+
+cd /home/runner/workspace/levqor-site
+timeout 180 npm run build 2>&1 | head -120
+
+If build fails due to your edits, fix and re-run.
+
+If build passes, explicitly note: “Build after backend consolidation: PASSED”.
+
+
+No backend build is needed for this task, but if you can cheaply compile Python (optional):
+
+cd /home/runner/workspace
+python -m compileall api || true
+
+
+---
+
+7. GIT DIFF, COMMIT, PUSH
+
+
+
+
+---
+
+From repo root:
+
+cd /home/runner/workspace
+git status
+git diff
+
+If the diffs match the intent (docs clarified, CI/legacy Vercel backend configs removed/neutralised):
+
+git add .
+git commit -m "chore: consolidate backend on Replit and deprecate Vercel backend"
+git push origin main
+
+If there’s “nothing to commit”, say so.
+
+
+---
+
+8. FINAL REPORT
+
+
+
+
+---
+
+Summarise:
+
+Any Vercel backend URLs or workflows you found and what you did with them.
+
+Final architecture statement, e.g.:
+
+Frontend: Vercel (levqor-site, levqor.ai / www.levqor.ai).
+
+Backend: Replit Autoscale (api.levqor.ai).
+
+No backend deployment on Vercel; any such project is legacy and disabled.
+
+
+Which docs you updated and how.
+
+Build status after changes.
+
+Latest commit hash (if committed.
+
+
+Do NOT claim anything about the external Vercel backend project being deleted; that is outside this environment. Just ensure the repo no longer assumes or depends on a Vercel backend.
+
+After this runs and you push:
+
+- In **Vercel**, you can safely delete/disable the old backend project, because nothing in the repo or CI will expect it.  
+- In **Cloudflare**, `api.levqor.ai` should stay pointing to Replit only.
+
+Once the agent has finished and you’ve pushed, tell me and we’ll do one final sanity pass: verify that nothing in the codebase references any backend `.vercel.app` URL anymore and all roads lead through `api.levqor.ai`.0

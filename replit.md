@@ -38,6 +38,19 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
+### Architecture Overview (Canonical)
+
+**IMPORTANT:** Levqor X 9.0 uses a clean separation of concerns:
+
+- **Frontend**: Next.js application deployed on **Vercel only** (`levqor.ai` / `www.levqor.ai`)
+- **Backend**: Python/Flask API deployed on **Replit Autoscale only** (`api.levqor.ai`)
+- **No backend deployment exists on Vercel** — any legacy Vercel backend projects are deprecated and must not be used
+
+This architecture ensures:
+- Frontend scales via Vercel's global edge network
+- Backend scales via Replit's Autoscale platform with per-request pricing
+- Clear separation prevents deployment confusion and configuration drift
+
 ### Frontend Architecture
 
 **Framework**: Next.js (App Router)
@@ -52,9 +65,9 @@ Preferred communication style: Simple, everyday language.
 - Responsive design with Tailwind utility classes
 - SEO optimization: Public pages indexed, private dashboard excluded
 
-### Deployment
+### Frontend Deployment
 
-**Platform**: Vercel
+**Platform**: Vercel (Frontend Only)
 - **Rationale**: Native Next.js hosting with automatic deployments, edge network, and zero-config setup
 - **Configuration**: 
   - Node.js 20.x runtime
@@ -81,8 +94,9 @@ Preferred communication style: Simple, everyday language.
 - **Database**: PostgreSQL (Replit-hosted, development database)
 - **Billing**: Stripe integration via Replit Stripe connector
 - **Scheduler**: APScheduler for background jobs (18 scheduled tasks)
-- **Deployment**: Replit Autoscale (auto-scales based on demand)
+- **Deployment**: **Replit Autoscale ONLY** (auto-scales based on demand, per-request pricing)
 - **Custom Domain**: `api.levqor.ai` (A + TXT records via Cloudflare, Proxy OFF)
+- **NOTE**: Backend is NOT deployed on Vercel — Replit is the sole production backend platform
 
 **Key Backend Modules**:
 - `api/billing/checkout.py`: Stripe checkout session creation for DFY tiers + add-ons

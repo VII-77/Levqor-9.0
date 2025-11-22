@@ -3,6 +3,12 @@
 ## Summary
 This document records all evidence for the Dashboard V2 deployment, SEO noindex setup, and backend/frontend live verification as required by the Genesis governance pipeline.
 
+## Architecture (Canonical)
+
+**Frontend**: Deployed on Vercel (project: `levqor-site`) with domains `levqor.ai` / `www.levqor.ai`  
+**Backend**: Deployed on Replit Autoscale behind `api.levqor.ai`  
+**NOTE**: No production backend deployment exists on Vercel; any such project is legacy and should remain disabled.
+
 ---
 
 ## 1. Git Commit Evidence

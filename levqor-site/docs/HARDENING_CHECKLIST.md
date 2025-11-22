@@ -2,6 +2,12 @@
 
 This checklist must be reviewed and ticked off before and after each production deployment.
 
+## Architecture (Canonical)
+
+**Frontend**: Deployed on Vercel (project: `levqor-site`) with domains `levqor.ai` / `www.levqor.ai`  
+**Backend**: Deployed on Replit Autoscale behind `api.levqor.ai`  
+**NOTE**: No production backend deployment exists on Vercel; any such project is legacy and should remain disabled.
+
 ---
 
 ## 1. Security Headers
