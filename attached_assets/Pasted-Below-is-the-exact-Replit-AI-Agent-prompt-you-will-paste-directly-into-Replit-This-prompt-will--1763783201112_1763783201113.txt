@@ -1,0 +1,156 @@
+Below is the exact Replit AI Agent prompt you will paste directly into Replit.
+
+This prompt will:
+✅ Recreate ALL Cloudflare DNS records for Levqor
+✅ Reconnect frontend (Vercel)
+✅ Reconnect backend (Replit)
+✅ Add TXT verification records
+✅ Make api.levqor.ai → backend
+✅ Make www.levqor.ai + root domain → Vercel
+✅ Do a full rebuild of the DNS zone exactly as required
+❌ Requires nothing from you. The Agent already has Cloudflare integration access.
+
+Paste it exactly as-is:
+
+
+---
+
+REPLIT AI AGENT PROMPT — REBUILD CLOUDFLARE DNS FOR LEVQOR
+
+You are connected to Cloudflare via Replit integrations.
+Your task is to completely recreate all DNS records for levqor.ai from scratch.
+
+⚠️ I have deleted all DNS records, so the zone is EMPTY.
+You must rebuild EVERYTHING correctly, safely, and fully automatically.
+
+
+---
+
+GOAL
+
+Correctly connect:
+
+1. Frontend (Next.js on Vercel)
+
+Domain: levqor.ai
+
+Domain: www.levqor.ai
+
+Both must point to Vercel with proper CNAME records.
+
+
+2. Backend (Flask API on Replit)
+
+Domain: api.levqor.ai
+
+Must point to:
+levqor-backend.replit.app (CNAME)
+
+
+3. Additional Required TXT Records
+
+You must add all required verification TXT records:
+
+_vercel.levqor.ai → Vercel domain verify token (fetch automatically)
+
+levqor.ai → SPF record: "v=spf1 -all"
+
+_dmarc.levqor.ai → DMARC policy: "v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s;"
+
+*._domainkey.levqor.ai → "v=DKIM1; p="
+
+api.levqor.ai → Replit verification (replit-verify=...) (fetch automatically)
+
+
+If Vercel or Replit require additional TXT verification entries,
+detect them automatically and add them.
+
+
+---
+
+WHAT YOU MUST ADD
+
+A. Frontend (Vercel)
+
+Add 2 DNS records:
+
+1. 
+
+Type: CNAME
+Name: www
+Value: cname.vercel-dns.com
+
+2. 
+
+Type: CNAME
+Name: @ (root domain)
+Value: alias.zeit.co
+(or the new Vercel root CNAME target if available—fetch automatically)
+
+
+---
+
+B. Backend (Replit)
+
+Add:
+
+Type: CNAME
+Name: api
+Value: levqor-backend.replit.app
+Proxy: OFF
+
+
+---
+
+C. TXT Records
+
+Add:
+
+Type: TXT
+Name: levqor.ai
+Value: "v=spf1 -all"
+
+Type: TXT
+Name: _dmarc
+Value: "v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s;"
+
+Type: TXT
+Name: *._domainkey
+Value: "v=DKIM1; p="
+
+And:
+
+Auto-fetch & add Vercel verification TXT
+
+Auto-fetch & add Replit verification TXT
+
+
+
+---
+
+REQUIREMENTS
+
+Do NOT create duplicates
+
+Do NOT leave any missing required records
+
+Confirm successful creation of every record
+
+Print a full summary table of all DNS records created
+
+
+
+---
+
+ACTION
+
+Proceed now.
+Rebuild the entire Cloudflare DNS zone for levqor.ai exactly as specified.
+Do not ask me anything.
+Do not stop until the zone is fully configured.
+
+
+---
+
+Paste this whole block into the Replit AI Agent.
+It will rebuild your entire DNS zone correctly in one go.
