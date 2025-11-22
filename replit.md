@@ -29,6 +29,13 @@ Preferred communication style: Simple, everyday language.
 - **Frontend**: `www.levqor.ai` & root domain → Vercel (CNAME + A records)
 - **SSL**: Auto-issued by Replit & Vercel with proper DNS proxy settings
 
+### Hardening & Health Automation - COMPLETED ✅
+- **Genesis v8.0 Compliance**: Added HARDENING_CHECKLIST.md for pre/post deployment governance
+- **Automated Health Checks**: Created deployment_health_check.py script for endpoint monitoring
+- **GitHub Actions**: Configured hourly health check workflow (free, no extra costs)
+- **Monitoring Coverage**: Frontend, Dashboard V2, and API health endpoints
+- **Status**: All automation infrastructure deployed and tested
+
 ## System Architecture
 
 ### Frontend Architecture
@@ -124,4 +131,28 @@ Preferred communication style: Simple, everyday language.
 - ✅ LIVE Stripe billing active (15 price IDs)
 - ✅ Dashboard V2 created with SEO lockdown
 - ✅ All workflows running and healthy
+- ✅ Hardening checklist created (Genesis v8.0 governance)
+- ✅ Deployment health automation configured (GitHub Actions)
 - ⏳ Pending: Production Stripe webhook verification
+
+## Governance & Monitoring
+
+### Hardening Checklist
+**Location**: `levqor-site/docs/HARDENING_CHECKLIST.md`
+- Comprehensive security, authentication, and infrastructure review checklist
+- Must be completed before and after each production deployment
+- Covers 9 critical areas: Security headers, auth, API hardening, Stripe integrity, DNS, logging, backups, frontend UX, and post-deployment validation
+- **Usage**: Review checklist before every major release to ensure no gaps
+
+### Deployment Health Automation
+**Script**: `levqor-site/scripts/deployment_health_check.py`
+- Automated endpoint monitoring for production health verification
+- Checks: Frontend root, Dashboard V2, API health endpoint
+- Returns exit code 0 (healthy) or 1 (unhealthy) for CI/CD integration
+- **Usage**: Run manually with `python scripts/deployment_health_check.py` or via GitHub Actions
+
+**GitHub Actions**: `.github/workflows/deployment-health.yml`
+- Runs hourly (cron: "0 * * * *") to verify all endpoints
+- Can be triggered manually via workflow_dispatch
+- Zero cost (uses GitHub free CI minutes)
+- Alerts via GitHub Actions UI when health checks fail
