@@ -1,5 +1,1 @@
-{
-  "/page": "app/page.js",
-  "/(catchall)/[...slug]/page": "app/(catchall)/[...slug]/page.js",
-  "/api/[...path]/route": "app/api/[...path]/route.js"
-}
+{}
