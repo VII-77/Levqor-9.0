@@ -123,6 +123,53 @@ function DFYCard({
   );
 }
 
+function AddonCard({
+  addon, title, price, description
+}: { addon: string; title: string; price: number; description: string }) {
+  
+  const handleClick = async () => {
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ 
+          addons: addon
+        })
+      });
+      const data = await response.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        console.error("Add-on Checkout error:", data.error);
+        alert("Checkout failed. Please try again or contact support.");
+      }
+    } catch (err) {
+      console.error("Add-on Checkout error:", err);
+      alert("Checkout failed. Please try again or contact support.");
+    }
+  };
+
+  return (
+    <div className="rounded-xl border p-5 shadow hover:shadow-md transition-shadow bg-white">
+      <div className="mb-3">
+        <h4 className="text-lg font-semibold">{title}</h4>
+        <p className="text-sm text-gray-600 mt-1">{description}</p>
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="text-2xl font-bold">
+          £{price}<span className="text-sm font-normal text-gray-600">/month</span>
+        </div>
+        <button
+          onClick={handleClick}
+          className="rounded-lg border border-gray-900 bg-gray-900 text-white px-4 py-2 hover:bg-gray-800 transition-colors text-sm font-medium"
+        >
+          Add to Plan
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Card({
   tier, title, price, per, features, badge, trial, term
 }: { tier: Tier; title: string; price: number; per: string; features: string[]; badge?: string; trial?: boolean; term: Term }) {
@@ -367,6 +414,38 @@ export default function PricingPage() {
               "Full documentation & training",
               "Dedicated account manager"
             ]}
+          />
+        </div>
+      </div>
+
+      {/* Add-Ons */}
+      <div className="mb-12">
+        <h2 className="text-2xl font-bold mb-4 text-center">Add-Ons</h2>
+        <p className="text-center text-gray-600 mb-6">Enhance your plan with recurring add-ons</p>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          <AddonCard
+            addon="addon_priority_support"
+            title="Priority Support"
+            price={29}
+            description="Get faster responses and higher priority in our support queue"
+          />
+          <AddonCard
+            addon="addon_sla_99"
+            title="SLA 99.9%"
+            price={49}
+            description="99.9% uptime guarantee with SLA commitment and monitoring"
+          />
+          <AddonCard
+            addon="addon_white_label"
+            title="White Label"
+            price={99}
+            description="Remove Levqor branding and use your own custom brand"
+          />
+          <AddonCard
+            addon="addon_extra_workflows"
+            title="Extra Workflow Pack"
+            price={10}
+            description="Add +50 extra workflow capacity to your current plan"
           />
         </div>
       </div>

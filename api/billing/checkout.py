@@ -33,32 +33,42 @@ def ensure_stripe_configured():
         return False
 
 
+def _clean_price_id(price_id: str) -> str:
+    """Clean price ID by removing any text after the actual ID"""
+    if not price_id:
+        return ""
+    price_id = price_id.strip()
+    if " " in price_id:
+        price_id = price_id.split()[0]
+    return price_id
+
+
 def get_price_map():
     """Get price IDs from environment - DFY pricing tiers (Starter £9, Launch £29, Growth £59, Agency £149)"""
     return {
         # DFY Core Tiers (GBP pricing)
-        "starter": os.environ.get("STRIPE_PRICE_STARTER", "").strip(),
-        "starter_year": os.environ.get("STRIPE_PRICE_STARTER_YEAR", "").strip(),
-        "launch": os.environ.get("STRIPE_PRICE_LAUNCH", "").strip(),
-        "launch_year": os.environ.get("STRIPE_PRICE_LAUNCH_YEAR", "").strip(),
-        "growth": os.environ.get("STRIPE_PRICE_GROWTH", "").strip(),
-        "growth_year": os.environ.get("STRIPE_PRICE_GROWTH_YEAR", "").strip(),
-        "agency": os.environ.get("STRIPE_PRICE_AGENCY", "").strip(),
-        "agency_year": os.environ.get("STRIPE_PRICE_AGENCY_YEAR", "").strip(),
+        "starter": _clean_price_id(os.environ.get("STRIPE_PRICE_STARTER", "")),
+        "starter_year": _clean_price_id(os.environ.get("STRIPE_PRICE_STARTER_YEAR", "")),
+        "launch": _clean_price_id(os.environ.get("STRIPE_PRICE_LAUNCH", "")),
+        "launch_year": _clean_price_id(os.environ.get("STRIPE_PRICE_LAUNCH_YEAR", "")),
+        "growth": _clean_price_id(os.environ.get("STRIPE_PRICE_GROWTH", "")),
+        "growth_year": _clean_price_id(os.environ.get("STRIPE_PRICE_GROWTH_YEAR", "")),
+        "agency": _clean_price_id(os.environ.get("STRIPE_PRICE_AGENCY", "")),
+        "agency_year": _clean_price_id(os.environ.get("STRIPE_PRICE_AGENCY_YEAR", "")),
         # Legacy tier aliases (backward compatibility)
-        "scale": os.environ.get("STRIPE_PRICE_SCALE", os.environ.get("STRIPE_PRICE_GROWTH", "")).strip(),
-        "scale_year": os.environ.get("STRIPE_PRICE_SCALE_YEAR", os.environ.get("STRIPE_PRICE_GROWTH_YEAR", "")).strip(),
-        "business": os.environ.get("STRIPE_PRICE_BUSINESS", os.environ.get("STRIPE_PRICE_AGENCY", "")).strip(),
-        "business_year": os.environ.get("STRIPE_PRICE_BUSINESS_YEAR", os.environ.get("STRIPE_PRICE_AGENCY_YEAR", "")).strip(),
+        "scale": _clean_price_id(os.environ.get("STRIPE_PRICE_SCALE", os.environ.get("STRIPE_PRICE_GROWTH", ""))),
+        "scale_year": _clean_price_id(os.environ.get("STRIPE_PRICE_SCALE_YEAR", os.environ.get("STRIPE_PRICE_GROWTH_YEAR", ""))),
+        "business": _clean_price_id(os.environ.get("STRIPE_PRICE_BUSINESS", os.environ.get("STRIPE_PRICE_AGENCY", ""))),
+        "business_year": _clean_price_id(os.environ.get("STRIPE_PRICE_BUSINESS_YEAR", os.environ.get("STRIPE_PRICE_AGENCY_YEAR", ""))),
         # One-time DFY packages (if needed)
-        "dfy_starter": os.environ.get("STRIPE_PRICE_DFY_STARTER", "").strip(),
-        "dfy_professional": os.environ.get("STRIPE_PRICE_DFY_PROFESSIONAL", "").strip(),
-        "dfy_enterprise": os.environ.get("STRIPE_PRICE_DFY_ENTERPRISE", "").strip(),
+        "dfy_starter": _clean_price_id(os.environ.get("STRIPE_PRICE_DFY_STARTER", "")),
+        "dfy_professional": _clean_price_id(os.environ.get("STRIPE_PRICE_DFY_PROFESSIONAL", "")),
+        "dfy_enterprise": _clean_price_id(os.environ.get("STRIPE_PRICE_DFY_ENTERPRISE", "")),
         # Recurring Add-ons (monthly subscriptions)
-        "addon_priority_support": os.environ.get("STRIPE_PRICE_ADDON_PRIORITY_SUPPORT", "").strip(),
-        "addon_sla_99": os.environ.get("STRIPE_PRICE_ADDON_SLA_99_9", "").strip(),
-        "addon_white_label": os.environ.get("STRIPE_PRICE_ADDON_WHITE_LABEL", "").strip(),
-        "addon_extra_workflows": os.environ.get("STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS", "").strip(),
+        "addon_priority_support": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_PRIORITY_SUPPORT", "")),
+        "addon_sla_99": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_SLA_99_9", "")),
+        "addon_white_label": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_WHITE_LABEL", "")),
+        "addon_extra_workflows": _clean_price_id(os.environ.get("STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS", "")),
     }
 
 
@@ -90,6 +100,18 @@ def billing_health():
         return jsonify({
             "status": "failed",
             "error": f"Missing subscription price IDs: {', '.join(missing_subscription)}"
+        }), 500
+    
+    if missing_dfy:
+        return jsonify({
+            "status": "failed",
+            "error": f"Missing DFY package price IDs: {', '.join(missing_dfy)}"
+        }), 500
+    
+    if missing_addons:
+        return jsonify({
+            "status": "failed",
+            "error": f"Missing add-on price IDs: {', '.join(missing_addons)}"
         }), 500
     
     return jsonify({
