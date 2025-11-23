@@ -188,7 +188,15 @@ def root():
 
 @app.get("/health")
 def health():
-    return jsonify({"ok": True, "ts": int(time())})
+    """Enterprise-grade health endpoint with version and uptime tracking"""
+    uptime_seconds = int(time() - START_TIME)
+    return jsonify({
+        "status": "ok",
+        "version": VERSION,
+        "build": BUILD,
+        "timestamp": int(time()),
+        "uptime_seconds": uptime_seconds
+    })
 
 @app.get("/status")
 def system_status():

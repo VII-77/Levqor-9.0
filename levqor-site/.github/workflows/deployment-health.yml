@@ -25,4 +25,8 @@ jobs:
 
       - name: Run deployment health script
         run: |
-          python scripts/deployment_health_check.py
+          python levqor-site/scripts/deployment_health_check.py
+      
+      - name: Run backend keep-alive check
+        run: |
+          python scripts/backend_keepalive.py
