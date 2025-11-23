@@ -12,6 +12,14 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (November 2025)
 
+### V12.13 Blueprint Pricing Corrections — DEPLOYED ✅ (Nov 23, 2025)
+- **Agency Tier**: Fixed from 15 to 10 users across all pages
+- **Trial Messaging**: Removed all "No credit card required" statements (9 pages)
+- **Card Requirement**: Added clear messaging: "Card required, but no charge if cancelled within 7 days"
+- **Trial Availability**: Extended from "Growth & Agency only" to all plans
+- **Production Verification**: All corrections live on levqor.ai (Vercel deployment successful)
+- **DNS Status**: All domains verified and operational (levqor.ai, www, api.levqor.ai)
+
 ### V12.12 Enterprise Upgrade - COMPLETED ✅ (Nov 23, 2025)
 - **Reliability & Resiliency**: Added DB connection retry logic, backend keep-alive monitoring, enhanced /health endpoint
 - **Observability & Monitoring**: Implemented structured JSON logging, error monitoring hooks, frontend client logger
