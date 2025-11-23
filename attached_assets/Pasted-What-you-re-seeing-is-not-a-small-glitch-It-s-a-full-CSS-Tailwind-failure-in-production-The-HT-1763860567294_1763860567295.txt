@@ -1,0 +1,254 @@
+What you’re seeing is not “a small glitch”. It’s a full CSS / Tailwind failure in production. The HTML is there, but all styling is gone, so the site looks like a raw Markdown export.
+
+This is almost always one of:
+
+1. globals.css not being imported in src/app/layout.tsx
+
+
+2. globals.css missing / in wrong place
+
+
+3. Tailwind pipeline broken (tailwind.config.* / postcss.config.js)
+
+
+4. Vercel build using a broken cache
+
+
+
+You don’t need to diagnose this by hand. Here’s a single agent prompt that will audit and fix the CSS pipeline end-to-end.
+
+
+---
+
+Paste this into the Replit AI Agent
+
+You are working on the Levqor frontend in the repo at /home/runner/workspace/levqor-site.
+
+GOAL: Fix the production styling issue where https://levqor.ai renders completely unstyled HTML. Root cause is almost certainly that Tailwind/global CSS is not being loaded in the App Router layout. You must:
+
+- Diagnose the styling pipeline (Tailwind + globals.css + layout.tsx import).
+- Repair ONLY what is actually broken.
+- Rebuild to confirm CSS is included.
+- Output a clear report of what was wrong and what you changed.
+
+Follow these steps EXACTLY:
+
+------------------------------------------------
+1. VERIFY PROJECT STRUCTURE
+------------------------------------------------
+
+From /home/runner/workspace/levqor-site, list the key files:
+
+```bash
+pwd
+ls -R src/app | sed -e 's/^/src\/app\//'
+ls -1 tailwind.config.* postcss.config.* 2>/dev/null || echo "no tailwind/postcss config found"
+
+You must confirm:
+
+There is a src/app/layout.tsx.
+
+There is a src/app/globals.css.
+
+Tailwind + PostCSS configs exist (tailwind.config.ts or .js, postcss.config.js).
+
+
+
+---
+
+2. CHECK globals.css CONTENT
+
+
+
+
+---
+
+Open src/app/globals.css and print the top 20 lines:
+
+sed -n '1,40p' src/app/globals.css || echo "globals.css missing"
+
+Confirm that it contains AT LEAST:
+
+@tailwind base;
+
+@tailwind components;
+
+@tailwind utilities;
+
+
+If any of these three directives are missing, add them back. If the file is missing entirely, recreate it with a standard Tailwind global file and any existing custom styles you can find in the repo (search for @tailwind base to reuse previous content if it exists elsewhere).
+
+
+---
+
+3. CHECK layout.tsx IMPORT
+
+
+
+
+---
+
+Open src/app/layout.tsx:
+
+sed -n '1,60p' src/app/layout.tsx
+
+You must confirm there is a top-level import:
+
+import './globals.css'
+
+If that import is missing, add it at the top of the file (after the "use client" or "use server" pragma if present, and before other imports). Do NOT change anything else.
+
+
+---
+
+4. VALIDATE TAILWIND CONFIG
+
+
+
+
+---
+
+Open the Tailwind config and make sure content paths include the App Router:
+
+sed -n '1,160p' tailwind.config.* 2>/dev/null || echo "tailwind config missing"
+
+Ensure the content array includes ALL of:
+
+./src/app/**/*.{js,ts,jsx,tsx,mdx}
+
+./src/components/**/*.{js,ts,jsx,tsx,mdx}
+
+./src/pages/**/*.{js,ts,jsx,tsx,mdx} (if pages exists)
+
+
+If ./src/app/**/*.{js,ts,jsx,tsx,mdx} is missing, add it.
+
+Example of a correct content section (adjust paths to match existing structure):
+
+content: [
+  "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+  "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+  "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+],
+
+Do NOT remove existing valid entries.
+
+Also confirm plugins includes require('tailwindcss') via postcss.config.js:
+
+sed -n '1,80p' postcss.config.js 2>/dev/null || echo "postcss config missing"
+
+It should look something like:
+
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+
+If Tailwind is missing here, add it.
+
+
+---
+
+5. RUN LOCAL BUILD TO CONFIRM CSS INCLUDED
+
+
+
+
+---
+
+After any fixes above, run:
+
+cd /home/runner/workspace/levqor-site
+npm run build 2>&1 | tee /tmp/levqor_build_css.log
+
+Then list the CSS assets:
+
+ls -R .next/static/css || echo "no CSS assets generated"
+
+And quickly inspect one of the CSS files to ensure it’s non-empty:
+
+CSS_FILE=$(ls .next/static/css | head -n1)
+echo "Inspecting CSS file: $CSS_FILE"
+sed -n '1,40p' ".next/static/css/$CSS_FILE"
+
+If the CSS directory is missing or files are effectively empty, re-check Tailwind config and globals import.
+
+
+---
+
+6. GIT DIFF (DO NOT COMMIT)
+
+
+
+
+---
+
+Show me exactly what you changed:
+
+cd /home/runner/workspace
+git diff levqor-site/src/app/layout.tsx levqor-site/src/app/globals.css levqor-site/tailwind.config.* levqor-site/postcss.config.js
+
+Do NOT run git commit and do NOT push. I will review the changes first.
+
+
+---
+
+7. FINAL REPORT
+
+
+
+
+---
+
+At the end, print a concise report with:
+
+Whether globals.css existed and its initial state.
+
+Whether layout.tsx had the import './globals.css' line and what you did.
+
+Whether tailwind.config.* needed fixes (especially the content section).
+
+Whether postcss.config.js was correct or changed.
+
+The result of npm run build (success/failure).
+
+Confirmation that .next/static/css exists and contains non-empty CSS files.
+
+
+Do NOT change any other application code, routing, or environment variables. Only modify what is necessary to restore Tailwind/global CSS loading.
+
+---
+
+After the agent finishes:
+
+1. Run `git diff` yourself in Replit and skim that it only touched:
+   - `src/app/globals.css`
+   - `src/app/layout.tsx`
+   - `tailwind.config.*`
+   - `postcss.config.js` (if needed)
+
+2. If it looks sane, commit and push:
+
+```bash
+cd /home/runner/workspace
+rm -f .git/index.lock
+git add levqor-site/src/app/layout.tsx levqor-site/src/app/globals.css levqor-site/tailwind.config.* levqor-site/postcss.config.js
+git commit -m "fix: restore Tailwind and global styling in production"
+git push origin main
+
+3. Vercel will redeploy. After deployment, reload https://levqor.ai in a hard-refresh (Ctrl+Shift+R). The site should come back with full styling, spacing, colors, and layout.
+
+
+
+If, after this, the page is still naked HTML, send me:
+
+The content of layout.tsx top 30 lines
+
+The content of globals.css top 40 lines
+
+The content section of tailwind.config.*
+
+
+Then I’ll stop guessing and target the exact misconfig.
