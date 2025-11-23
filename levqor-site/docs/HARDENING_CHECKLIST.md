@@ -1,6 +1,28 @@
-# Levqor Hardening Checklist — Genesis v8.0
+# Levqor Hardening Checklist — V12.12 Enterprise Upgrade
 
 This checklist must be reviewed and ticked off before and after each production deployment.
+
+## V12.12 Enterprise Additions
+
+### Reliability & Resiliency
+- [ ] Backend resilience layer (`api/utils/resilience.py`) deployed
+- [ ] DB retry logic tested with connection failures
+- [ ] Backend keep-alive pinger script added to health monitoring
+- [ ] Enhanced `/health` endpoint returns version + uptime
+
+### Observability & Monitoring
+- [ ] Structured JSON logging configured (`api/utils/logging_config.py`)
+- [ ] Error monitoring hooks integrated (`api/utils/error_monitor.py`)
+- [ ] Frontend client logger utility deployed (`src/lib/client-logger.ts`)
+- [ ] Correlation IDs tracked across all critical paths
+
+### Enterprise Support Automation
+- [ ] Support tier logic module functional (`api/support/tiers.py`)
+- [ ] Support ticket endpoint tested (`POST /api/support/tickets`)
+- [ ] AI routing stub integrated (ready for future AI agent)
+- [ ] SLA hours correctly mapped to starter/launch/growth/agency tiers
+
+---
 
 ## Architecture (Canonical)
 
