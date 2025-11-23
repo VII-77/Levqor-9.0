@@ -1,0 +1,58 @@
+You are operating in the Levqor production environment. Your task is to perform a full environment variable synchronization for the backend (Replit Autoscale). Follow these instructions EXACTLY:
+
+1. **SCAN & ENUMERATE REQUIRED ENV VARS**
+   - Parse all Python backend files to list every referenced Stripe-related variable:
+     STRIPE_SECRET_KEY,
+     STRIPE_WEBHOOK_SECRET,
+     STRIPE_PUBLISHABLE_KEY,
+     STRIPE_PRICE_STARTER,
+     STRIPE_PRICE_STARTER_YEAR,
+     STRIPE_PRICE_LAUNCH,
+     STRIPE_PRICE_LAUNCH_YEAR,
+     STRIPE_PRICE_GROWTH,
+     STRIPE_PRICE_GROWTH_YEAR,
+     STRIPE_PRICE_AGENCY,
+     STRIPE_PRICE_AGENCY_YEAR,
+     STRIPE_PRICE_DFY_STARTER,
+     STRIPE_PRICE_DFY_PROFESSIONAL,
+     STRIPE_PRICE_DFY_ENTERPRISE,
+     STRIPE_PRICE_ADDON_PRIORITY_SUPPORT,
+     STRIPE_PRICE_ADDON_SLA_99,
+     STRIPE_PRICE_ADDON_WHITE_LABEL,
+     STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS.
+
+   - Parse all Next.js files for environment variables:
+     NEXTAUTH_URL,
+     NEXTAUTH_SECRET,
+     NEXT_PUBLIC_API_URL,
+     NEXT_PUBLIC_APP_URL,
+     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY.
+
+2. **CROSS-CHECK AGAINST CURRENT ENVIRONMENT**
+   - Use `replit.secrets` to check which variables already exist.
+   - Produce a diff: Missing / Present / Incorrect.
+
+3. **WRITE ALL MISSING VARIABLES**
+   For every missing variable:
+   - Create it using `replit.secrets.set("<KEY>", "<PLACEHOLDER>")`
+   - DO NOT overwrite existing values unless the placeholder is empty.
+   - For Stripe price IDs, create placeholders like: 
+     price_REPLACE_ME_STARTER
+     price_REPLACE_ME_LAUNCH
+     price_REPLACE_ME_ADDON_SUPPORT
+   - For NEXTAUTH variables:
+     NEXTAUTH_URL = "https://levqor.ai"
+     NEXT_PUBLIC_API_URL = "https://api.levqor.ai"
+     NEXT_PUBLIC_APP_URL = "https://levqor.ai"
+
+4. **VERIFY**
+   - After writing, run another scan to confirm Zero Missing Variables.
+   - Output a clean environment report with:
+     • Required vars  
+     • Values present  
+     • Values missing (should be ZERO)  
+     • Any placeholders requiring manual Stripe Prices  
+
+5. **DO NOT MODIFY CODE. ONLY MANAGE ENV VARS.**
+
+Start by listing all required variables and comparing them against the current Replit environment. Then write everything that is missing.
