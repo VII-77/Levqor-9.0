@@ -50,12 +50,12 @@ const plans = {
     workflows: 500,
     runs: "250,000",
     speed: "Fastest",
-    users: 15,
+    users: 10,
     connectors: "All + SSO",
     aiCredits: "100,000",
     support: "4-hr SLA",
     trial: true,
-    features: ["500 workflows", "250,000 runs/mo", "15 users", "All connectors + SSO", "100,000 AI credits", "4-hour SLA", "7-day free trial"]
+    features: ["500 workflows", "250,000 runs/mo", "10 users", "All connectors + SSO", "100,000 AI credits", "4-hour SLA", "7-day free trial"]
   }
 };
 
@@ -304,7 +304,7 @@ export default function PricingPage() {
         <h1 className="text-4xl font-bold mb-3">Simple, transparent pricing</h1>
         <p className="text-gray-600 mb-2">Choose the plan that fits your automation needs</p>
         <p className="text-sm">
-          <span className="text-gray-500">7-day free trial on Growth & Agency. Cancel anytime. </span>
+          <span className="text-gray-500">7-day free trial on all plans. Card required, no charge if you cancel before Day 7. </span>
           <a href="#faqs" className="text-blue-600 hover:underline">Jump to FAQs →</a>
         </p>
       </div>
@@ -559,7 +559,7 @@ export default function PricingPage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-blue-600">✓</span>
-            <span>7-day trial on Growth & Agency</span>
+            <span>7-day trial (card required, no charge)</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-blue-600">✓</span>
@@ -583,7 +583,7 @@ export default function PricingPage() {
           <details className="bg-white rounded-xl p-4 shadow">
             <summary className="cursor-pointer font-medium">What happens after the trial?</summary>
             <p className="mt-2 text-sm text-gray-600">
-              Growth and Agency plans include a 7-day free trial. You won't be charged until the trial ends. Cancel anytime during the trial with no charge.
+              All subscription plans include a 7-day free trial. A valid credit card is required to start your trial, but you won't be charged during the 7 days. If you cancel before Day 7 ends, you pay £0. If you stay, your subscription starts automatically on Day 8.
             </p>
           </details>
           <details className="bg-white rounded-xl p-4 shadow">
