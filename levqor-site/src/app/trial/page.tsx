@@ -13,15 +13,13 @@ export default function TrialPage() {
       
       <div className="space-y-6 text-gray-700 leading-relaxed">
         <p className="text-lg">
-          Try Levqor risk-free with our 7-day free trial. No credit card required to start, and
-          you can cancel anytime before the trial ends without being charged.
+          Try Levqor risk-free with our 7-day free trial. A valid credit card is required to start, but you won't be charged during the trial. If you cancel before Day 7 ends, you pay £0.
         </p>
 
         <div className="bg-green-50 border-l-4 border-green-500 p-6 my-6">
           <p className="font-semibold text-green-900 mb-2">7-Day Free Trial</p>
           <p className="text-green-800">
-            Available on Growth (£59/month) and Agency (£149/month) plans. Test all features with
-            full access before committing to a subscription.
+            Available on all subscription plans (Starter, Launch, Growth, Agency). Test all features with full access before committing to a subscription. Card required, but no charge if you cancel within 7 days.
           </p>
         </div>
         
@@ -44,7 +42,7 @@ export default function TrialPage() {
         <ul className="list-disc list-inside space-y-2 ml-4">
           <li>500 workflows</li>
           <li>250,000 workflow runs per month</li>
-          <li>15 team members</li>
+          <li>10 team members</li>
           <li>All connectors + SSO</li>
           <li>100,000 AI credits</li>
           <li>4-hour SLA support (see <Link href="/sla" className="text-blue-600 hover:underline">SLA details</Link>)</li>
@@ -59,14 +57,13 @@ export default function TrialPage() {
           <li><strong>New customers only:</strong> You must not have an existing Levqor account</li>
           <li><strong>One trial per organization:</strong> One trial per company/email domain</li>
           <li><strong>Valid email required:</strong> Business email preferred (personal emails accepted)</li>
-          <li><strong>No credit card needed:</strong> Start your trial without payment information</li>
+          <li><strong>Credit card required:</strong> A valid payment method is required to start your trial</li>
         </ul>
 
         <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6">
-          <p className="font-semibold text-blue-900 mb-2">No Credit Card Required</p>
+          <p className="font-semibold text-blue-900 mb-2">Card Required, But No Charge During Trial</p>
           <p className="text-blue-800">
-            Unlike most SaaS products, we don't ask for payment details to start your trial. You'll
-            only need to add a payment method if you decide to continue after the 7 days.
+            A valid credit card is required to verify your account and start the trial. You will NOT be charged during the 7-day trial period. If you cancel before the trial ends (Day 7), you pay £0. If you stay, your subscription begins on Day 8.
           </p>
         </div>
 
@@ -165,8 +162,7 @@ export default function TrialPage() {
         <div className="bg-blue-50 rounded-xl p-8 mt-12">
           <h3 className="text-xl font-bold text-gray-900 mb-3">Ready to Start Your Free Trial?</h3>
           <p className="text-gray-700 mb-4">
-            Test Levqor for 7 days with no credit card required. Cancel anytime, or upgrade to
-            continue with a 30-day money-back guarantee.
+            Test Levqor for 7 days with full access. A credit card is required to start, but you won't be charged during the trial. Cancel anytime within 7 days to pay £0, or continue with a 30-day money-back guarantee.
           </p>
           <Link href="/pricing" className="text-blue-600 hover:underline font-medium">
             Start Free Trial →

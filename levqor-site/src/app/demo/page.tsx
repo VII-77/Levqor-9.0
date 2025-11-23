@@ -41,8 +41,8 @@ export default function DemoPage() {
             <div className="text-4xl mb-4">🚀</div>
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Self-Guided Tour</h2>
             <p className="text-gray-700 mb-6">
-              Prefer to explore on your own? Sign up for a free account and take our
-              interactive product tour. No credit card required.
+              Prefer to explore on your own? Sign up for a 7-day free trial and take our
+              interactive product tour.
             </p>
             <ul className="space-y-2 text-gray-700 mb-6">
               <li>• Instant access to full platform</li>
@@ -106,7 +106,7 @@ export default function DemoPage() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">Can I try it before buying?</h3>
               <p className="text-gray-700">
-                Yes! We offer a free trial with full access to all features. No credit card required.
+                Yes! We offer a 7-day free trial with full access to all features. A credit card is required to start, but you won't be charged during the trial.
               </p>
             </div>
             <div>

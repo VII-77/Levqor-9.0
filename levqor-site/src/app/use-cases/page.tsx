@@ -113,7 +113,7 @@ export default function UseCasesPage() {
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-12 text-center text-white">
           <h2 className="text-3xl font-bold mb-4">Ready to Automate Your Workflows?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Start with a free trial. No credit card required. Build your first workflow in minutes.
+            Start your 7-day free trial. Build your first workflow in minutes.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/signin" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition">

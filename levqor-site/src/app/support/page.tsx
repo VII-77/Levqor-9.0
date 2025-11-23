@@ -72,7 +72,7 @@ export default function SupportPage() {
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">What's included in the free trial?</h3>
-              <p className="text-gray-700">Full access to all features with no credit card required. See our <Link href="/pricing" className="text-blue-600 hover:underline">pricing page</Link> for details.</p>
+              <p className="text-gray-700">Full access to all features for 7 days. A credit card is required to start, but you won't be charged during the trial. See our <Link href="/pricing" className="text-blue-600 hover:underline">pricing page</Link> for details.</p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 mb-1">Do you offer enterprise support?</h3>

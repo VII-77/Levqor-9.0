@@ -98,7 +98,7 @@ export default function HowItWorksPage() {
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-12 text-center text-white mt-16">
         <h2 className="text-3xl font-bold mb-4">Ready to Automate?</h2>
         <p className="text-xl mb-8 opacity-90">
-          Start your free trial today. No credit card required.
+          Start your 7-day free trial today.
         </p>
         <div className="flex gap-4 justify-center">
           <Link href="/signin" className="px-8 py-4 bg-white text-blue-600 rounded-xl font-semibold hover:bg-gray-100 transition">

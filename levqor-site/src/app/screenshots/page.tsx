@@ -118,7 +118,7 @@ export default function ScreenshotsPage() {
         <div className="mt-16 bg-blue-50 rounded-2xl p-12 text-center">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Want to See It Live?</h2>
           <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
-            Sign up for a free account and explore the platform yourself. No credit card required.
+            Sign up for a 7-day free trial and explore the platform yourself.
           </p>
           <div className="flex gap-4 justify-center">
             <Link href="/signin" className="px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition">

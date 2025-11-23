@@ -162,7 +162,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to automate your workflow?</h2>
           <p className="text-xl text-gray-300 mb-8">
-            Join hundreds of teams shipping faster with Levqor. Start free, no credit card required.
+            Join hundreds of teams shipping faster with Levqor. Start your 7-day free trial today.
           </p>
           <Link
             href="/signin"
