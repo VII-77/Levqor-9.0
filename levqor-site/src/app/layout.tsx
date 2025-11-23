@@ -132,7 +132,8 @@ export default function RootLayout({
                   <li><Link href="/docs" className="hover:text-white transition">Docs</Link></li>
                   <li><Link href="/integrations" className="hover:text-white transition">Integrations</Link></li>
                   <li><Link href="/how-it-works" className="hover:text-white transition">How It Works</Link></li>
-                  <li><Link href="/support" className="hover:text-white transition">Support</Link></li>
+                  <li><Link href="/use-cases" className="hover:text-white transition">Use Cases</Link></li>
+                  <li><Link href="/tour" className="hover:text-white transition">Product Tour</Link></li>
                 </ul>
               </div>
               
@@ -140,8 +141,12 @@ export default function RootLayout({
                 <h4 className="text-white font-semibold mb-4">Company</h4>
                 <ul className="space-y-2.5 text-sm">
                   <li><Link href="/about" className="hover:text-white transition">About</Link></li>
+                  <li><Link href="/team" className="hover:text-white transition">Team</Link></li>
+                  <li><Link href="/blog" className="hover:text-white transition">Blog</Link></li>
+                  <li><Link href="/roadmap" className="hover:text-white transition">Roadmap</Link></li>
                   <li><Link href="/contact" className="hover:text-white transition">Contact</Link></li>
                   <li><Link href="/careers" className="hover:text-white transition">Careers</Link></li>
+                  <li><Link href="/support" className="hover:text-white transition">Support</Link></li>
                 </ul>
               </div>
               

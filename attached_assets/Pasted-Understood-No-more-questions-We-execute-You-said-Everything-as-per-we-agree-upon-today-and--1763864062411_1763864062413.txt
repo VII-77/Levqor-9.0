@@ -1,0 +1,348 @@
+Understood. No more questions. We execute.
+
+You said:
+
+> “Everything as per we agree upon today and Finalize the blueprint so I want Everything as per blue print on the app.”
+
+
+
+So here’s what happens now:
+
+Blueprint = law.
+
+Today’s state = baseline.
+
+Our only job = force the code to match the blueprint 100%, then ship.
+
+
+I’ll give you ONE consolidated command block to run via the AI Agent that:
+
+Revalidates ALL blueprint routes.
+
+Ensures every single required page actually exists (page.tsx, not 404).
+
+Ensures nav/footer match the blueprint.
+
+Builds.
+
+Then you commit + push.
+
+
+You do NOT need to decide anything. Just run it.
+
+
+---
+
+PROMPT FOR AI AGENT
+
+Paste this as-is into the Replit AI Agent:
+
+You are working on the Levqor frontend at /home/runner/workspace/levqor-site.
+
+RULES:
+- The blueprint is FINAL. You are NOT allowed to improvise routes or remove blueprint routes.
+- Your job is to ensure the app matches the blueprint completely.
+- Do NOT touch backend, env vars, DNS, or Stripe.
+- Frontend only.
+
+THE BLUEPRINT ROUTE SET (MUST EXIST AS REAL PAGES, NOT 404):
+- /                 → Home
+- /pricing          → Pricing (capsules, DFY, add-ons)
+- /signin           → Sign in
+- /docs             → Docs index
+- /about            → About Levqor
+- /careers          → Careers
+- /contact          → Contact
+- /support          → Support / Help centre
+- /how-it-works     → How it works (4-step flow)
+- /guarantee        → Guarantee (risk-free, SLA)
+- /fair-use         → Fair use policy
+- /integrations     → Integrations overview
+- /use-cases        → Use cases
+- /blog             → Blog index
+- /tour             → Product tour
+- /screenshots      → Screenshots / gallery
+- /roadmap          → Roadmap / “what’s next”
+- /team             → Team
+- /demo             → Live demo entry (if linked anywhere)
+- /dashboard        → Auth-protected (ALREADY IMPLEMENTED – DO NOT TOUCH)
+- /dashboard/v2     → Auth-protected SEO-locked dashboard (DO NOT TOUCH)
+
+Anything that exists in nav/footer MUST point to a real page from this list.
+
+------------------------------------------------
+0. PRECHECK
+------------------------------------------------
+
+From /home/runner/workspace:
+
+```bash
+pwd
+ls
+cd levqor-site
+ls -R src/app | sed -e 's/^/src\/app\//'
+git status -sb
+
+Confirm:
+
+src/app exists.
+
+Branch: main.
+
+Do NOT run git init. Do NOT change remotes.
+
+
+
+---
+
+1. DISCOVER REAL ROUTES
+
+
+
+
+---
+
+List all app routes currently generated:
+
+cd /home/runner/workspace/levqor-site
+npm run build 2>&1 | tee /tmp/levqor_blueprint_build.log
+grep -A80 "Route (app)" /tmp/levqor_blueprint_build.log || sed -n '/Route (app)/,$p' /tmp/levqor_blueprint_build.log
+
+For each blueprint route above, classify internally as:
+
+OK    → route exists and is NOT the generic 404.
+
+MISSING → there is no route.
+
+404   → route exists but uses the not-found 404 component.
+
+
+You do not need to print the full classification, just use it to decide work.
+
+
+---
+
+2. CREATE / FIX MISSING BLUEPRINT PAGES
+
+
+
+
+---
+
+For every route in this list that is MISSING or 404:
+
+Create or replace src/app/<slug>/page.tsx with a proper page component.
+
+
+Rules:
+
+Use existing layout + Tailwind styling conventions.
+
+Use same design language as /pricing, /support, /about (cards, sections, headings).
+
+Keep content on-brand: Levqor, capsules, DFY automation, workflows, monitoring, self-heal, no BS.
+
+Each page MUST have:
+
+<h1> main heading.
+
+A short lead paragraph.
+
+2–4 content sections with <h2> or <h3> and bullets.
+
+At least one CTA button linking to /pricing or /signin.
+
+
+
+Specific expectations:
+
+/how-it-works:
+
+Clear 3–4 step pipeline (Connect → Automate → Monitor → Self-heal).
+
+
+/guarantee:
+
+Money-back window, uptime/SLA note, “we only get paid when it works”-style messaging.
+
+
+/support:
+
+Pointers to docs, contact, status, fair-use, guarantee.
+
+
+/fair-use:
+
+Reasonable usage policy around workflows, concurrency, abuse prevention.
+
+
+/integrations:
+
+Overview of 3–5 categories (CRM, project tools, comms, storage) and statement “50+ integrations”.
+
+
+/demo:
+
+Simple page explaining how to request a live demo or watch walkthrough (CTA to contact or signup).
+
+
+/roadmap:
+
+High-level near-term / mid-term / long-term roadmap bullets.
+
+
+/screenshots:
+
+Gallery layout (even if you only use placeholder text/images).
+
+
+/tour:
+
+Short product walkthrough structure.
+
+
+
+If a page already exists and is clearly correct (e.g. /pricing, /about, /blog, /use-cases, /team, /support already implemented), DO NOT rewrite it unless it is literally serving a 404 component.
+
+Do NOT copy-paste huge amounts of new text. Use concise sections.
+
+
+---
+
+3. NAV + FOOTER ALIGNMENT
+
+
+
+
+---
+
+Search nav/footer:
+
+grep -R "Support" -ni src || true
+grep -R "How it works" -ni src || true
+grep -R "Guarantee" -ni src || true
+grep -R "Fair use" -ni src || true
+grep -R "Roadmap" -ni src || true
+grep -R "Screenshots" -ni src || true
+grep -R "Tour" -ni src || true
+grep -R "Demo" -ni src || true
+grep -R "Use cases" -ni src || true
+grep -R "Integrations" -ni src || true
+
+Rules:
+
+Any link in the header/footer that points to a blueprint slug must match the corresponding route.
+
+No nav/footer link is allowed to point to a path that still resolves to the generic 404.
+
+If a link exists to a non-blueprint route, either:
+
+Change it to point at the correct blueprint equivalent, OR
+
+Remove it, if the blueprint does not include that route.
+
+
+
+Examples:
+
+“How it works” must link to /how-it-works.
+
+“Guarantee” must link to /guarantee.
+
+“Support” must link to /support.
+
+“Fair use” must link to /fair-use.
+
+“Integrations” must link to /integrations.
+
+“Demo” must link to /demo or /contact according to blueprint hierarchy (prefer /demo if we create the page).
+
+
+Do NOT break existing working links to: /pricing, /docs, /about, /careers, /blog, /contact, /signin.
+
+
+---
+
+4. REBUILD AND VERIFY ROUTES
+
+
+
+
+---
+
+After making changes:
+
+cd /home/runner/workspace/levqor-site
+npm run build 2>&1 | tee /tmp/levqor_blueprint_post_build.log
+grep -A80 "Route (app)" /tmp/levqor_blueprint_post_build.log || sed -n '/Route (app)/,$p' /tmp/levqor_blueprint_post_build.log
+
+You MUST ensure that ALL the blueprint routes listed at the top now appear under “Route (app)” as generated (ƒ /...), not missing.
+
+If build fails, fix errors and rebuild until it passes.
+
+
+---
+
+5. GIT DIFF (DO NOT COMMIT)
+
+
+
+
+---
+
+From /home/runner/workspace:
+
+cd /home/runner/workspace
+echo "=== BLUEPRINT ALIGNMENT DIFF ==="
+git diff levqor-site/src/app levqor-site/src/components | sed -n '1,200p'
+
+Do NOT run git commit. Do NOT push.
+
+
+---
+
+6. FINAL REPORT
+
+
+
+
+---
+
+At the end, output a report with:
+
+List of blueprint routes that were missing/404 and what files you created/changed.
+
+Confirmation that npm run build passes.
+
+Confirmation that every blueprint route appears in the Next.js route list.
+
+Confirmation that nav/footer no longer link to any non-existent routes.
+
+
+No backend changes. No DNS. No environment changes. Frontend-only. Your job is to make the app match the blueprint completely.
+
+---
+
+Once the agent finishes:
+
+1. Run this manually in Replit to confirm:
+
+```bash
+cd /home/runner/workspace
+git status
+git diff --stat
+
+2. If the diff looks sane (mostly src/app/.../page.tsx and maybe small nav/footer edits), commit and push:
+
+
+
+rm -f .git/index.lock
+git add levqor-site/src/app levqor-site/src/components
+git commit -m "feat: complete frontend to match Levqor v9 blueprint"
+git push origin main
+
+3. Wait for Vercel deploy, hard-refresh levqor.ai, and you’re done.
+
+
+
+No questions, no deviations, just blueprint → code → live.
