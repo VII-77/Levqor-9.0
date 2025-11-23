@@ -257,7 +257,7 @@ export default function TermsPage() {
               Your continued use of the Services after any such changes constitutes your acceptance of the new Terms. If you do not agree to the modified Terms, you must stop using the Services and cancel your subscription.
             </p>
             <p className="mb-4">
-              It is your responsibility to review these Terms periodically for updates. We recommend checking this page regularly to stay informed of any changes.
+              It is your responsibility to review these <Link href="/terms" className="text-blue-600 hover:underline">Terms</Link> periodically for updates. We recommend checking this page regularly to stay informed of any changes.
             </p>
           </section>
 
