@@ -83,8 +83,8 @@ export default function RootLayout({
                 <Link href="/docs" className="text-gray-700 hover:text-black font-medium transition">
                   Docs
                 </Link>
-                <Link href="/contact" className="text-gray-700 hover:text-black font-medium transition">
-                  Contact
+                <Link href="/support" className="text-gray-700 hover:text-black font-medium transition">
+                  Support
                 </Link>
               </div>
               <div className="flex items-center gap-4">
@@ -130,8 +130,9 @@ export default function RootLayout({
                 <ul className="space-y-2.5 text-sm">
                   <li><Link href="/pricing" className="hover:text-white transition">Pricing</Link></li>
                   <li><Link href="/docs" className="hover:text-white transition">Docs</Link></li>
-                  <li><a href="https://api.levqor.ai/public/changelog" className="hover:text-white transition">Changelog</a></li>
-                  <li><a href="https://api.levqor.ai/health" className="hover:text-white transition">Status</a></li>
+                  <li><Link href="/integrations" className="hover:text-white transition">Integrations</Link></li>
+                  <li><Link href="/how-it-works" className="hover:text-white transition">How It Works</Link></li>
+                  <li><Link href="/support" className="hover:text-white transition">Support</Link></li>
                 </ul>
               </div>
               
@@ -149,6 +150,8 @@ export default function RootLayout({
                 <ul className="space-y-2.5 text-sm">
                   <li><Link href="/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
                   <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
+                  <li><Link href="/guarantee" className="hover:text-white transition">Guarantee</Link></li>
+                  <li><Link href="/fair-use" className="hover:text-white transition">Fair Use</Link></li>
                   <li><a href="https://api.levqor.ai/.well-known/security.txt" className="hover:text-white transition">Security</a></li>
                 </ul>
               </div>
