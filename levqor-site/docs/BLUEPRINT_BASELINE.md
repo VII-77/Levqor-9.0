@@ -1,9 +1,10 @@
-# Levqor Blueprint Baseline v8.0-Final-Nov23
+# Levqor Blueprint Baseline v12.13
 
 **Locked:** November 23, 2025  
 **Status:** PRODUCTION VERIFIED  
 **Drift Detection:** ZERO DRIFT  
-**Authority:** Frontend Release Engineering Verification
+**Authority:** Frontend Release Engineering Verification  
+**Model:** Workflows + Runs + AI Credits + Seats (NOT capsules)
 
 ---
 
@@ -69,14 +70,23 @@
 
 ## GLOBAL LIMITS & ALLOWANCES
 
-### Trial & Refund Policy
-- **Trial Period:** 7 days (Growth & Agency plans only)
-- **Refund Window:** 30-day money-back guarantee (all plans)
-- **Refund Conditions:** Full refund if requested within 30 days of purchase; pro-rated refund available after 30 days at discretion
+### Trial & Refund Policy (v12.13)
+- **Trial Period:** 7 days (ALL plans: Starter, Launch, Growth, Agency)
+- **Trial Requirements:** Valid card required to start trial; no charge during 7-day period
+- **Trial Cancellation:** Cancel before Day 7 ends = £0 charge; if not cancelled, billing starts Day 8
+- **Trial Limit:** One active trial per customer account (not per tier)
+- **Refund Window:** 30-day money-back guarantee (all plans, starts after trial if applicable)
+- **Refund Conditions:** Full refund if requested within 30 days of first charge; pro-rated refund available after 30 days at discretion
 
-### Service Level Agreement (SLA)
-- **Uptime Commitment:** 99.9% (Agency plan only)
-- **Response Time Target:** 4-hour response for Agency support
+### Service Level Agreement (SLA) — v12.13 Support Tiers
+| Plan | Response SLA | Coverage | Channels |
+|------|--------------|----------|----------|
+| **Starter** | 48 business hours | Mon-Fri 9am-5pm GMT | Email only |
+| **Launch** | 24 business hours | Mon-Fri 9am-5pm GMT | Priority email |
+| **Growth** | 12 business hours | Mon-Sat 8am-8pm GMT | Email + in-app chat |
+| **Agency** | 4-hour critical SLA | 24/7 emergency | Email + chat + video calls |
+
+- **Uptime Commitment:** 99.9% (all paid plans, Agency includes SLA credits)
 - **Service Credits:** Available for SLA breaches (see `/sla` for details)
 - **Exclusions:** Not covered for customer misuse, DDoS attacks, or fair-use violations
 
@@ -228,9 +238,15 @@ All 9 new policy pages verified:
 
 ---
 
-## BASELINE LOCK DECLARATION
+## BASELINE LOCK DECLARATION — v12.13
 
-**This baseline represents the verified, production-ready state of Levqor's frontend as of November 23, 2025.**
+**This baseline represents the verified, production-ready state of Levqor's frontend as of November 23, 2025 (Blueprint v12.13).**
+
+### Key v12.13 Changes from v8.0
+1. **Trial extended to ALL tiers** (was Growth/Agency only)
+2. **Trial wording standardized** with clear card requirement messaging
+3. **Support SLAs explicitly documented** per tier (48h/24h/12h/4h)
+4. **Pricing model confirmed** as Workflows + Runs + AI Credits (no capsules)
 
 ### What This Locks
 1. All 23 blueprint-required routes must remain accessible

@@ -2,7 +2,7 @@
 
 /**
  * Levqor Blueprint Drift Monitor
- * Enforces BLUEPRINT_BASELINE v8.0-Final-Nov23
+ * Enforces BLUEPRINT_BASELINE v12.13
  * 
  * Usage: node scripts/drift-monitor.js
  */
@@ -12,7 +12,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const BASELINE = {
-  version: 'v12.12',
+  version: 'v12.13',
   routes: {
     public: ['/', '/pricing', '/guarantee', '/how-it-works', '/support', '/integrations', '/about', '/careers'],
     auth: ['/signin', '/dashboard', '/dashboard/v2'],
@@ -124,8 +124,45 @@ function checkPricingFile() {
     });
   }
   
+  // v12.13: Check trial on ALL tiers
+  const tiersWithTrial = ['starter', 'launch', 'growth', 'agency'];
+  tiersWithTrial.forEach(tier => {
+    const trialRegex = new RegExp(`${tier}.*?trial:\\s*true`, 'is');
+    if (!trialRegex.test(content)) {
+      drift.critical.push({
+        file: 'src/app/pricing/page.tsx',
+        issue: `${tier} tier missing trial flag`,
+        severity: 'CRITICAL',
+        expected: 'trial: true on all tiers (v12.13)',
+        impact: 'Trial policy violation - must be available on all tiers'
+      });
+    }
+  });
+  
+  // v12.13: Check trial wording includes card requirement
+  if (!content.includes('Card required') && !content.includes('card required')) {
+    drift.critical.push({
+      file: 'src/app/pricing/page.tsx',
+      issue: 'Trial messaging missing card requirement',
+      severity: 'CRITICAL',
+      expected: 'Trial wording must mention "Card required"',
+      impact: 'Misleading trial terms - v12.13 violation'
+    });
+  }
+  
+  // v12.13: Check trial hero section exists
+  if (!content.includes('7-day free trial') && !content.includes('7 days')) {
+    drift.major.push({
+      file: 'src/app/pricing/page.tsx',
+      issue: 'Trial explanation section missing',
+      severity: 'MAJOR',
+      expected: 'Canonical trial explanation on pricing page',
+      impact: 'Incomplete trial disclosure'
+    });
+  }
+  
   if (drift.critical.length === 0) {
-    drift.passed.push('Pricing file validated');
+    drift.passed.push('Pricing file validated (v12.13)');
   }
 }
 
@@ -233,7 +270,7 @@ function generateReport() {
   const status = totalIssues === 0 ? 'PASS' : 'FAIL';
   
   let report = `# Blueprint Drift Status Report\n\n`;
-  report += `**Baseline:** v12.12 (Enterprise Upgrade)\n`;
+  report += `**Baseline:** v12.13 (Trial on all tiers + Workflows/Runs/AI model)\n`;
   report += `**Checked:** ${timestamp}\n`;
   report += `**Status:** ${status}\n\n`;
   report += `---\n\n`;

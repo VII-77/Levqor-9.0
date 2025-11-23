@@ -1,6 +1,25 @@
-# Levqor Hardening Checklist — V12.12 Enterprise Upgrade
+# Levqor Hardening Checklist — V12.13 Blueprint Compliance
 
 This checklist must be reviewed and ticked off before and after each production deployment.
+
+## V12.13 Blueprint Compliance Additions
+
+### Pricing & Trial Policy
+- [ ] Pricing page displays correct allowances: Workflows + Runs + AI Credits (NOT capsules)
+- [ ] All 4 tiers (Starter/Launch/Growth/Agency) show 7-day free trial badge
+- [ ] Trial wording includes "Card required" on all surfaces (pricing, trial, refunds, guarantee pages)
+- [ ] Trial hero section on `/pricing` matches canonical long-form wording
+- [ ] DFY prices verified: £149/£299/£499 (not older £99/£249/£599)
+
+### Support SLAs
+- [ ] Support response times match baseline: 48h/24h/12h/4h for Starter/Launch/Growth/Agency
+- [ ] Support policy page reflects tier-specific SLAs correctly
+- [ ] Guarantee page lists SLAs without conflicts
+
+### Drift Monitor
+- [ ] `npm run drift:check` passes with 0 critical/major violations
+- [ ] Baseline doc updated to v12.13
+- [ ] All trial checks pass (trial on all tiers, card requirement messaging)
 
 ## V12.12 Enterprise Additions
 
