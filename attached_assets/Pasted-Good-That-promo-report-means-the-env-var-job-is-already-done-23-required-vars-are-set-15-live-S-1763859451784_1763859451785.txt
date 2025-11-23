@@ -1,0 +1,215 @@
+Good. That promo report means the env-var job is already done:
+
+23 required vars are set.
+
+15 live Stripe prices are wired.
+
+NEXTAUTH + NEXT_PUBLIC URLs are configured.
+
+Frontend build has been triggered from the correct GitHub repo.
+
+
+You don’t need another env-sync prompt now.
+
+What you do need next is a hard, end-to-end production check.
+
+Here’s a single AI-agent prompt that will run a full live smoke test against levqor.ai and api.levqor.ai (no config changes, read-only):
+
+# LEVQOR AI AGENT — PRODUCTION E2E SMOKE TEST (READ-ONLY, NO CONFIG CHANGES)
+
+Goal: Verify that the fully-configured environment is actually working in production:
+- Frontend on Vercel: https://levqor.ai
+- Backend on Replit:  https://api.levqor.ai
+- Live Stripe integration: billing endpoints wired
+
+You MUST NOT touch code, env vars, or deployments. Only run checks and report.
+
+------------------------------------------------
+0. BASE INFO (NO CHANGES)
+------------------------------------------------
+
+Assume current canonical architecture:
+- Frontend: Vercel → https://levqor.ai and https://www.levqor.ai
+- Backend: Replit Autoscale → https://api.levqor.ai
+- Checkout endpoint: POST https://api.levqor.ai/api/billing/checkout
+- Health endpoint:   GET  https://api.levqor.ai/health
+
+Print:
+> STARTING LEVQOR PRODUCTION SMOKE TEST (READ-ONLY)
+
+------------------------------------------------
+1. DNS + BASIC CONNECTIVITY
+------------------------------------------------
+
+From shell:
+
+```bash
+echo "[1] DNS / connectivity checks"
+curl -I https://levqor.ai 2>&1 | head -20
+curl -I https://www.levqor.ai 2>&1 | head -20
+curl -I https://api.levqor.ai/health 2>&1 | head -20
+
+Interpret:
+
+Confirm 2xx/3xx from levqor.ai and www.levqor.ai (www should 308/301 to naked).
+
+Confirm 2xx from api.levqor.ai/health.
+
+
+
+---
+
+2. FRONTEND ROUTES
+
+
+
+
+---
+
+echo "[2] Frontend route checks"
+/usr/bin/curl -s -o /tmp/root.html -w "%{http_code}" https://levqor.ai
+echo "  / -> $(tail -n1 /tmp/root.html)"
+
+curl -s -o /tmp/signin.html -w "%{http_code}" https://levqor.ai/signin
+echo "  /signin -> $(tail -n1 /tmp/signin.html)"
+
+curl -s -o /tmp/pricing.html -w "%{http_code}" https://levqor.ai/pricing
+echo "  /pricing -> $(tail -n1 /tmp/pricing.html)"
+
+curl -s -o /tmp/about.html -w "%{http_code}" https://levqor.ai/about
+echo "  /about -> $(tail -n1 /tmp/about.html)"
+
+curl -s -o /tmp/careers.html -w "%{http_code}" https://levqor.ai/careers
+echo "  /careers -> $(tail -n1 /tmp/careers.html)"
+
+# Dashboard v2 is auth-protected, 3xx is OK
+curl -s -o /tmp/dashv2.html -w "%{http_code}" https://levqor.ai/dashboard/v2
+echo "  /dashboard/v2 -> $(tail -n1 /tmp/dashv2.html)"
+
+Interpret:
+
+/, /pricing, /about, /careers should be 200.
+
+/signin should be 200 (render page, not 404).
+
+/dashboard/v2 should be 3xx redirect to signin, not 404.
+
+
+Also quickly search meta:
+
+grep -i "noindex" /tmp/dashv2.html || echo "  (dash v2 HTML not captured or protected, manual check needed)"
+
+
+---
+
+3. CHECKOUT / BILLING CONFIG
+
+
+
+
+---
+
+We will NOT submit a real checkout, only config checks.
+
+echo "[3] Billing config check"
+curl -s -w "\nHTTP %{http_code}\n" https://api.levqor.ai/api/billing/checkout-config
+
+Interpret:
+
+Expect HTTP 200.
+
+Body should list all 15 price IDs (8 subs, 3 DFY, 4 add-ons).
+
+If endpoint doesn’t exist or is 404/500, report.
+
+
+
+---
+
+4. BASIC CHECKOUT DRY-RUN (NO CHARGE)
+
+
+
+
+---
+
+We will call the checkout endpoint with a fake request and only verify we get a Stripe URL back. Do NOT follow redirects.
+
+echo "[4] Subscription checkout dry-run (Launch monthly)"
+curl -s -X POST https://api.levqor.ai/api/billing/checkout \
+  -H "Content-Type: application/json" \
+  -d '{"purchase_type":"subscription","tier":"launch","billing_interval":"month"}' \
+  -w "\nHTTP %{http_code}\n" | head -20
+
+Interpret:
+
+Expect HTTP 200 or 201.
+
+JSON should contain a URL that looks like https://checkout.stripe.com/….
+
+
+Repeat for an add-on (if you want):
+
+echo "[4b] Add-on checkout dry-run (Priority Support)"
+curl -s -X POST https://api.levqor.ai/api/billing/checkout \
+  -H "Content-Type: application/json" \
+  -d '{"purchase_type":"addons","addons":"addon_priority_support"}' \
+  -w "\nHTTP %{http_code}\n" | head -20
+
+Again: DO NOT follow the URL; just confirm it exists.
+
+
+---
+
+5. SUMMARISE RESULTS
+
+
+
+
+---
+
+At the end, print a clear summary table:
+
+DNS:
+
+levqor.ai: HTTP code + verdict
+
+www.levqor.ai: HTTP code + redirect verdict
+
+api.levqor.ai/health: HTTP code + verdict
+
+
+Frontend routes:
+
+/, /signin, /pricing, /about, /careers, /dashboard/v2 with HTTP codes and pass/fail.
+
+
+Billing:
+
+/api/billing/checkout-config HTTP and whether all prices present.
+
+/api/billing/checkout dry-run result for subscription + add-on (HTTP + “Stripe URL present?”).
+
+
+
+Classify each as:
+
+PASS
+
+WARN (works but odd status)
+
+FAIL (needs investigation)
+
+
+Do NOT modify any files or env vars. This task is read-only diagnostics only.
+
+---
+
+Run that through the agent.
+
+Then you only have to read its summary and tell me:
+
+- Any route it marks as FAIL.  
+- Any billing endpoint that returns non-200 or no Stripe URL.  
+
+From there we’ll fix only what’s still broken, instead of guessing.
