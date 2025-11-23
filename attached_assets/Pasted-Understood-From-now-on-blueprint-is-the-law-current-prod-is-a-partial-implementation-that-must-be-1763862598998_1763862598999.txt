@@ -1,0 +1,300 @@
+Understood. From now on: blueprint is the law, current prod is a partial implementation that must be brought up to it.
+
+You’re already live, so we’re in “tighten to blueprint” mode, not “experiment” mode.
+
+Here’s a single Replit AI Agent prompt that:
+
+Audits the current frontend against the expected blueprint routes.
+
+Fixes the missing/404 blueprint pages.
+
+Aligns nav/footer to those routes.
+
+Verifies everything with npm run build.
+
+Does not touch backend, DNS, or env vars.
+
+
+Paste this into the Replit AI Agent.
+
+
+---
+
+You are working on the Levqor frontend in the repo at /home/runner/workspace/levqor-site.
+
+GOAL
+-----
+Bring the live frontend EXACTLY in line with the blueprint routes and structure. The blueprint is the source of truth. Current production is close but incomplete (some links go to the 404 shell, some blueprint pages are missing). Your job:
+
+1. Ensure ALL blueprint routes exist as real pages (not 404).
+2. Ensure nav + footer only link to valid blueprint routes.
+3. Keep existing design language and components; do NOT introduce a new design system.
+4. Do NOT touch backend code, env vars, or DNS. Frontend-only changes.
+
+Treat the following as the MINIMUM blueprint route set that MUST exist and return a real page component:
+
+- `/`                → Home / marketing landing
+- `/pricing`         → Pricing (tiers + DFY + add-ons)
+- `/signin`          → Auth page (already working; do not break)
+- `/docs`            → Documentation index/landing
+- `/about`           → About Levqor
+- `/careers`         → Careers
+- `/contact`         → Contact / support entry
+- `/support`         → Support/help centre entry page
+- `/how-it-works`    → How Levqor works (high-level explainer)
+- `/guarantee`       → Guarantee / promise page
+- `/fair-use`        → Fair use / usage policy
+- `/blog`            → Blog index (if already present)
+- `/integrations`    → Integrations overview (if referenced in nav/footer)
+- `/use-cases`       → Use cases overview (if referenced)
+- `/roadmap`         → Roadmap / “what’s next” (if referenced)
+- `/screenshots`     → Screenshots/gallery (if referenced)
+- `/tour`            → Product tour (if referenced)
+- `/team`            → Team/about-people (if referenced)
+
+If any of these routes are currently missing or fall through to the 404 component, that is a BUG and must be fixed.
+
+Follow these steps EXACTLY:
+
+------------------------------------------------
+0. PRE-CHECKS
+------------------------------------------------
+
+From /home/runner/workspace:
+
+```bash
+pwd
+ls
+cd levqor-site
+ls -R src/app | sed -e 's/^/src\/app\//'
+git status -sb
+
+Confirm:
+
+This is the Next.js app with src/app present.
+
+You are on branch main and tracking origin/main.
+
+
+Do NOT run git init. Do NOT add new remotes.
+
+
+---
+
+1. DISCOVER CURRENT ROUTES VS BLUEPRINT
+
+
+
+
+---
+
+List all current app routes:
+
+cd /home/runner/workspace/levqor-site
+npx next lint >/dev/null 2>&1 || echo "lint warnings (ignore unless fatal)"
+npm run build 2>&1 | tee /tmp/levqor_blueprint_build.log | sed -n '/Route (app)/,$p' | head -80
+
+From the “Route (app)” section, determine for each blueprint path above:
+
+Exists as a route (ƒ) or not.
+
+If it exists, whether it’s clearly the intended page or just falling back to the 404.
+
+
+You MUST build an internal checklist like:
+
+/support → missing route → must create
+
+/how-it-works → exists but 404 component → must replace
+
+etc.
+
+
+
+---
+
+2. FIX MISSING BLUEPRINT PAGES
+
+
+
+
+---
+
+For each blueprint route that does NOT have a dedicated page.tsx under src/app/.../page.tsx, create one.
+
+Rules:
+
+Use the existing layout, typography, and component style from other marketing pages (e.g. about, pricing, docs) as a reference.
+
+Keep copy simple but on-brand: Levqor automates workflows, self-heals runs, DFY automation, Stripe-billed SaaS, etc.
+
+Do NOT invent new product features. Reuse concepts already present in the repo (pricing tiers, DFY, add-ons, monitoring, self-healing workflows).
+
+Each page should include:
+
+A main <h1> heading.
+
+A short descriptive lead paragraph.
+
+2–4 sections with bullet points or subheadings.
+
+A clear CTA (e.g. “See pricing”, “Start free trial”, “Contact support”).
+
+
+
+Concrete implementation:
+
+Create src/app/support/page.tsx as a simple support/help hub.
+
+Create src/app/how-it-works/page.tsx explaining high-level pipeline (connect tools, monitor, self-heal).
+
+Create src/app/guarantee/page.tsx outlining refund / satisfaction / reliability guarantees (copy can be placeholder but professional).
+
+Create src/app/fair-use/page.tsx describing usage expectations (e.g. fair use of automation capacity, abuse safeguards).
+
+
+If /integrations, /use-cases, /roadmap, /screenshots, /tour, /team are already implemented, leave them. If they are referenced in nav/footer but 404, create minimal but consistent pages for them too.
+
+Use existing sections/components where possible (e.g. reuse layout and card patterns from landing/pricing).
+
+
+---
+
+3. ALIGN NAVBAR + FOOTER TO BLUEPRINT
+
+
+
+
+---
+
+Find the navbar and footer components (likely under src/app/(marketing)/layout or src/components):
+
+grep -R "Sign in" -n src | head -20
+grep -R "Support" -n src | head -20
+grep -R "Guarantee" -n src | head -20
+grep -R "Fair use" -ni src || grep -R "Fair Use" -ni src || true
+grep -R "How it works" -ni src || true
+
+Tasks:
+
+1. Ensure navbar links include at least: Home (/), Pricing (/pricing), Docs (/docs), Contact (/contact), Sign in (/signin), Start free trial (link to /pricing or /signin as already designed).
+
+
+2. Ensure footer “Product / Company / Legal” sections point ONLY to existing routes:
+
+Product: Pricing, Docs, Support.
+
+Company: About, Careers, Contact, Roadmap (if implemented).
+
+Legal/Policy: Privacy, Terms, Security, Fair use, Guarantee (as you create them).
+
+
+
+
+If you see links pointing to missing routes, either:
+
+Create the route (preferred, if it’s part of the blueprint list), OR
+
+Remove/replace the link with a valid destination.
+
+
+DO NOT leave any nav/footer link pointing at a route that just shows the generic 404.
+
+
+---
+
+4. PRESERVE AUTH + DASHBOARD BEHAVIOUR
+
+
+
+
+---
+
+Do NOT touch:
+
+src/app/signin/page.tsx
+
+src/app/dashboard/**
+
+src/middleware.ts
+
+Auth configuration (src/auth.*)
+
+
+You may add links TO /signin or /dashboard, but do not change how auth works.
+
+
+---
+
+5. VALIDATE WITH BUILD
+
+
+
+
+---
+
+After making all changes:
+
+cd /home/runner/workspace/levqor-site
+npm run build 2>&1 | tee /tmp/levqor_blueprint_post_build.log
+
+This must succeed.
+
+From the Route (app) section, verify that the following routes now appear:
+
+/, /pricing, /signin, /docs, /about, /careers, /contact
+
+/support, /how-it-works, /guarantee, /fair-use
+
+Any other blueprint routes you implemented (blog, integrations, use-cases, roadmap, tour, screenshots, team, etc.)
+
+
+If build fails, FIX the errors; do not leave it broken.
+
+
+---
+
+6. FINAL GIT DIFF (DO NOT COMMIT)
+
+
+
+
+---
+
+Show me exactly what changed:
+
+cd /home/runner/workspace
+echo "=== FRONTEND BLUEPRINT DIFF ==="
+git diff levqor-site/src/app \
+        levqor-site/src/components \
+        levqor-site/src/app/layout.tsx \
+        levqor-site/src/middleware.ts | sed -n '1,200p'
+
+Do NOT run git commit and do NOT push. I will review the diff before it is committed.
+
+
+---
+
+7. FINAL REPORT
+
+
+
+
+---
+
+At the end, output a clear report with:
+
+Which blueprint routes were missing and are now implemented.
+
+Which nav/footer links were broken and how you fixed them.
+
+Confirmation that npm run build passes.
+
+A route list showing that all blueprint paths now map to real pages (no generic 404s).
+
+
+Do NOT change backend code, env vars, DNS, or Stripe integration. Frontend-only, blueprint-alignment work.
+
+---
+
+Run that through the agent, then send me the git diff or a screenshot of the changed files list and I’ll tell you exactly what to commit.0
