@@ -1,14 +1,25 @@
-# Levqor X 9.0
+# Levqor X 9.0 — V12.12 Enterprise
 
 ## Overview
 
 Levqor X is a comprehensive data backup and retention management platform with Done-For-You (DFY) service tiers. The project consists of a Python Flask backend API, a Next.js frontend, PostgreSQL database, and Stripe billing integration. Currently configured for production with LIVE Stripe credentials and automatic Vercel deployments.
+
+**Enterprise Upgrade V12.12 (November 23, 2025):** Enhanced with reliability/resiliency, observability/monitoring, and enterprise support automation capabilities while maintaining full backward compatibility with all pricing, policies, and SLA guarantees.
 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes (November 2025)
+
+### V12.12 Enterprise Upgrade - COMPLETED ✅ (Nov 23, 2025)
+- **Reliability & Resiliency**: Added DB connection retry logic, backend keep-alive monitoring, enhanced /health endpoint
+- **Observability & Monitoring**: Implemented structured JSON logging, error monitoring hooks, frontend client logger
+- **Enterprise Support**: Created tier-aware support routing, SLA mapping, AI integration stubs, support ticket API
+- **Governance**: Extended drift monitor with V12.12 file checks, updated hardening checklist, deployment automation
+- **Modules Created**: 7 new enterprise modules (resilience, logging, error monitoring, support tiers, AI router, keep-alive, client logger)
+- **Blueprint Compliance**: ✅ PASS - No pricing/policy/route violations detected
+- **Breaking Changes**: ❌ None - Full backward compatibility maintained
 
 ### Dashboard V2 SEO Configuration - COMPLETED ✅
 - **Created**: `/dashboard/v2` route with protected access

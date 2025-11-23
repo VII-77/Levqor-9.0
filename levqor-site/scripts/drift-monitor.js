@@ -308,12 +308,12 @@ function checkEnterpriseFiles() {
   log('Checking V12.12 Enterprise files...');
   
   const enterpriseFiles = [
-    { path: '../api/utils/resilience.py', name: 'Resilience layer', category: 'Reliability' },
-    { path: '../api/utils/logging_config.py', name: 'Structured logging', category: 'Observability' },
-    { path: '../api/utils/error_monitor.py', name: 'Error monitoring', category: 'Observability' },
-    { path: '../api/support/tiers.py', name: 'Support tier logic', category: 'Enterprise Support' },
-    { path: '../api/support/ai_router.py', name: 'AI routing stub', category: 'Enterprise Support' },
-    { path: '../scripts/backend_keepalive.py', name: 'Backend keep-alive', category: 'Reliability' },
+    { path: '../../api/utils/resilience.py', name: 'Resilience layer', category: 'Reliability' },
+    { path: '../../api/utils/logging_config.py', name: 'Structured logging', category: 'Observability' },
+    { path: '../../api/utils/error_monitor.py', name: 'Error monitoring', category: 'Observability' },
+    { path: '../../api/support/tiers.py', name: 'Support tier logic', category: 'Enterprise Support' },
+    { path: '../../api/support/ai_router.py', name: 'AI routing stub', category: 'Enterprise Support' },
+    { path: '../../scripts/backend_keepalive.py', name: 'Backend keep-alive', category: 'Reliability' },
     { path: '../src/lib/client-logger.ts', name: 'Frontend logger', category: 'Observability' }
   ];
   

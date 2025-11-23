@@ -61,6 +61,10 @@ class JSONFormatter(logging.Formatter):
         if hasattr(record, "extra_data"):
             log_data["extra"] = record.extra_data
         
+        # Add enterprise error event if present
+        if hasattr(record, "error_event"):
+            log_data["error_event"] = record.error_event
+        
         return json.dumps(log_data, default=str)
 
 
