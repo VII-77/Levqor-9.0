@@ -12,7 +12,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const BASELINE = {
-  version: 'v8.0-Final-Nov23',
+  version: 'v12.12',
   routes: {
     public: ['/', '/pricing', '/guarantee', '/how-it-works', '/support', '/integrations', '/about', '/careers'],
     auth: ['/signin', '/dashboard', '/dashboard/v2'],
@@ -233,7 +233,7 @@ function generateReport() {
   const status = totalIssues === 0 ? 'PASS' : 'FAIL';
   
   let report = `# Blueprint Drift Status Report\n\n`;
-  report += `**Baseline:** v8.0-Final-Nov23\n`;
+  report += `**Baseline:** v12.12 (Enterprise Upgrade)\n`;
   report += `**Checked:** ${timestamp}\n`;
   report += `**Status:** ${status}\n\n`;
   report += `---\n\n`;
@@ -304,14 +304,50 @@ function generateReport() {
   return report;
 }
 
+function checkEnterpriseFiles() {
+  log('Checking V12.12 Enterprise files...');
+  
+  const enterpriseFiles = [
+    { path: '../api/utils/resilience.py', name: 'Resilience layer', category: 'Reliability' },
+    { path: '../api/utils/logging_config.py', name: 'Structured logging', category: 'Observability' },
+    { path: '../api/utils/error_monitor.py', name: 'Error monitoring', category: 'Observability' },
+    { path: '../api/support/tiers.py', name: 'Support tier logic', category: 'Enterprise Support' },
+    { path: '../api/support/ai_router.py', name: 'AI routing stub', category: 'Enterprise Support' },
+    { path: '../scripts/backend_keepalive.py', name: 'Backend keep-alive', category: 'Reliability' },
+    { path: '../src/lib/client-logger.ts', name: 'Frontend logger', category: 'Observability' }
+  ];
+  
+  let missingFiles = 0;
+  
+  enterpriseFiles.forEach(file => {
+    const filePath = path.join(__dirname, file.path);
+    
+    if (!fs.existsSync(filePath)) {
+      drift.major.push({
+        file: file.path.replace('../', ''),
+        issue: `V12.12 Enterprise ${file.name} missing`,
+        severity: 'MAJOR',
+        category: file.category,
+        impact: 'Enterprise upgrade incomplete'
+      });
+      missingFiles++;
+    }
+  });
+  
+  if (missingFiles === 0) {
+    drift.passed.push('All V12.12 Enterprise files present');
+  }
+}
+
 function main() {
-  console.log('\n🔍 Levqor Blueprint Drift Monitor v8.0-Final-Nov23\n');
+  console.log('\n🔍 Levqor Blueprint Drift Monitor v12.12\n');
   console.log('============================================\n');
   
   checkPricingFile();
   checkMiddleware();
   checkPolicyPages();
   checkRoutes();
+  checkEnterpriseFiles();
   
   const report = generateReport();
   const reportPath = path.join(__dirname, '../docs/DRIFT_STATUS.md');
