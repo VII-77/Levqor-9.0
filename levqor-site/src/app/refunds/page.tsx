@@ -32,11 +32,18 @@ export default function RefundsPage() {
         </p>
         
         <ul className="list-disc list-inside space-y-2 ml-4">
-          <li><strong>First 30 days:</strong> Full refund, no questions asked</li>
+          <li><strong>During 7-day trial:</strong> Cancel anytime before Day 7 ends — no charge, nothing to refund</li>
+          <li><strong>First 30 days after billing starts:</strong> Full refund, no questions asked</li>
           <li><strong>After 30 days:</strong> Pro-rated refund may be available at our discretion</li>
-          <li><strong>Trial users:</strong> If you cancel during your 7-day free trial, you won't be charged</li>
           <li><strong>Automatic renewals:</strong> Cancel anytime before your next billing cycle to avoid charges</li>
         </ul>
+        
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-6 my-6">
+          <p className="font-semibold text-blue-900 mb-2">Free Trial Billing</p>
+          <p className="text-blue-800">
+            All subscription plans include a 7-day free trial. A card is required to start the trial, but you won't be charged during the trial period. If you cancel before the trial ends (Day 7), you pay £0 and no refund is needed. Billing only begins on Day 8 if you choose to continue.
+          </p>
+        </div>
 
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">Done-For-You (DFY) Package Refunds</h2>
         <p>

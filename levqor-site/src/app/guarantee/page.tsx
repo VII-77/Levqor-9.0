@@ -57,15 +57,29 @@ export default function GuaranteePage() {
           <li>No selling or sharing of your data</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Support Response Guarantee</h2>
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">7-Day Free Trial Guarantee</h2>
         <p>
-          We commit to responding to all support inquiries within:
+          Try any plan risk-free with our 7-day free trial. Here's our guarantee:
         </p>
         
         <ul className="list-disc list-inside space-y-2 ml-4">
-          <li><strong>Critical issues:</strong> 1 hour (Business/Agency plans)</li>
-          <li><strong>Standard issues:</strong> 24 hours (all paid plans)</li>
-          <li><strong>General inquiries:</strong> 48 hours (all plans)</li>
+          <li><strong>Card required:</strong> A valid payment method is required to start your trial</li>
+          <li><strong>No charge during trial:</strong> You won't be billed during the 7-day trial period</li>
+          <li><strong>Cancel anytime:</strong> Cancel before Day 7 ends and pay £0</li>
+          <li><strong>Automatic billing:</strong> If you don't cancel, your plan renews on Day 8 at the standard price</li>
+          <li><strong>One trial per account:</strong> Trial is per organization, not per plan tier</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold text-gray-900 mt-8">Support Response Guarantee</h2>
+        <p>
+          We commit to responding to all support inquiries within our tier-specific SLAs:
+        </p>
+        
+        <ul className="list-disc list-inside space-y-2 ml-4">
+          <li><strong>Starter:</strong> 48 business hours (email only)</li>
+          <li><strong>Launch:</strong> 24 business hours (priority email)</li>
+          <li><strong>Growth:</strong> 12 business hours (priority support + chat)</li>
+          <li><strong>Agency:</strong> 4-hour SLA for critical issues (24/7 emergency support)</li>
         </ul>
 
         <h2 className="text-2xl font-semibold text-gray-900 mt-8">Fair Billing Guarantee</h2>
