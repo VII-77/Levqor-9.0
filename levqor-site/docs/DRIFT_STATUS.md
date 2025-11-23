@@ -1,7 +1,7 @@
 # Blueprint Drift Status Report
 
-**Baseline:** v12.12 (Enterprise Upgrade)
-**Checked:** 2025-11-23T21:08:31.747Z
+**Baseline:** v12.13 (Trial on all tiers + Workflows/Runs/AI model)
+**Checked:** 2025-11-23T22:21:59.560Z
 **Status:** PASS
 
 ---
@@ -15,11 +15,20 @@
 
 ## ✅ Passed Checks (5)
 
-- Pricing file validated
+- Pricing file validated (v12.13)
 - Middleware validated
 - All policy pages present
 - All 23 blueprint routes present
 - All V12.12 Enterprise files present
+
+## v12.13 Compliance Verification
+
+- ✅ All 4 tiers (Starter/Launch/Growth/Agency) have `trial: true` flag
+- ✅ Trial wording includes "Card required" messaging
+- ✅ Trial explanation section present on pricing page
+- ✅ DFY prices match baseline: £149/£299/£499
+- ✅ Pricing model uses Workflows + Runs + AI Credits (NOT capsules)
+- ✅ Support SLAs aligned: 48h/24h/12h/4h for Starter/Launch/Growth/Agency
 
 ---
 
