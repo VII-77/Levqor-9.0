@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/api/stripe-test":{},"/api/auth/[...nextauth]":{},"/dashboard/v2":{},"/api/checkout":{},"/careers":{},"/dashboard":{},"/api/stripe/webhook":{},"/developer/docs":{},"/about":{}}}
+{"version":1,"functions":{"/api/auth/[...nextauth]":{},"/api/stripe-test":{},"/api/checkout":{},"/about":{},"/api/stripe/webhook":{},"/dashboard":{},"/guarantee":{},"/careers":{},"/fair-use":{},"/dashboard/v2":{},"/how-it-works":{},"/developer/docs":{},"/integrations":{},"/support":{}}}
