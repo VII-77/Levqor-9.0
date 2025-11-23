@@ -33,7 +33,7 @@
 - ✅ `/refunds` — Refund Policy (30-day money-back guarantee)
 - ✅ `/sla` — Service Level Agreement (99.9% uptime, 4-hour response)
 - ✅ `/support-policy` — Support Response Times by Plan
-- ✅ `/trial` — Free Trial Terms (7-day trial on Growth & Agency)
+- ✅ `/trial` — Free Trial Terms (7-day trial on ALL plans)
 - ✅ `/cancellation` — Cancellation & Account Closure Policy
 - ✅ `/disputes` — Dispute Resolution Process
 - ✅ `/revisions` — DFY Revision Policy (2 rounds included)
@@ -47,12 +47,12 @@
 
 ### Subscription Plans (Monthly & Yearly, GBP)
 
-| Tier | Monthly | Yearly | Workflows | Runs/Month | AI Credits | Trial | Support |
-|------|---------|--------|-----------|------------|------------|-------|---------|
-| **Starter** | £9 | £90 | 5 | 2,000 | 1,000 | — | Email |
-| **Launch** | £29 | £290 | 20 | 10,000 | 5,000 | — | Priority Email |
-| **Growth** | £59 | £590 | 100 | 50,000 | 20,000 | 7-day ✓ | Priority |
-| **Agency** | £149 | £1,490 | 500 | 250,000 | 100,000 | 7-day ✓ | 4-hr SLA |
+| Tier | Monthly | Yearly | Workflows | Runs/Month | AI Credits | Seats | Trial | Support |
+|------|---------|--------|-----------|------------|------------|-------|-------|---------|
+| **Starter** | £9 | £90 | 5 | 2,000 | 1,000 | 1 | 7-day ✓ | Email (48h) |
+| **Launch** | £29 | £290 | 20 | 10,000 | 5,000 | 3 | 7-day ✓ | Priority (24h) |
+| **Growth** | £59 | £590 | 100 | 50,000 | 20,000 | 5 | 7-day ✓ | Priority (12h) |
+| **Agency** | £149 | £1,490 | 500 | 250,000 | 100,000 | 10 | 7-day ✓ | 4-hr SLA |
 
 **Verified Live:** All 4 tiers displaying correctly on `/pricing` with exact prices and features.
 
