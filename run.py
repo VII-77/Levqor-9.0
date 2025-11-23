@@ -883,5 +883,82 @@ def auto_tune_endpoint():
 from monitors.scheduler import init_scheduler
 init_scheduler()
 
+# V12.12 Enterprise Support Endpoints
+@app.post("/api/support/tickets")
+def create_support_ticket():
+    """
+    Enterprise support ticket creation endpoint.
+    Creates a support ticket with tier-aware routing.
+    """
+    from api.support.tiers import get_support_config, get_default_priority
+    from api.support.ai_router import route_ticket_to_ai
+    from api.utils.resilience import get_correlation_id
+    import uuid
+    
+    data = request.get_json() or {}
+    
+    # Validate required fields
+    if not data.get("subject") or not data.get("body"):
+        return jsonify({"error": "missing_required_fields", "required": ["subject", "body"]}), 400
+    
+    # Generate ticket ID and correlation ID
+    ticket_id = f"TKT-{uuid.uuid4().hex[:8].upper()}"
+    correlation_id = get_correlation_id()
+    
+    # Determine customer tier (default to starter if not authenticated)
+    tier = data.get("tier", "starter").lower()
+    
+    # Get support configuration for tier
+    support_config = get_support_config(tier)
+    
+    # Create ticket object
+    ticket = {
+        "ticket_id": ticket_id,
+        "correlation_id": correlation_id,
+        "tier": tier,
+        "subject": data["subject"],
+        "body": data["body"],
+        "category": data.get("category", "general"),
+        "priority": get_default_priority(tier),
+        "status": "open",
+        "channel": "api",
+        "metadata": data.get("metadata", {}),
+        "created_at": int(time()),
+        "sla_hours": support_config["sla_hours"]
+    }
+    
+    # Log ticket creation
+    log.info(
+        f"Support ticket created: {ticket_id}",
+        extra={
+            "ticket_id": ticket_id,
+            "correlation_id": correlation_id,
+            "tier": tier,
+            "subject": data["subject"][:100]
+        }
+    )
+    
+    # Route to AI if tier supports it
+    if support_config.get("ai_assisted"):
+        ai_result = route_ticket_to_ai(
+            ticket_id=ticket_id,
+            tier=tier,
+            subject=data["subject"],
+            body=data["body"],
+            metadata=ticket.get("metadata")
+        )
+        ticket["ai_routing"] = ai_result
+    
+    # TODO: Store ticket in database
+    # For now, just return the created ticket
+    
+    return jsonify({
+        "status": "received",
+        "ticket_id": ticket_id,
+        "correlation_id": correlation_id,
+        "sla_hours": support_config["sla_hours"],
+        "message": f"Ticket created successfully. Expected response within {support_config['sla_hours']} business hours."
+    }), 201
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
