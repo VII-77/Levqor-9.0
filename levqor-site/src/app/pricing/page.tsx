@@ -204,7 +204,13 @@ function Card({
   };
 
   return (
-    <div className="rounded-2xl border p-6 shadow grid gap-4 bg-white hover:shadow-lg transition-shadow">
+    <div className="relative rounded-2xl border p-6 shadow grid gap-4 bg-white hover:shadow-lg transition-shadow">
+      {/* Floating trial badge */}
+      {trial && (
+        <div className="absolute top-2 right-2 bg-green-600 text-white text-xs px-2 py-1 rounded">
+          7-day free trial
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold">{title}</h3>
         {badge && <span className="text-xs rounded-full px-3 py-1 bg-black text-white font-medium">{badge}</span>}
@@ -215,7 +221,7 @@ function Card({
       </div>
       {trial && (
         <div className="text-xs text-green-700 font-medium bg-green-50 rounded-lg px-3 py-2">
-          ✓ 7-day free trial • Card required • Cancel before Day 7 to avoid charges
+          ✓ Card required • Cancel before Day 7 to avoid charges
         </div>
       )}
       <ul className="text-sm space-y-2 flex-1">
@@ -228,7 +234,7 @@ function Card({
       </ul>
       <button
         onClick={handleClick}
-        className="rounded-xl border border-black bg-black text-white px-4 py-2 hover:bg-gray-800 transition-colors font-medium"
+        className="w-full bg-black text-white py-3 rounded-lg hover:bg-gray-800 transition font-medium"
       >
         {trial ? "Start 7-Day Trial" : "Get Started"}
       </button>

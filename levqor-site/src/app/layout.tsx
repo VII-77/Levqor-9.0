@@ -157,7 +157,8 @@ export default function RootLayout({
                   <li><Link href="/terms" className="hover:text-white transition">Terms of Service</Link></li>
                   <li><Link href="/guarantee" className="hover:text-white transition">Guarantee</Link></li>
                   <li><Link href="/fair-use" className="hover:text-white transition">Fair Use</Link></li>
-                  <li><a href="https://api.levqor.ai/.well-known/security.txt" className="hover:text-white transition">Security</a></li>
+                  <li><Link href="/security" className="hover:text-white transition">Security</Link></li>
+                  <li><a href="https://api.levqor.ai/health" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">System Status</a></li>
                 </ul>
               </div>
             </div>

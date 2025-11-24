@@ -1,7 +1,7 @@
 # Blueprint Drift Status Report
 
 **Baseline:** v12.13 (Trial on all tiers + Workflows/Runs/AI model)
-**Checked:** 2025-11-24T08:12:18.559Z
+**Checked:** 2025-11-24T09:27:06.726Z
 **Status:** PASS
 
 ---
@@ -28,38 +28,6 @@
 - ❌ **CRITICAL:** Breaks pricing, policy, or core architecture — MUST FIX before deploy
 - ⚠️ **MAJOR:** Breaks routes, middleware, or auth — SHOULD FIX before deploy
 - ℹ️ **MINOR:** Formatting or styling issues — CAN FIX later
-
----
-
-## Backend API Domain Status
-
-### Custom Domain: api.levqor.ai ✅ HEALTHY
-
-**Last Verified:** November 24, 2025 08:11 UTC
-
-**Production Status:** Fully operational and serving all backend endpoints correctly
-
-| Endpoint | Status | Response Time | Notes |
-|----------|--------|---------------|-------|
-| `GET /health` | ✅ HTTP 200 | ~500ms | Returns `{"status":"ok"}` |
-| `GET /api/usage/summary` | ✅ HTTP 200 | ~600ms | Returns aggregate metrics |
-
-**DNS Configuration:**
-- ✅ Resolves to: `34.111.179.208`
-- ✅ Cloudflare DNS-only mode (no proxy)
-- ✅ TXT verification record present
-
-**TLS Certificate:**
-- ✅ Subject: `CN = api.levqor.ai`
-- ✅ Issuer: Let's Encrypt (E7)
-- ✅ Valid until: Feb 22, 2026
-- ✅ Auto-renewal enabled
-
-**Known Issue:**
-Replit Publishing UI shows domain status as "failed" - this is a cosmetic UI bug. The domain is verified healthy via direct `curl` testing and is considered the production-primary backend endpoint.
-
-**Fallback:**
-Internal domain `levqor-backend.replit.app` remains available as backup.
 
 ---
 

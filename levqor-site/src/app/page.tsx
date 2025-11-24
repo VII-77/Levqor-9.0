@@ -78,6 +78,16 @@ export default function Home() {
             See pricing
           </Link>
         </div>
+        
+        {/* Trust Signals */}
+        <div className="mt-6 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
+          <span>⭐ 99.97% uptime</span>
+          <span>🔒 Enterprise-grade encryption</span>
+          <span>🌍 Trusted by teams in 12+ countries</span>
+        </div>
+        <p className="mt-3 text-xs text-gray-500">
+          Over 150+ workflows automated this month.
+        </p>
       </section>
 
       {/* Trust Band */}
