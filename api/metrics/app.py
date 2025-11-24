@@ -11,11 +11,16 @@ log = logging.getLogger("levqor.metrics")
 
 # In-memory counters (production would use Redis or similar)
 # MEGA-PHASE 5: Extended with GTM Engine metrics
+# MEGA-PHASE 8: Extended with OpenAI-specific metrics
 _metrics_store = {
     "ai_requests_total": 0,
     "ai_requests_last_5m": 0,
     "errors_total": 0,
     "errors_last_5m": 0,
+    "ai_openai_calls_total": 0,
+    "ai_openai_errors_total": 0,
+    "ai_openai_calls_last_5m": 0,
+    "ai_openai_errors_last_5m": 0,
     "consultations_booked": 0,
     "consultations_run": 0,
     "support_auto_requests": 0,
@@ -77,12 +82,27 @@ def increment_trial_feedback():
     _metrics_store["trial_feedback_submissions"] += 1
 
 
+# MEGA-PHASE 8: OpenAI-specific metric incrementers
+def increment_openai_call():
+    """Increment OpenAI API call counter"""
+    _metrics_store["ai_openai_calls_total"] += 1
+    _metrics_store["ai_openai_calls_last_5m"] += 1
+
+
+def increment_openai_error():
+    """Increment OpenAI error counter"""
+    _metrics_store["ai_openai_errors_total"] += 1
+    _metrics_store["ai_openai_errors_last_5m"] += 1
+
+
 def reset_5min_counters():
     """Reset 5-minute rolling counters"""
     current_time = time()
     if current_time - _metrics_store["last_reset"] >= 300:  # 5 minutes
         _metrics_store["ai_requests_last_5m"] = 0
         _metrics_store["errors_last_5m"] = 0
+        _metrics_store["ai_openai_calls_last_5m"] = 0
+        _metrics_store["ai_openai_errors_last_5m"] = 0
         _metrics_store["last_reset"] = current_time
 
 
@@ -108,6 +128,10 @@ def get_app_metrics():
         "ai_requests_total": _metrics_store["ai_requests_total"],
         "errors_last_5m": _metrics_store["errors_last_5m"],
         "errors_total": _metrics_store["errors_total"],
+        "ai_openai_calls_last_5m": _metrics_store["ai_openai_calls_last_5m"],
+        "ai_openai_calls_total": _metrics_store["ai_openai_calls_total"],
+        "ai_openai_errors_last_5m": _metrics_store["ai_openai_errors_last_5m"],
+        "ai_openai_errors_total": _metrics_store["ai_openai_errors_total"],
         "business_metrics": {
             "consultations_booked": _metrics_store["consultations_booked"],
             "consultations_run": _metrics_store["consultations_run"],

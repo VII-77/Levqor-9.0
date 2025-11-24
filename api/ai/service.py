@@ -1,15 +1,18 @@
 """
 Unified AI Service Layer with Optional OpenAI Integration
-MEGA-PHASE 6 - Real AI backend support (optional, env-flagged)
+MEGA-PHASE 8 - Enhanced multilingual AI with GPT-4o-mini only
 
 This module provides a central AI service that:
-1. Uses OpenAI API when OPENAI_API_KEY is set (cost-controlled)
+1. Uses OpenAI API (gpt-4o-mini) when OPENAI_API_KEY is set AND AI_ENABLED != "false"
 2. Falls back to existing pattern-based logic when key is missing or API fails
-3. Supports multilingual responses when using real AI
+3. Supports multilingual responses (40 languages) when using real AI
 4. Never breaks existing behavior - always has a safe fallback
+5. Strict cost controls: max_tokens=256, 10s timeout, pricing safety prompts
+6. Full metrics tracking for OpenAI calls and errors
 """
 import os
 import logging
+import json
 from typing import Dict, Any, Tuple, List, Optional
 
 log = logging.getLogger("levqor.ai.service")
@@ -26,23 +29,51 @@ except Exception as e:
     log.warning(f"OpenAI import failed: {e} - using pattern-based fallbacks")
 
 
+def is_ai_enabled() -> bool:
+    """
+    Check if AI is enabled based on environment variables.
+    
+    AI is enabled ONLY if:
+    1. OPENAI_API_KEY is set and non-empty
+    2. AI_ENABLED is NOT explicitly set to "false" or "0"
+    3. OpenAI library is available
+    
+    Returns:
+        bool: True if AI should be used, False for pattern-based fallback
+    """
+    if not OPENAI_AVAILABLE or not OpenAI_Class:
+        return False
+    
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    if not api_key:
+        return False
+    
+    ai_enabled = os.getenv("AI_ENABLED", "1").lower().strip()
+    if ai_enabled in ("false", "0", "no", "off"):
+        log.info("AI explicitly disabled via AI_ENABLED env var")
+        return False
+    
+    return True
+
+
 def _get_openai_client():
     """
-    Get OpenAI client instance, creating it only when API key is valid.
-    Returns None if key is missing or invalid.
+    Get OpenAI client instance, creating it only when API key is valid AND AI is enabled.
+    Returns None if key is missing, invalid, or AI is disabled.
     
     CRITICAL: This prevents creating a client with empty API key,
     which would cause auth errors instead of fallback behavior.
+    
+    MEGA-PHASE 8: Now also checks AI_ENABLED flag
     """
-    if not OPENAI_AVAILABLE or not OpenAI_Class:
+    if not is_ai_enabled():
         return None
     
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key or not api_key.strip():
-        return None
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
     
     try:
-        return OpenAI_Class(api_key=api_key.strip())
+        # Set timeout at client level (10s for all requests)
+        return OpenAI_Class(api_key=api_key, timeout=10.0)
     except Exception as e:
         log.warning(f"Failed to create OpenAI client: {e}")
         return None
@@ -56,6 +87,8 @@ def generate_ai_response(
     """
     Unified AI dispatcher that tries OpenAI first, then falls back to patterns.
     
+    MEGA-PHASE 8: Enhanced with full metrics tracking and error handling
+    
     Args:
         task: Type of AI task ('chat', 'workflow', 'debug', 'onboarding')
         language: Normalized language code (en, de, fr, es, hi, etc.)
@@ -67,22 +100,35 @@ def generate_ai_response(
             "success": bool,
             "answer" or "steps" or "explanation": str/list,
             "meta": {
-                "ai_backend": "openai" | "pattern",
+                "ai_backend": "openai" | "pattern" | "stub_fallback",
                 "language": str
             }
         }
     """
-    # CRITICAL FIX: Get client instance (only created if API key is valid)
     openai_client = _get_openai_client()
     
-    # Try OpenAI only if we have a valid client (which means valid API key)
     if openai_client:
         try:
-            return _call_openai(task, language, payload, openai_client)
+            from api.metrics.app import increment_openai_call, increment_openai_error
+            
+            increment_openai_call()
+            result = _call_openai(task, language, payload, openai_client)
+            
+            result.setdefault("meta", {})
+            result["meta"]["ai_backend"] = "openai"
+            result["meta"]["language"] = language
+            return result
+            
         except Exception as e:
-            log.warning(f"OpenAI call failed: {e} - falling back to patterns")
+            from api.metrics.app import increment_openai_error
+            increment_openai_error()
+            
+            error_msg = str(e)
+            if len(error_msg) > 100:
+                error_msg = error_msg[:100] + "..."
+            
+            log.warning(f"OpenAI call failed ({task}, {language}): {error_msg} - falling back")
     
-    # Fallback to pattern-based logic (default behavior when no key or on error)
     return _pattern_based_response(task, language, payload)
 
 
@@ -95,118 +141,303 @@ def _call_openai(
     """
     Call OpenAI API with cost controls and safety measures.
     
+    MEGA-PHASE 8: Enhanced with JSON parsing, pricing safety, and structured outputs
+    
     Args:
         task: Task type
         language: Language code
         payload: Task payload
-        client: OpenAI client instance (guaranteed to have valid API key)
+        client: OpenAI client instance (guaranteed to have valid API key, 10s timeout)
+    
+    Returns:
+        Task-specific structured response with success=True
+    
+    Raises:
+        Exception on any error (caught by caller for fallback)
     """
-    # Build task-specific prompt
     system_prompt = _build_system_prompt(task, language)
     user_prompt = _build_user_prompt(task, payload)
     
-    # Call OpenAI with cost controls
+    model_name = os.getenv("AI_MODEL", "gpt-4o-mini")
+    
     response = client.chat.completions.create(
-        model="gpt-4o-mini",  # Cheap model
+        model=model_name,
         messages=[
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        max_tokens=256,  # Cost control
-        temperature=0.4,  # Focused responses
+        max_tokens=256,
+        temperature=0.5,
     )
     
     answer = response.choices[0].message.content.strip()
     
-    # Format based on task type
     if task == "workflow":
+        steps = _parse_workflow_json(answer) or _parse_workflow_steps(answer)
         return {
             "success": True,
-            "steps": _parse_workflow_steps(answer),
+            "steps": steps,
             "meta": {
                 "ai_backend": "openai",
                 "language": language,
-                "model": "gpt-4o-mini"
+                "model": model_name
             }
         }
+    
     elif task == "debug":
+        parsed = _parse_debug_json(answer)
+        if parsed:
+            return {
+                "success": True,
+                "explanation": parsed.get("explanation", answer),
+                "steps": parsed.get("steps", []),
+                "prevention": parsed.get("prevention", ""),
+                "meta": {
+                    "ai_backend": "openai",
+                    "language": language,
+                    "model": model_name
+                }
+            }
         return {
             "success": True,
             "explanation": answer,
-            "suggestions": _extract_suggestions(answer),
+            "steps": [],
+            "prevention": "",
             "meta": {
                 "ai_backend": "openai",
-                "language": language
+                "language": language,
+                "model": model_name
             }
         }
+    
     elif task == "onboarding":
+        parsed = _parse_onboarding_json(answer)
+        if parsed:
+            return {
+                "success": True,
+                "guidance": parsed.get("guidance", answer),
+                "next_step": parsed.get("next_step", ""),
+                "meta": {
+                    "ai_backend": "openai",
+                    "language": language,
+                    "model": model_name
+                }
+            }
         return {
             "success": True,
             "guidance": answer,
             "next_step": _extract_next_step(answer),
             "meta": {
                 "ai_backend": "openai",
-                "language": language
+                "language": language,
+                "model": model_name
             }
         }
-    else:  # chat
+    
+    else:
         return {
             "success": True,
             "answer": answer,
             "meta": {
                 "ai_backend": "openai",
-                "language": language
+                "language": language,
+                "model": model_name
             }
         }
 
 
+def _get_language_name(code: str) -> str:
+    """Get human-readable language name from code."""
+    lang_names = {
+        'en': 'English', 'de': 'German', 'fr': 'French', 'es': 'Spanish',
+        'pt': 'Portuguese', 'it': 'Italian', 'nl': 'Dutch', 'sv': 'Swedish',
+        'no': 'Norwegian', 'da': 'Danish', 'fi': 'Finnish', 'pl': 'Polish',
+        'cs': 'Czech', 'sk': 'Slovak', 'hu': 'Hungarian', 'ro': 'Romanian',
+        'bg': 'Bulgarian', 'el': 'Greek', 'ru': 'Russian', 'uk': 'Ukrainian',
+        'tr': 'Turkish', 'ar': 'Arabic', 'he': 'Hebrew', 'fa': 'Persian',
+        'ur': 'Urdu', 'hi': 'Hindi', 'bn': 'Bengali', 'ta': 'Tamil',
+        'te': 'Telugu', 'ml': 'Malayalam', 'pa': 'Punjabi', 'gu': 'Gujarati',
+        'zh-hans': 'Chinese (Simplified)', 'zh-hant': 'Chinese (Traditional)',
+        'ja': 'Japanese', 'ko': 'Korean', 'vi': 'Vietnamese',
+        'id': 'Indonesian', 'ms': 'Malay', 'th': 'Thai'
+    }
+    return lang_names.get(code.lower(), 'English')
+
+
 def _build_system_prompt(task: str, language: str) -> str:
-    """Build task and language-aware system prompt."""
+    """
+    Build task and language-aware system prompt with pricing safety.
+    
+    MEGA-PHASE 8: Enhanced with Blueprint pricing safety and structured output requirements
+    """
     base = (
         "You are Levqor AI, an assistant for the Levqor automation platform. "
         "Keep responses concise (under 200 words), business-friendly, and actionable. "
+        "CRITICAL PRICING RULES: "
+        "- Monthly plans: £9, £29, £59, £149 (Starter/Growth/Business/Agency) "
+        "- Annual: £90, £290, £590, £1490 "
+        "- 7-day free trial (card required) "
+        "- NEVER invent discounts, modify prices, or suggest different amounts. "
+        "- If asked about pricing, mention tiers exist and direct to pricing page. "
         "Never execute code, expose secrets, or provide financial advice. "
     )
     
     if language != "en":
-        lang_names = {
-            "de": "German", "fr": "French", "es": "Spanish",
-            "hi": "Hindi", "ar": "Arabic", "zh-hans": "Chinese (Simplified)"
-        }
-        lang_name = lang_names.get(language, language.upper())
-        base += f"Respond in {lang_name}. "
+        lang_name = _get_language_name(language)
+        base += f"Respond in fluent {lang_name}. If unsure, use English. "
     
     task_specifics = {
-        "chat": "Answer user questions about workflows, pricing, features, and support.",
-        "workflow": "Help users design automation workflows. Provide clear, numbered steps.",
-        "debug": "Analyze errors and provide debugging guidance with specific suggestions.",
-        "onboarding": "Guide new users through their first steps with Levqor."
+        "chat": (
+            "Answer user questions about workflows, pricing, features, and support. "
+            "Be helpful and guide them to the appropriate resources."
+        ),
+        "workflow": (
+            "Help users design automation workflows. "
+            "Output numbered steps or JSON format: "
+            '{"steps": [{"type": "trigger", "label": "...", "description": "..."}]}. '
+            "Focus on workflow logic only - never mention pricing or billing."
+        ),
+        "debug": (
+            "Analyze errors and provide debugging guidance. "
+            "Output JSON format: "
+            '{"explanation": "...", "steps": [{"action": "...", "description": "..."}], "prevention": "..."}. '
+            "Provide specific, actionable suggestions."
+        ),
+        "onboarding": (
+            "Guide new users through their first steps with Levqor. "
+            "Output JSON format: "
+            '{"guidance": "...", "next_step": "..."}. '
+            "Be encouraging and provide clear next actions."
+        )
     }
     
     return base + task_specifics.get(task, "Provide helpful assistance.")
 
 
 def _build_user_prompt(task: str, payload: Dict[str, Any]) -> str:
-    """Build task-specific user prompt from payload."""
+    """
+    Build task-specific user prompt from payload.
+    
+    MEGA-PHASE 8: Truncates long inputs to prevent excessive token usage
+    """
     if task == "chat":
-        query = payload.get("query", "")
+        query = payload.get("query", "")[:500]
         context = payload.get("context", {})
         page = context.get("page", "unknown")
         return f"User question (on {page} page): {query}"
     
     elif task == "workflow":
-        description = payload.get("description", "")
+        description = payload.get("description", "")[:1000]
         return f"Help me create a workflow: {description}"
     
     elif task == "debug":
-        error = payload.get("error", "")
+        error = payload.get("error", "")[:1000]
+        context = payload.get("context", {})
+        component = context.get("component", "")
+        if component:
+            return f"Error in {component}: {error}. How do I fix it?"
         return f"I'm getting this error: {error}. How do I fix it?"
     
     elif task == "onboarding":
-        current_step = payload.get("current_step", 0)
-        return f"I'm at onboarding step {current_step}. What should I do next?"
+        current_step = payload.get("current_step", "welcome")
+        context = payload.get("context", {})
+        progress = context.get("progress", {})
+        return f"Onboarding step: {current_step}. Progress: {progress}. What's next?"
     
-    return str(payload)
+    return str(payload)[:500]
+
+
+def _parse_workflow_json(text: str) -> Optional[List[Dict[str, Any]]]:
+    """
+    Try to parse workflow steps from JSON format.
+    
+    Expected format: {"steps": [{"type": "...", "label": "...", "description": "..."}]}
+    
+    Returns:
+        List of step dicts if successful, None if parsing fails
+    """
+    try:
+        text_clean = text.strip()
+        if text_clean.startswith("```json"):
+            text_clean = text_clean[7:]
+        if text_clean.startswith("```"):
+            text_clean = text_clean[3:]
+        if text_clean.endswith("```"):
+            text_clean = text_clean[:-3]
+        
+        data = json.loads(text_clean.strip())
+        
+        if isinstance(data, dict) and "steps" in data:
+            steps = data["steps"]
+            if isinstance(steps, list) and len(steps) > 0:
+                return steps
+        
+        return None
+    except Exception:
+        return None
+
+
+def _parse_debug_json(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Try to parse debug response from JSON format.
+    
+    Expected format: {"explanation": "...", "steps": [...], "prevention": "..."}
+    
+    Returns:
+        Dict with explanation/steps/prevention if successful, None if parsing fails
+    """
+    try:
+        text_clean = text.strip()
+        if text_clean.startswith("```json"):
+            text_clean = text_clean[7:]
+        if text_clean.startswith("```"):
+            text_clean = text_clean[3:]
+        if text_clean.endswith("```"):
+            text_clean = text_clean[:-3]
+        
+        data = json.loads(text_clean.strip())
+        
+        if isinstance(data, dict) and "explanation" in data:
+            return {
+                "explanation": data.get("explanation", ""),
+                "steps": data.get("steps", []),
+                "prevention": data.get("prevention", "")
+            }
+        
+        return None
+    except Exception:
+        return None
+
+
+def _parse_onboarding_json(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Try to parse onboarding response from JSON format.
+    
+    Expected format: {"guidance": "...", "next_step": "..."}
+    
+    Returns:
+        Dict with guidance/next_step if successful, None if parsing fails
+    """
+    try:
+        text_clean = text.strip()
+        if text_clean.startswith("```json"):
+            text_clean = text_clean[7:]
+        if text_clean.startswith("```"):
+            text_clean = text_clean[3:]
+        if text_clean.endswith("```"):
+            text_clean = text_clean[:-3]
+        
+        data = json.loads(text_clean.strip())
+        
+        if isinstance(data, dict) and ("guidance" in data or "next_step" in data):
+            return {
+                "guidance": data.get("guidance", ""),
+                "next_step": data.get("next_step", "")
+            }
+        
+        return None
+    except Exception:
+        return None
 
 
 def _parse_workflow_steps(text: str) -> List[Dict[str, Any]]:
@@ -370,17 +601,18 @@ def _pattern_debug(payload: Dict[str, Any], language: str = "en") -> Dict[str, A
     error = payload.get("error", "").lower()
     greeting = _get_greeting_prefix(language)
     
-    suggestions = [
-        "Check your workflow configuration for missing fields",
-        "Verify API credentials and permissions",
-        "Review recent changes to the workflow",
-        "Check system status at levqor.ai/status"
+    steps = [
+        {"action": "Check your workflow configuration for missing fields"},
+        {"action": "Verify API credentials and permissions"},
+        {"action": "Review recent changes to the workflow"},
+        {"action": "Check system status at levqor.ai/status"}
     ]
     
     return {
         "success": True,
         "explanation": f"{greeting}Based on the error, here are some debugging steps to try.",
-        "suggestions": suggestions,
+        "steps": steps,
+        "prevention": "Implement proper error handling and validation to prevent this issue.",
         "meta": {"ai_backend": "pattern", "language": language}
     }
 
