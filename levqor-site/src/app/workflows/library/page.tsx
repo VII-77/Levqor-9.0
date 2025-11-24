@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { designTokens } from "@/config/design-tokens";
 
@@ -10,7 +10,7 @@ type WorkflowTemplate = {
   category: string;
   difficulty: "Beginner" | "Intermediate" | "Advanced";
   industry: string;
-  aiGenerated: boolean;
+  aiGenerated?: boolean;
   uses: number;
 };
 
