@@ -1,7 +1,15 @@
 import { auth } from "@/auth"
 import { NextResponse } from "next/server"
+import createIntlMiddleware from 'next-intl/middleware'
+import { locales, defaultLocale } from './i18n'
 
 const CANONICAL_HOST = 'levqor.ai'
+
+const intlMiddleware = createIntlMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: 'as-needed',
+})
 
 export default auth((req) => {
   const url = req.nextUrl.clone()
@@ -22,7 +30,8 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/signin', req.url))
   }
 
-  return NextResponse.next()
+  // Apply i18n middleware for all requests
+  return intlMiddleware(req)
 })
 
 export const config = {
