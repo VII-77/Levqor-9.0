@@ -1,0 +1,284 @@
+You are the Levqor X Hypergrowth Engineer.
+
+CONTEXT
+- Project: Levqor X 9.0 (levqor-site frontend + Replit backend at api.levqor.ai)
+- Current state:
+  - V13.x app live, MEGA Phases + Hypergrowth Cycles 1–5 complete.
+  - AI backend endpoints live (/api/ai/*).
+  - GTM engine live (consultations, lifecycle nudges, metrics, support auto, community APIs, workflow library/daily).
+  - Security Core v13.0 active (rate limiting, audit logs, tamper detection).
+  - 40-language display system, 4 routed locales (en/de/fr/es).
+  - Metrics endpoint: /api/metrics/app
+- Hypergrowth Cycle 5 delivered:
+  - Workflow library API, daily workflow API.
+  - Community APIs, atomic append, api-client utilities.
+- Goal of Cycle 6:
+  - Implement a **referral + sharing growth loop** that is:
+    - Safe, stub-friendly, and backwards compatible.
+    - 100% compliant with existing Blueprint & legal constraints.
+    - Focused on virality (sharing workflows, inviting friends) WITHOUT changing pricing, trials, SLAs, or legal content.
+
+ABSOLUTE RULES (DO NOT VIOLATE)
+1) DO NOT modify:
+   - Pricing: £9 / £29 / £59 / £149 monthly; £90 / £290 / £590 / £1,490 yearly.
+   - DFY pricing: £149 / £299 / £499.
+   - Trial policy: “7-day free trial • Card required • Cancel before Day 7”.
+   - SLAs: 48h / 24h / 12h / 4h support.
+   - Legal copy on /terms, /privacy, /sla, /support-policy, etc.
+   - Database schema, migrations, or SQL models.
+   - package.json dependencies or scripts.
+   - DNS, domains, or environment variables.
+2) DO NOT:
+   - Introduce real discounts that contradict the Blueprint (no % off, no trial changes, no new money amounts).
+   - Touch Stripe configuration, prices, or billing behaviour.
+3) You MAY:
+   - Add **new frontend components and routes**.
+   - Add **new backend endpoints** that use JSON files under workspace-data/ for state.
+   - Add **new metrics** to /api/metrics/app.
+   - Add **copy-only incentives** like “bonus automation capacity” or “priority support review”, without numbers or guarantees that hit Blueprint constraints.
+4) Git:
+   - DO NOT run git commands. The user handles commit/push.
+5) Always:
+   - Keep code build-safe.
+   - Prefer small, composable changes.
+   - Add clear comments where behaviour is stub/demo-only.
+
+========================================
+PHASE 0 — SANITY & SAFETY CHECK
+========================================
+1) Confirm you’re in the correct repo and structure:
+
+   - Run:
+     - cd /home/runner/workspace && pwd
+     - ls -R levqor-site/src/app | head -80
+     - ls api | head -40
+     - ls monitors | head -40
+     - ls workspace-data 2>/dev/null || echo "NO_WORKSPACE_DATA"
+
+2) Verify current health:
+
+   - Backend:
+     - curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "HEALTH_FAILED"
+   - Frontend key routes:
+     - for r in / /pricing /status /workflows/library /workflows/daily /community ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-25s %s\n" "$r" "$code"; done
+
+3) TypeScript and Drift (read-only check):
+
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit 2>&1 | head -40
+   - node scripts/drift-monitor.js 2>&1 | tail -20
+
+If these fail in a serious way, STOP and report why.
+
+========================================
+PHASE 1 — REFERRAL BACKEND (STUB, SAFE)
+========================================
+Goal: Create a **referral + invite API** that tracks basic stats, but:
+- Uses JSON files only (workspace-data/).
+- Has NO impact on billing/trials/SLAs.
+- Is safe to call from frontend.
+
+1) Create directory and files if missing:
+
+   - mkdir -p workspace-data/referrals
+   - mkdir -p api/referrals
+
+2) Implement backend modules:
+
+   a) api/referrals/storage.py
+      - Provide helpers:
+        - get_referrals_for_email(email: str) -> list[dict]
+        - append_referral(referral: dict) -> None
+        - get_referral_stats() -> dict
+      - Use:
+        - FILE: workspace-data/referrals/referrals.jsonl
+        - JSON Lines format (one referral per line).
+        - PII: store full email, but MASK in logs.
+        - Ensure atomic write:
+          - Write new file to *.tmp, fsync, then rename.
+        - Handle missing file gracefully (treat as empty).
+      - Referral record fields (minimal):
+        - id: string (timestamp + random suffix)
+        - referrer_email: string
+        - invited_email: string
+        - created_at: ISO8601 string
+        - source: “dashboard” | “pricing” | “community” | “manual”
+        - status: "created" (no active reward logic)
+
+   b) api/referrals/endpoints.py
+      - Create a Blueprint `referrals_bp` with prefix `/api/referrals`.
+      - Endpoints:
+        1) POST /api/referrals/create
+           - body: { "referrer_email": string, "invited_email": string, "source"?: string }
+           - Validate:
+             - Both emails present and contain "@".
+             - source optional, default "manual".
+           - Create referral record via storage helper.
+           - Log masked emails (abc***@domain).
+           - Return: { "success": true, "referral_id": "...", "message": "Referral recorded" }
+           - On validation error: 400 with JSON { success: false, error: "..." }.
+        2) GET /api/referrals/stats
+           - Optional query: ?email=<referrer_email>
+           - If email present:
+             - Return stats: { "success": true, "email": "...", "total_sent": N, "last_10": [ ... ] }
+             - Use storage helper.
+           - If no email:
+             - Return global stats: { "success": true, "total_referrals": N, "unique_referrers": M }.
+
+   c) Register blueprint in run.py
+      - Import and register:
+        - from api.referrals.endpoints import referrals_bp
+        - app.register_blueprint(referrals_bp)
+      - Keep registration consistent with Stripe and marketing endpoints.
+      - DO NOT modify existing blueprints, only add this one.
+
+3) Metrics integration:
+
+   - In api/metrics/app.py (or equivalent metrics module), add counters:
+     - referrals_created
+     - referrals_stats_requests
+   - Increment on:
+     - Each successful /api/referrals/create.
+     - Each /api/referrals/stats call.
+   - Ensure /api/metrics/app JSON includes these new keys with 0 as default.
+
+4) Local backend tests (localhost):
+
+   - Start local backend if needed:
+     - (If a dev server already running via foreman or python, reuse; otherwise briefly run `python3 run.py` in a separate process only if safe.)
+   - Test via curl against localhost (NOT api.levqor.ai):
+     - curl -s -X POST http://127.0.0.1:8000/api/referrals/create -H "Content-Type: application/json" -d '{"referrer_email":"test@levqor.ai","invited_email":"friend@example.com","source":"dashboard"}' | python3 -m json.tool
+     - curl -s "http://127.0.0.1:8000/api/referrals/stats?email=test@levqor.ai" | python3 -m json.tool
+     - curl -s "http://127.0.0.1:8000/api/referrals/stats" | python3 -m json.tool
+   - Confirm 200 responses and expected structure.
+
+========================================
+PHASE 2 — FRONTEND REFERRAL UI (SAFE STUB)
+========================================
+Goal: Add **UI hooks** to invite/share, but:
+- No real incentive that touches pricing/trial/SLA.
+- Copy should be “soft”: e.g. “Invite a friend to accelerate your automation journey”.
+
+1) Create referral helper component:
+
+   - File: levqor-site/src/components/referrals/ReferralInvite.tsx
+   - “use client”
+   - Props:
+     - context: "dashboard" | "pricing" | "library"
+   - Features:
+     - Shows a small card with:
+       - Title: “Invite a teammate or client”
+       - Body: explain benefit in vague terms (no specific monetary reward).
+       - Input: invited_email (email field).
+       - Button: “Send invite”.
+     - On submit:
+       - POST to `${process.env.NEXT_PUBLIC_API_URL ?? "https://api.levqor.ai"}/api/referrals/create`.
+       - Include source from context.
+       - Handle success/failure with a small message.
+       - Do not block page; show inline feedback.
+     - DO NOT:
+       - Adjust any allowances or pricing.
+       - Show codes, credits, or discounts.
+
+2) Integrate into key pages:
+
+   a) /dashboard/v2:
+      - File: levqor-site/src/app/dashboard/v2/page.tsx
+      - Import ReferralInvite and place it near:
+        - OnboardingChecklist / HelpPanel; e.g. a “Growth” section.
+      - Use context="dashboard".
+
+   b) /pricing:
+      - File: levqor-site/src/app/pricing/page.tsx
+      - Add a small “Invite a friend” section near bottom of page or sidebar area.
+      - Use context="pricing".
+      - Ensure no pricing numbers are changed.
+
+   c) /workflows/library or /community (choose ONE, not both, to keep footprint small):
+      - Add ReferralInvite in a sidebar or bottom section.
+      - Use context="library".
+
+3) Add basic share links (no backend needed):
+
+   - On /workflows/daily and/or /workflows/library:
+     - Add “Share this workflow” section with:
+       - Copy link button (navigator.clipboard.writeText(window.location.href) with try/catch).
+       - A couple of social-share hrefs (Twitter/X, LinkedIn) using `encodeURIComponent(location.href)`.
+     - This is pure frontend, no backend change.
+
+========================================
+PHASE 3 — VALIDATION & SAFETY
+========================================
+1) TypeScript & Drift:
+
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit 2>&1 | head -40
+   - node scripts/drift-monitor.js 2>&1 | tail -20
+
+2) Backend health & new endpoints (AGAINST api.levqor.ai):
+
+   - curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "HEALTH_FAILED"
+   - curl -s "https://api.levqor.ai/api/metrics/app" | python3 -m json.tool | head -40 || echo "METRICS_FAILED"
+   - Try new endpoints:
+     - curl -s -X POST "https://api.levqor.ai/api/referrals/create" -H "Content-Type: application/json" -d '{"referrer_email":"test+remote@levqor.ai","invited_email":"friend+remote@example.com","source":"pricing"}' | python3 -m json.tool || echo "REMOTE_REFERRAL_CREATE_FAILED"
+     - curl -s "https://api.levqor.ai/api/referrals/stats" | python3 -m json.tool || echo "REMOTE_REFERRAL_STATS_FAILED"
+
+3) Frontend route smoke-test:
+
+   - for r in / /pricing /dashboard/v2 /workflows/library /community ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-25s %s\n" "$r" "$code"; done
+
+4) Verify Blueprint invariants:
+
+   - Confirm by grep:
+     - cd /home/runner/workspace/levqor-site
+     - grep -n "£9" src/app/pricing/page.tsx
+     - grep -n "£29" src/app/pricing/page.tsx
+     - grep -n "£59" src/app/pricing/page.tsx
+     - grep -n "£149" src/app/pricing/page.tsx
+     - grep -n "7-day free trial" -R src/app/pricing src/app/trial
+   - Confirm no new discount strings:
+     - grep -R "discount" src/app | head -20 || echo "NO_DISCOUNT_STRINGS_FOUND_OR_FEW"
+     - grep -R "% off" src/app | head -20 || echo "NO_PERCENT_OFF_STRINGS"
+
+========================================
+PHASE 4 — SUMMARY FOR USER (NO GIT)
+========================================
+At the end, output a **clear, human-readable summary** for the user including:
+
+1) What you implemented:
+   - New backend endpoints (/api/referrals/create, /api/referrals/stats).
+   - New storage module for referrals (JSONL).
+   - Metrics updates (referrals_created, referrals_stats_requests).
+   - New ReferralInvite component and where it is integrated.
+   - Where share buttons are added (workflow pages).
+
+2) Evidence it’s safe:
+   - TypeScript: PASS (0 errors).
+   - Drift Monitor: PASS.
+   - Backend health: OK.
+   - New endpoints tested (local + api.levqor.ai).
+   - Pricing/trial/SLAs unchanged.
+   - No legal or schema changes.
+
+3) Files changed (high-level list, no full diff):
+   - api/referrals/storage.py
+   - api/referrals/endpoints.py
+   - run.py (registration only)
+   - api/metrics/app.py (metrics only)
+   - levqor-site/src/components/referrals/ReferralInvite.tsx
+   - levqor-site/src/app/dashboard/v2/page.tsx
+   - levqor-site/src/app/pricing/page.tsx
+   - one of: levqor-site/src/app/workflows/library/page.tsx OR src/app/community/page.tsx
+
+4) Git reminder:
+   - Show commands but DO NOT run them:
+     - cd /home/runner/workspace
+     - git status
+     - git add <list of modified files>
+     - git commit -m "V13.4 Hypergrowth Cycle 6: referrals & sharing growth loop (safe stub)"
+     - git push origin main
+
+If ANY step fails in a critical way, stop and clearly explain what failed and why, instead of guessing.
+
+END OF PROMPT
+```0

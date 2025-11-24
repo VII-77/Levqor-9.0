@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import HelpPanel from "@/components/HelpPanel";
 import AIHelpPanel from "@/components/ai/AIHelpPanel";
+import ReferralInvite from "@/components/referrals/ReferralInvite";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export default async function DashboardV2() {
         </div>
         
         <OnboardingChecklist />
+        
+        <ReferralInvite context="dashboard" />
         
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-blue-900 mb-2">

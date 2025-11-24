@@ -4,6 +4,53 @@ import Link from "next/link";
 import Head from "next/head";
 import { designTokens } from "@/config/design-tokens";
 
+const ShareWorkflow = () => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyLink = () => {
+    try {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy link", err);
+    }
+  };
+
+  const shareUrl = typeof window !== "undefined" ? encodeURIComponent(window.location.href) : "";
+  const shareText = encodeURIComponent("Check out today's workflow on Levqor");
+
+  return (
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-4">
+      <h3 className="text-sm font-semibold text-slate-200 mb-3">Share this workflow</h3>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={handleCopyLink}
+          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm rounded-md transition-colors"
+        >
+          {copied ? "✓ Copied!" : "📋 Copy link"}
+        </button>
+        <a
+          href={`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareText}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-md transition-colors"
+        >
+          𝕏 Share on X
+        </a>
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white text-sm rounded-md transition-colors"
+        >
+          in Share on LinkedIn
+        </a>
+      </div>
+    </div>
+  );
+};
+
 type DailyWorkflow = {
   date: string;
   id: string;
@@ -299,6 +346,11 @@ export default function WorkflowOfTheDayPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Share Workflow */}
+            <div className="mb-8">
+              <ShareWorkflow />
             </div>
 
             {/* CTA Buttons */}

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { designTokens } from "@/config/design-tokens";
+import ReferralInvite from "@/components/referrals/ReferralInvite";
 
 type WorkflowTemplate = {
   id: string;
@@ -233,6 +234,11 @@ export default function WorkflowLibraryPage() {
             <p className="text-neutral-500 text-lg">No workflows match your filters. Try adjusting your selection.</p>
           </div>
         )}
+      </section>
+
+      {/* Referral Invite */}
+      <section className="max-w-4xl mx-auto px-6 pb-8">
+        <ReferralInvite context="library" />
       </section>
 
       {/* CTA */}

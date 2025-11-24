@@ -5,6 +5,7 @@ import PageViewTracker from "@/components/PageViewTracker";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
 import ExitIntentModal from "@/components/ExitIntentModal";
+import ReferralInvite from "@/components/referrals/ReferralInvite";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
 
@@ -639,6 +640,11 @@ export default function PricingPage() {
             <span>SLA on Agency plan</span>
           </div>
         </div>
+      </div>
+
+      {/* Referral Invite */}
+      <div className="max-w-2xl mx-auto mb-12">
+        <ReferralInvite context="pricing" />
       </div>
 
       {/* FAQ */}

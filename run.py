@@ -938,7 +938,7 @@ from api.consultations.book import bp as consultation_book_bp
 from api.consultations.run import bp as consultation_run_bp
 from api.support.auto import bp as support_auto_bp
 from api.marketing.lifecycle import bp as lifecycle_bp
-from api.referrals.routes import bp as referrals_bp
+from api.referrals.endpoints import referrals_bp
 from api.knowledge.search import bp as knowledge_bp
 from api.omega.operator import bp as omega_operator_bp
 from api.omega.optimizations import bp as omega_optimizations_bp

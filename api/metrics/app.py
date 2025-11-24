@@ -13,6 +13,7 @@ log = logging.getLogger("levqor.metrics")
 # In-memory counters (production would use Redis or similar)
 # MEGA-PHASE 5: Extended with GTM Engine metrics
 # MEGA-PHASE 8: Extended with OpenAI-specific metrics
+# HYPERGROWTH CYCLE 6: Extended with referral metrics
 _metrics_store = {
     "ai_requests_total": 0,
     "ai_requests_last_5m": 0,
@@ -29,6 +30,8 @@ _metrics_store = {
     "lifecycle_ticks": 0,
     "pricing_cta_clicks": 0,
     "trial_feedback_submissions": 0,
+    "referrals_created": 0,
+    "referrals_stats_requests": 0,
     "last_reset": time(),
 }
 
@@ -94,6 +97,23 @@ def increment_openai_error():
     """Increment OpenAI error counter"""
     _metrics_store["ai_openai_errors_total"] += 1
     _metrics_store["ai_openai_errors_last_5m"] += 1
+
+
+# HYPERGROWTH CYCLE 6: Referral metric incrementers
+def increment_metric(metric_name: str):
+    """Generic metric incrementer for referral system"""
+    if metric_name in _metrics_store:
+        _metrics_store[metric_name] += 1
+
+
+def increment_referrals_created():
+    """Increment referrals created counter"""
+    _metrics_store["referrals_created"] += 1
+
+
+def increment_referrals_stats():
+    """Increment referrals stats requests counter"""
+    _metrics_store["referrals_stats_requests"] += 1
 
 
 def reset_5min_counters():
