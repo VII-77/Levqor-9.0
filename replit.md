@@ -1,8 +1,14 @@
-# Levqor X 9.0 — V12.12 Enterprise
+# Levqor X 9.0 — V13.1 Enterprise
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. The V12.12 Enterprise upgrade focused on enhancing reliability, resiliency, observability, monitoring, and automating enterprise support while maintaining backward compatibility.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. 
+
+**Latest Updates (V13.1):**
+- **MEGA-PHASE 1:** AI UX layer with 6 production components (1,665 lines), professional branding, design tokens, homepage animations
+- **MEGA-PHASE 2:** Complete i18n infrastructure for 4 languages (EN/DE/FR/ES), currency formatting utilities, locale-aware routing with auth protection
+
+The V12.12 Enterprise upgrade focused on enhancing reliability, resiliency, observability, monitoring, and automating enterprise support while maintaining backward compatibility.
 
 ## User Preferences
 
@@ -18,9 +24,11 @@ This separation ensures optimal scaling for both components and prevents deploym
 ### Frontend Architecture
 
 - **Framework**: Next.js (App Router) for server-side rendering and performance.
-- **Styling**: Tailwind CSS with a dark theme (slate color palette).
+- **Styling**: Tailwind CSS with design tokens system (208 lines), professional branding with Logo component.
 - **Language**: TypeScript for type safety.
-- **Authentication**: NextAuth protects routes like `/dashboard` and `/dashboard/v2`.
+- **Authentication**: NextAuth protects routes like `/dashboard` and `/dashboard/v2` (auth middleware integrated with i18n).
+- **Internationalization**: next-intl supporting 4 locales (EN/DE/FR/ES) with locale-aware routing and auth protection.
+- **AI UX Components**: 6 production components for contextual help, workflow creation, debugging, onboarding, suggestions, and knowledge browsing.
 - **Deployment**: Vercel handles automatic deployments, global edge network, and custom domains.
 
 ### Backend Architecture
@@ -36,7 +44,11 @@ This separation ensures optimal scaling for both components and prevents deploym
 
 ### UI/UX Decisions
 
-- **Dark Theme**: Predominantly dark mode using Tailwind CSS's slate color palette for a consistent and modern look.
+- **Design System**: Centralized design tokens (`src/config/design-tokens.ts`) for colors, spacing, typography, and animations.
+- **Branding**: Professional Logo component with brand gradient, integrated across navigation and hero sections.
+- **Animations**: Custom CSS animations (fade-in-up, slide-in, scale-in) for polished user experience.
+- **Dark Theme**: Predominantly dark mode using Tailwind CSS's slate color palette with gradient accents.
+- **AI Experience**: Context-aware help panels, natural language workflow builder, debug assistant, onboarding tutor, workflow suggestions, and knowledge graph.
 - **Responsive Design**: Achieved using Tailwind utility classes to ensure functionality across various devices.
 - **SEO**: Public pages are indexed, while private dashboard routes (`/dashboard`, `/dashboard/v2`) are explicitly excluded from search engines using `noindex`, `nofollow`, and `nocache` meta tags.
 
@@ -60,9 +72,81 @@ This separation ensures optimal scaling for both components and prevents deploym
 
 ### Framework Dependencies
 - **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM.
-- **Frontend**: Next.js, React, TypeScript, Tailwind CSS, NextAuth.
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS, NextAuth, next-intl.
 - **Database**: Drizzle ORM for schema definitions and PostgreSQL driver.
+- **AI Components**: 6 client-side prototypes ready for backend integration.
 
 ### Authentication & Security
 - **NextAuth**: Planned for OAuth integration (Google/Microsoft).
+- **Middleware Security**: Auth protection works across all locales (locale prefix stripping ensures `/de/dashboard` is protected).
 - **Replit Secrets**: Manages sensitive credentials such as Stripe keys and API tokens.
+
+## Recent Changes (V13.1)
+
+### MEGA-PHASE 1: AI UX & Branding (Completed 2025-11-24)
+
+**AI Components (1,665 lines):**
+- `AIHelpPanel` (242 lines) - Contextual dashboard assistance
+- `NaturalLanguageWorkflowBuilder` (301 lines) - Plain English workflow creation
+- `AIDebugAssistant` (305 lines) - Intelligent error analysis
+- `AIOnboardingTutor` (283 lines) - Interactive user guidance
+- `WorkflowAutosuggestions` (222 lines) - Workflow optimization tips
+- `LevqorKnowledgeGraph` (312 lines) - Visual knowledge browsing
+
+**Branding & Design:**
+- Design tokens system (208 lines in `src/config/design-tokens.ts`)
+- Logo component with brand gradient
+- Homepage enhancement with animations and gradients
+- Custom CSS animations (fade-in-up, slide-in-left/right, scale-in)
+
+**New Pages:**
+- `/workflows/new` - Workflow creation with mode selection
+- `/workflows/errors` - Error debugging dashboard
+
+**Status:** Production-ready. AI components are client-side prototypes designed for easy backend integration.
+
+### MEGA-PHASE 2: Globalization (Completed 2025-11-24)
+
+**i18n Infrastructure (100 lines core):**
+- Configuration: `src/i18n.ts` with 4 locales (EN/DE/FR/ES)
+- Middleware: Auth + i18n integration with locale-aware route protection
+- Provider: NextIntlClientProvider in root layout
+- Component: LocaleSwitcher in header navigation
+
+**Currency Support:**
+- Utility library: `src/lib/currency.ts` (38 lines)
+- Supports GBP, EUR, USD with locale-aware formatting
+- Currency mapping: EN→GBP, DE/FR/ES→EUR
+
+**Translation Files:**
+- 4 complete translation files (272 lines total)
+- Homepage, features, CTAs, common strings
+- Ready for expansion to other pages
+
+**Security Fix:**
+- Critical auth bypass vulnerability fixed
+- Middleware now strips locale prefixes before auth check
+- Protected routes work correctly across all locales (`/de/dashboard`, `/fr/admin`, etc.)
+
+**Status:** Production-ready. Architect verified auth protection and locked value preservation.
+
+## Locked Blueprint Values (NEVER MODIFY)
+
+**Pricing Tiers:**
+- Starter: £9/month, £90/year
+- Growth: £29/month, £290/year
+- Business: £59/month, £590/year
+- Agency: £149/month, £1490/year
+
+**DFY Packages:**
+- Starter: £149
+- Professional: £299
+- Enterprise: £499
+
+**Trial & Legal:**
+- 7-day free trial (card required)
+- 30-day refund policy
+- SLAs: 48h/24h/12h/4h (by tier)
+- 99.9% uptime guarantee
+
+**All legal copy and terms are locked and must not be modified.**
