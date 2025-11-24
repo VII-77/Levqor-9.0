@@ -18,6 +18,10 @@ def ai_debug():
     Request: { "error": string, "context": { stack?, component?, ... } }
     Response: { "success": boolean, "explanation": string, "steps": array, "prevention": string }
     """
+    from api.metrics.app import increment_ai_request, increment_error
+    
+    increment_ai_request()
+    
     try:
         data = request.get_json()
         
@@ -58,6 +62,8 @@ def ai_debug():
         }), 200
         
     except Exception as e:
+        from api.metrics.app import increment_error
+        increment_error()
         log.error(f"AI debug error: {e}")
         return jsonify({
             "success": False,

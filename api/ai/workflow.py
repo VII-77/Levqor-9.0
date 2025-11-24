@@ -18,6 +18,10 @@ def ai_workflow():
     Request: { "query": string, "context": { ... } }
     Response: { "success": boolean, "steps": array, "meta": object }
     """
+    from api.metrics.app import increment_ai_request, increment_error
+    
+    increment_ai_request()
+    
     try:
         data = request.get_json()
         
@@ -57,6 +61,8 @@ def ai_workflow():
         }), 200
         
     except Exception as e:
+        from api.metrics.app import increment_error
+        increment_error()
         log.error(f"AI workflow error: {e}")
         return jsonify({
             "success": False,

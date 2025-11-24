@@ -30,107 +30,60 @@ export default function NaturalLanguageWorkflowBuilder({ onWorkflowCreated, clas
   const [suggestedWorkflow, setSuggestedWorkflow] = useState<WorkflowStep[] | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
 
-  // Simulate AI processing (in production, this calls your AI backend)
+  // Call real AI backend endpoint
   const processNaturalLanguage = async (text: string): Promise<WorkflowStep[]> => {
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/workflow`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: text,
+          context: {
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      });
 
-    // Simple pattern matching for demo (production uses actual AI/LLM)
-    const patterns: Record<string, WorkflowStep[]> = {
-      'email.*slack': [
-        {
-          id: '1',
-          type: 'trigger',
-          app: 'Gmail',
-          action: 'New Email',
-          description: 'When a new email arrives in Gmail',
-        },
-        {
-          id: '2',
-          type: 'condition',
-          app: 'Filter',
-          action: 'Contains keyword',
-          description: 'If the email contains specific keywords',
-        },
-        {
-          id: '3',
-          type: 'action',
-          app: 'Slack',
-          action: 'Send Message',
-          description: 'Send a message to a Slack channel',
-        },
-      ],
-      'form.*sheet': [
-        {
-          id: '1',
-          type: 'trigger',
-          app: 'Google Forms',
-          action: 'New Response',
-          description: 'When a new form response is submitted',
-        },
-        {
-          id: '2',
-          type: 'action',
-          app: 'Google Sheets',
-          action: 'Add Row',
-          description: 'Add a new row to a Google Sheet',
-        },
-        {
-          id: '3',
-          type: 'action',
-          app: 'Email',
-          action: 'Send Confirmation',
-          description: 'Send a confirmation email to the respondent',
-        },
-      ],
-      'crm|salesforce|hubspot': [
-        {
-          id: '1',
-          type: 'trigger',
-          app: 'CRM',
-          action: 'New Contact',
-          description: 'When a new contact is created',
-        },
-        {
-          id: '2',
-          type: 'action',
-          app: 'Email',
-          action: 'Send Welcome',
-          description: 'Send a welcome email sequence',
-        },
-        {
-          id: '3',
-          type: 'action',
-          app: 'Slack',
-          action: 'Notify Team',
-          description: 'Notify sales team in Slack',
-        },
-      ],
-    };
+      if (!response.ok) {
+        throw new Error('AI workflow request failed');
+      }
 
-    // Find matching pattern
-    const pattern = Object.keys(patterns).find(p => new RegExp(p, 'i').test(text));
-    
-    if (pattern) {
-      return patterns[pattern];
+      const data = await response.json();
+
+      if (data.success && data.steps) {
+        // Convert backend response to WorkflowStep format
+        return data.steps.map((step: any, index: number) => ({
+          id: (index + 1).toString(),
+          type: step.type as 'trigger' | 'action' | 'condition' | 'notification',
+          app: step.label,
+          action: step.label,
+          description: step.description,
+        }));
+      } else {
+        throw new Error('Invalid AI response');
+      }
+    } catch (error) {
+      console.error('AI workflow error:', error);
+      // Fallback workflow on error
+      return [
+        {
+          id: '1',
+          type: 'trigger',
+          app: 'Your App',
+          action: 'Event Occurs',
+          description: 'When something happens in your app',
+        },
+        {
+          id: '2',
+          type: 'action',
+          app: 'Target App',
+          action: 'Perform Action',
+          description: 'Do something automatically',
+        },
+      ];
     }
-
-    // Default fallback workflow
-    return [
-      {
-        id: '1',
-        type: 'trigger',
-        app: 'Your App',
-        action: 'Event Occurs',
-        description: 'When something happens in your app',
-      },
-      {
-        id: '2',
-        type: 'action',
-        app: 'Target App',
-        action: 'Perform Action',
-        description: 'Do something automatically',
-      },
-    ];
   };
 
   const handleSubmit = async () => {

@@ -4,6 +4,7 @@ import LeadCaptureInline from "@/components/LeadCaptureInline";
 import PageViewTracker from "@/components/PageViewTracker";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
+import ExitIntentModal from "@/components/ExitIntentModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
 
@@ -315,6 +316,7 @@ export default function PricingPage() {
 
   return (
     <main className="mx-auto max-w-6xl p-6">
+      <ExitIntentModal />
       <PageViewTracker page="/pricing" />
       
       {/* Display Preferences (Language & Currency) */}

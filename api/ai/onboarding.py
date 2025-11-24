@@ -17,6 +17,10 @@ def get_next_step():
     Request: { "current_step": string, "context": { progress?, userTier?, ... } }
     Response: { "success": boolean, "step": object, "meta": object }
     """
+    from api.metrics.app import increment_ai_request, increment_error
+    
+    increment_ai_request()
+    
     try:
         data = request.get_json()
         
@@ -42,6 +46,8 @@ def get_next_step():
         }), 200
         
     except Exception as e:
+        from api.metrics.app import increment_error
+        increment_error()
         log.error(f"AI onboarding error: {e}")
         return jsonify({
             "success": False,

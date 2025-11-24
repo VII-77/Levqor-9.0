@@ -84,9 +84,24 @@ export default function AIOnboardingTutor({
     }
   }, []);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const step = ONBOARDING_STEPS[currentStep];
     setCompletedSteps(prev => new Set([...prev, step.id]));
+    
+    // Call backend API to log onboarding progress (optional analytics)
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/onboarding/next-step`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          current_step: step.id,
+          context: { progress: currentStep / ONBOARDING_STEPS.length },
+        }),
+      });
+    } catch (error) {
+      // Silent fail - onboarding continues even if API call fails
+      console.log('Onboarding API call failed, continuing locally');
+    }
     
     if (currentStep < ONBOARDING_STEPS.length - 1) {
       setCurrentStep(currentStep + 1);

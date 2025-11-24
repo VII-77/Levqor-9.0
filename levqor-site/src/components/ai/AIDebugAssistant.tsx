@@ -35,11 +35,48 @@ export default function AIDebugAssistant({ error, onFixSuggested, className = ''
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [suggestion, setSuggestion] = useState<DebugSuggestion | null>(null);
 
-  // Simulate AI error analysis (in production, calls AI backend)
+  // Call real AI backend endpoint
   const analyzeError = async (err: WorkflowError): Promise<DebugSuggestion> => {
-    await new Promise(resolve => setTimeout(resolve, 1200));
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/debug`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          error: `${err.errorCode}: ${err.errorMessage}`,
+          context: {
+            step: err.step,
+            timestamp: err.timestamp,
+          },
+        }),
+      });
 
-    // Pattern matching for common errors (production uses AI/LLM)
+      if (!response.ok) {
+        throw new Error('AI debug request failed');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        return {
+          title: data.explanation.split('.')[0] || 'Error Analysis',
+          explanation: data.explanation,
+          fixes: data.steps.map((s: any) => s.description || s.action),
+          preventionTips: data.prevention ? [data.prevention] : undefined,
+        };
+      } else {
+        throw new Error('Invalid AI response');
+      }
+    } catch (error) {
+      console.error('AI debug error:', error);
+      // Fallback to pattern matching on error
+      return analyzeErrorFallback(err);
+    }
+  };
+
+  // Fallback pattern matching if API fails
+  const analyzeErrorFallback = (err: WorkflowError): DebugSuggestion => {
     const errorPatterns: Record<string, DebugSuggestion> = {
       'auth': {
         title: 'Authentication Failed',
