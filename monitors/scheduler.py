@@ -394,6 +394,19 @@ def run_omega_optimizer():
     except Exception as e:
         log.error(f"Omega Optimization Engine error: {e}")
 
+def run_legal_auditor():
+    """MEGA-PHASE Ω - Legal Omega: Legal File Integrity Auditor (daily)"""
+    log.info("Running Legal Omega Auditor...")
+    try:
+        from monitors.legal_auditor import audit_legal_files
+        result = audit_legal_files()
+        if result['status'] == 'ok':
+            log.info(f"✅ Legal Omega Auditor: All {result['files_checked']} files verified")
+        else:
+            log.warning(f"⚠️  Legal Omega Auditor: {result['changes_detected']} changes detected")
+    except Exception as e:
+        log.error(f"Legal Omega Auditor error: {e}")
+
 def check_security_tamper():
     """Periodic tamper detection for critical config/code files"""
     log.info("Running security tamper check...")
@@ -643,8 +656,19 @@ def init_scheduler():
             replace_existing=True
         )
         
+        # MEGA-PHASE Ω - Legal Omega: Legal File Integrity Auditor
+        scheduler.add_job(
+            run_legal_auditor,
+            'cron',
+            hour=3,
+            minute=0,
+            id='legal_omega_auditor',
+            name='Legal Omega Auditor',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        log.info("✅ APScheduler initialized with 23 jobs (including 6 monitoring jobs + 1 security job + 3 omega jobs)")
+        log.info("✅ APScheduler initialized with 24 jobs (including 6 monitoring jobs + 1 security job + 4 omega jobs)")
         return scheduler
         
     except ImportError:
