@@ -1,3 +1,13 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Security & data protection – Levqor',
+  description: 'Learn how Levqor protects your data with encryption, access control, audit logging, and compliance-ready practices.',
+  alternates: {
+    canonical: 'https://levqor.ai/security',
+  },
+};
+
 export default function SecurityPage() {
   return (
     <div className="max-w-3xl mx-auto py-20 px-6">

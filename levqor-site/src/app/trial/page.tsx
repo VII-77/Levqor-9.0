@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Free Trial Terms",
-  description: "Levqor's 7-day free trial - eligibility, what's included, and when billing starts.",
+  title: "Start your 7-day Levqor trial",
+  description: "Try Levqor free for 7 days. Card required, cancel before Day 7 to avoid charges.",
+  alternates: {
+    canonical: 'https://levqor.ai/trial',
+  },
 };
 
 export default function TrialPage() {

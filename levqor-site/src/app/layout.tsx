@@ -11,16 +11,16 @@ export const revalidate = 0;
 export const metadata: Metadata = {
   metadataBase: new URL('https://levqor.ai'),
   title: {
-    default: 'Levqor — Automate work. Ship faster. Pay only for results.',
+    default: 'Levqor – Automate work. Ship faster. Pay only for results.',
     template: '%s | Levqor'
   },
-  description: 'Levqor runs your workflows, monitors failures, and self-heals. Email, Sheets, Slack, CRM, and more. Enterprise-grade automation platform with 99.9% SLA.',
+  description: 'Levqor is the AI-powered automation layer for agencies and teams. Automate workflows, ship client work faster, and only pay for successful results.',
   keywords: ['automation', 'workflow', 'no-code', 'zapier alternative', 'make.com alternative', 'ai automation', 'self-healing workflows'],
   authors: [{ name: 'Levqor Technologies' }],
   creator: 'Levqor',
   openGraph: {
-    title: 'Levqor — Automate work. Ship faster. Pay only for results.',
-    description: 'Self-healing workflows that monitor failures and auto-recover. Connect Email, Sheets, Slack, CRM with no code.',
+    title: 'Levqor – Automate work. Ship faster. Pay only for results.',
+    description: 'Levqor is the AI-powered automation layer for agencies and teams. Automate workflows, ship client work faster, and only pay for successful results.',
     url: 'https://levqor.ai',
     siteName: 'Levqor',
     images: [
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Levqor - Self-Healing Automation Engine',
+        alt: 'Levqor - AI-powered automation platform',
       },
     ],
     locale: 'en_GB',
@@ -36,8 +36,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Levqor — Automate work. Ship faster.',
-    description: 'Self-healing workflows with 99.9% SLA. Connect 50+ apps, no code required.',
+    title: 'Levqor – Automate work. Ship faster. Pay only for results.',
+    description: 'Levqor is the AI-powered automation layer for agencies and teams. Automate workflows, ship client work faster, and only pay for successful results.',
     images: ['/og-image.png'],
     creator: '@levqor',
   },
@@ -53,6 +53,9 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+  },
+  alternates: {
+    canonical: 'https://levqor.ai',
   },
 }
 

@@ -1,3 +1,13 @@
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'System status & uptime – Levqor',
+  description: 'View Levqor system health, uptime metrics, and live API status.',
+  alternates: {
+    canonical: 'https://levqor.ai/status',
+  },
+};
+
 export default function StatusPage() {
   return (
     <div className="max-w-3xl mx-auto py-20 px-6">

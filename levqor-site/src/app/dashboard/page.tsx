@@ -2,8 +2,16 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import DashboardTiles from "@/components/DashboardTiles";
 import AnalyticsWidget from "@/components/AnalyticsWidget";
+import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 async function getUsage(){
   const api = process.env.NEXT_PUBLIC_API_URL!;
