@@ -79,10 +79,15 @@ export default function Footer() {
             <ul className="space-y-2.5 text-sm">
               <li><Link href="/privacy" className="hover:text-primary-400 transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-primary-400 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/cookies" className="hover:text-primary-400 transition-colors">Cookie Policy</Link></li>
+              <li><Link href="/data-rights" className="hover:text-primary-400 transition-colors">Data Rights</Link></li>
+              <li><Link href="/gdpr" className="hover:text-primary-400 transition-colors">GDPR</Link></li>
+              <li><Link href="/dpa" className="hover:text-primary-400 transition-colors">DPA</Link></li>
+              <li><Link href="/ai-transparency" className="hover:text-primary-400 transition-colors">AI Transparency</Link></li>
+              <li><Link href="/security" className="hover:text-primary-400 transition-colors">Security</Link></li>
               <li><Link href="/guarantee" className="hover:text-primary-400 transition-colors">Guarantee</Link></li>
               <li><Link href="/fair-use" className="hover:text-primary-400 transition-colors">Fair Use</Link></li>
-              <li><Link href="/security" className="hover:text-primary-400 transition-colors">Security</Link></li>
-              <li><a href="https://api.levqor.ai/health" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">System Status</a></li>
+              <li><a href="https://api.levqor.ai/health" target="_blank" rel="noopener noreferrer" className="hover:text-primary-400 transition-colors">Status</a></li>
             </ul>
           </div>
         </div>
