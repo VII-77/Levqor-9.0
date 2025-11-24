@@ -1,0 +1,458 @@
+YOU ARE: Replit AI Agent for Levqor X 9.0 — LEGAL OMEGA PHASE
+ROLE: Implement the final legal & compliance sealing layer for a live SaaS (levqor.ai / api.levqor.ai) WITHOUT breaking any existing behavior, pricing, or blueprint invariants.
+
+WORKSPACE:
+- Root: /home/runner/workspace
+- Backend: /home/runner/workspace (Flask app in run.py, api/*, monitors/*, security_core/*, etc.)
+- Frontend: /home/runner/workspace/levqor-site (Next.js 14 app, src/app/*, src/components/*, docs/*, scripts/drift-monitor.js, etc.)
+
+ABSOLUTE RULES — DO NOT BREAK THESE
+1) DO NOT change:
+   - Any pricing numbers
+   - Any trial wording
+   - Any SLA hours
+   - Any DFY package prices
+2) DO NOT:
+   - Change or delete existing /terms or /privacy content beyond minor cross-links or clarifications
+   - Modify database schemas
+   - Modify package.json
+   - Touch DNS, domains, or environment variables
+   - Run git commands (git add/commit/push). Only show them to the user at the end.
+3) ALWAYS:
+   - Verify each change with real commands (tsc, drift-monitor, curl, grep, etc.)
+   - Log structured warnings instead of crashing on errors
+   - Keep changes additive and reversible
+
+HIGH-LEVEL OBJECTIVE — LEGAL OMEGA
+Implement a final legal/compliance layer that:
+- Adds explicit data rights endpoints (export/delete/withdraw consent)
+- Logs and persists privacy requests safely (atomic writes)
+- Adds missing legal pages: DPA, AI transparency, data rights, cookie policy
+- Adds a compliant cookie consent banner
+- Adds a Legal Auditor scheduled job to checksum legal files and log drift
+- Leaves all business/pricing/trial/SLAs intact
+- Respects that /terms and /privacy are already enterprise-grade and must NOT be rewritten
+
+EXECUTION PLAN
+Follow these steps IN ORDER. After each major step, run verification commands. If anything fails, fix it before moving on.
+
+──────────────────────────────── STEP 0 — CONTEXT & SAFETY
+1) Confirm repo structure and key files:
+
+   - Backend:
+     - cd /home/runner/workspace && ls
+     - ls api monitors security_core || true
+
+   - Frontend:
+     - cd /home/runner/workspace/levqor-site && ls src/app
+     - ls src/app | grep -E 'terms|privacy|gdpr|security|cookies|cookie|dpa|ai' || true
+
+2) IMPORTANT: Note existing legal pages:
+   - /terms
+   - /privacy
+   - /gdpr
+   - /security
+   - Any other legal routes already present (acceptable-use, fair-use, refunds, etc.)
+
+   DO NOT replace or rewrite those pages. Only add new pages and light cross-links.
+
+If these sanity checks fail, STOP and output diagnostics.
+
+──────────────────────────────── STEP 1 — BACKEND PRIVACY & DATA RIGHTS API
+Create a dedicated privacy blueprint with export/delete/consent endpoints and safe JSON logging.
+
+1.1) Create privacy module:
+
+   - mkdir -p api/privacy
+
+   - File: api/privacy/__init__.py
+     - Define a Blueprint `privacy_bp` with url_prefix="/api/privacy"
+     - Import routes from .routes (you will create routes.py below)
+
+   - File: api/privacy/routes.py
+     Implement endpoints:
+
+     - POST /api/privacy/export
+       - Input JSON: { "email": "<string>" }
+       - Validate:
+         - email is present
+         - looks like an email (very basic: contains "@" and length >= 3)
+       - Append a record to a JSON log file, e.g.:
+         - workspace-data/privacy_requests.json
+         - Record structure:
+           {
+             "id": "<ISO timestamp + random suffix>",
+             "type": "export",
+             "email": "<full email>",
+             "received_at": "<ISO8601>",
+             "status": "pending"
+           }
+       - Write using ATOMIC write (temp file then rename) — see pattern in monitors/omega_operator.py or monitors/omega_optimizer.py and reuse the same approach.
+       - Log via existing logging setup with EMAIL MASKED:
+         - e.g. "PRIVACY_EXPORT_REQUEST: email=tes***@example.com"
+
+       - Response:
+         - 200 JSON: { "success": true, "message": "Your data export request has been recorded. We will process it and contact you by email." }
+         - 400 JSON on validation failure: { "success": false, "error": "..." }
+         - 500 JSON on unexpected error with generic message, but log full details internally.
+
+     - POST /api/privacy/delete
+       - Same validation and atomic append, but type = "delete"
+       - Response message: "Your deletion request has been recorded..."
+
+     - POST /api/privacy/consent/withdraw
+       - Same validation and atomic append, but type = "withdraw_consent"
+       - Response message: "Your consent withdrawal request has been recorded..."
+
+     - GET /api/privacy/requests/summary
+       - Reads the JSON file (if exists)
+       - Returns counts by type and status, anonymized:
+         {
+           "success": true,
+           "total": N,
+           "by_type": { "export": n1, "delete": n2, "withdraw_consent": n3 }
+         }
+       - This is an ADMIN-STYLE endpoint — include a comment: "# NOTE: Protect with auth in production."
+
+1.2) Implement atomic JSON write helper inside api/privacy/routes.py or a small local helper module:
+
+   - Pattern:
+     - Read existing JSON file if present, else [].
+     - Append new record.
+     - Write to a temp file in same directory.
+     - os.replace(temp_file, final_file) for atomic swap.
+   - Reuse logic from monitors/omega_operator.py or monitors/omega_optimizer.py by inspecting those files:
+     - cd /home/runner/workspace && sed -n '1,200p' monitors/omega_operator.py
+     - Copy the temp-file/rename pattern, not the business logic.
+
+1.3) Wire Blueprint in backend app:
+
+   - Open run.py
+   - Find where other blueprints are registered (ai, usage, marketing, etc.)
+   - Import and register:
+
+     from api.privacy import privacy_bp
+     app.register_blueprint(privacy_bp)
+
+   - Keep style consistent with existing blueprint registrations.
+
+1.4) Backend verification (syntax):
+
+   - cd /home/runner/workspace
+   - python3 -m compileall api monitors || exit 1
+   - python3 - << 'EOF'
+   try:
+       from run import app
+       print("✅ BACKEND_IMPORT_OK (Legal Omega privacy_bp)")
+   except Exception as e:
+       print("❌ BACKEND_IMPORT_FAILED:", e)
+       import traceback; traceback.print_exc()
+       raise SystemExit(1)
+   EOF
+
+If any failure, FIX before continuing.
+
+──────────────────────────────── STEP 2 — NEW LEGAL PAGES (FRONTEND)
+Add new legal/rights/AI transparency pages, WITHOUT touching existing /terms and /privacy content.
+
+TARGET ROUTES (if not already present):
+- /dpa              (Data Processing Addendum)
+- /ai-transparency  (AI & API usage transparency)
+- /data-rights      (Human data rights overview)
+- /cookies          (Cookie policy, linked to consent banner)
+If any of these already exist, only enhance them carefully without contradicting existing content.
+
+2.1) DPA Page — /dpa
+   - File: levqor-site/src/app/dpa/page.tsx (server component)
+   - Structure:
+     - Use same container classes as /terms or /privacy (e.g. max-w-3xl mx-auto py-16 px-4 space-y-6)
+     - Title: "Data Processing Addendum (DPA)"
+     - Sections:
+       - Introduction (relationship between Customer = Controller, Levqor = Processor)
+       - Sub-processors (Stripe, Replit, Vercel, email provider — high-level; no secrets)
+       - Data Categories (account data, usage data, billing data)
+       - Legal Bases (reference GDPR, but remind that canonical legal basis is in /privacy)
+       - International Transfers (SCCs or equivalent; point to /privacy and /gdpr)
+       - Security Measures (refer to /security)
+       - Data Subject Requests (point to new API endpoints and /data-rights)
+       - Termination & Data Return/Deletion
+       - Disclaimer: “This DPA summary is informational. For binding terms, see your signed agreement and the Terms of Service.”
+
+2.2) AI Transparency Page — /ai-transparency
+   - File: levqor-site/src/app/ai-transparency/page.tsx
+   - Content:
+     - Explain:
+       - AI is currently in stub/demo mode unless explicitly enabled.
+       - When real models are enabled, they may be from OpenAI or others.
+       - Explain kinds of data that may be sent to AI (workflow descriptions, error messages, etc.), and that sensitive credentials are not intentionally transmitted.
+       - Bias, limitations, hallucinations risk.
+       - Clear statement: "This page is informational and does not override the Privacy Policy or Terms."
+     - Link to:
+       - /privacy
+       - /terms
+       - /security
+
+2.3) Data Rights Page — /data-rights
+   - File: levqor-site/src/app/data-rights/page.tsx
+   - Purpose:
+     - End-user friendly explanation of:
+       - Right of access
+       - Right to rectification
+       - Right to erasure
+       - Right to restriction
+       - Right to data portability
+       - Right to object
+       - Right to withdraw consent
+       - Right to lodge a complaint with a supervisory authority
+     - For each right:
+       - Brief explanation in simple language.
+       - Call to action: "Submit a request using the data export/delete/consent forms or contact support."
+     - Reference your new backend endpoints conceptually, without hard-coding URLs in the copy (we’ll surface them elsewhere in UI or docs).
+
+2.4) Cookie Policy Page — /cookies
+   - File: levqor-site/src/app/cookies/page.tsx
+   - Content:
+     - Types of cookies:
+       - Strictly necessary
+       - Performance/analytics
+       - Functional
+       - Marketing
+     - List examples:
+       - Session cookie for auth
+       - Analytics cookie
+       - Preferences
+     - Explain:
+       - How users can manage cookies in browser settings.
+       - Mention that the consent banner controls non-essential cookies.
+     - Explicitly link back to /privacy.
+
+2.5) Add simple metadata where appropriate (using Next.js Metadata API) but DO NOT alter global metadata for /terms or /privacy.
+
+2.6) Frontend syntax check:
+
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit 2>&1 | head -50
+
+Fix any TypeScript errors.
+
+──────────────────────────────── STEP 3 — COOKIE CONSENT BANNER COMPONENT
+Add a GDPR-style cookie banner that:
+- Shows only if user has not given consent.
+- Persists state in localStorage.
+- Avoids showing on dashboard/signin routes.
+
+3.1) Create component:
+
+   - File: levqor-site/src/components/CookieBanner.tsx
+   - Requirements:
+     - 'use client'
+     - Use useEffect + useState to read/write localStorage key, e.g. "levqor-cookie-consent-v1"
+     - Buttons:
+       - "Accept all" (sets consent = "accepted_all")
+       - "Manage later" (hide banner, sets consent = "dismissed" but treat as non-essential off – this is just UI for now)
+     - UI:
+       - Fixed bottom bar on desktop and mobile.
+       - Use design tokens/brand colors (primary-600, neutral-900 background).
+       - Text: clear, simple, non-legalese.
+       - Link to /cookies and /privacy.
+     - Routing logic:
+       - Use `usePathname()` from 'next/navigation'.
+       - Do not render the banner on:
+         - Paths starting with "/dashboard"
+         - "/signin" and "/signin/verify"
+       - Render on marketing routes: homepage, pricing, trial, etc.
+
+3.2) Wire banner into root layout:
+
+   - File: levqor-site/src/app/layout.tsx
+   - Find the main <body> wrapper where Header/Footer are used.
+   - Import CookieBanner and render it so it appears on all public pages (but CookieBanner itself will hide for dashboard/signin based on pathname).
+   - Do NOT wrap the entire app; just render it at the bottom of <body> so it overlays content but doesn’t break layout.
+
+3.3) Frontend verification:
+
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit 2>&1 | head -50
+
+──────────────────────────────── STEP 4 — FOOTER LINK UPDATES
+Ensure all new legal pages are discoverable from the footer without breaking existing content.
+
+4.1) Open Footer component:
+
+   - File: levqor-site/src/components/Footer.tsx
+   - Confirm existing legal links (terms, privacy, refund policy, etc.)
+
+4.2) Add links (if not already present):
+
+   - /dpa
+   - /cookies
+   - /ai-transparency
+   - /data-rights
+
+Use existing link styling classes; do NOT remove or rename existing links.
+
+4.3) Quick check:
+
+   - cd /home/runner/workspace/levqor-site
+   - grep -n "dpa" src/components/Footer.tsx || sed -n '1,200p' src/components/Footer.tsx
+
+──────────────────────────────── STEP 5 — LEGAL OMEGA AUDITOR JOB
+Add a scheduled backend job that computes checksums of key legal files and logs any drift.
+
+5.1) Create new monitor:
+
+   - File: monitors/legal_auditor.py
+   - Responsibilities:
+     - Define function `run_legal_audit()` that:
+       - Builds a list of legal file paths (relative to repo root), e.g.:
+         - "levqor-site/src/app/terms/page.tsx"
+         - "levqor-site/src/app/privacy/page.tsx"
+         - "levqor-site/src/app/dpa/page.tsx"
+         - "levqor-site/src/app/ai-transparency/page.tsx"
+         - "levqor-site/src/app/data-rights/page.tsx"
+         - "levqor-site/src/app/cookies/page.tsx"
+       - For each file that exists:
+         - Compute SHA-256 hash of contents.
+       - Load baseline JSON from "workspace-data/legal_checksums.json" if present, else {}.
+       - If baseline is empty: init file with current hashes and log INFO:
+         - "LEGAL_AUDIT_BASELINE_INITIALIZED"
+       - Else:
+         - Compare each hash to baseline and log WARNING for any mismatches:
+           - "LEGAL_AUDIT_DRIFT: file=<path> expected=<old_hash_prefix> actual=<new_hash_prefix>"
+       - Save updated hashes back to legal_checksums.json using atomic write (same temp+rename pattern as earlier).
+     - Use Python logging with a dedicated logger name, e.g. "levqor.legal".
+
+5.2) Register job in scheduler:
+
+   - File: monitors/scheduler.py
+   - Import run_legal_audit:
+     - from monitors.legal_auditor import run_legal_audit
+   - Add APScheduler job:
+     - schedule: once per day (e.g. hour=2, minute=15) in UTC
+     - id: "legal_audit_daily"
+     - name: "Daily legal checksum audit"
+     - misfire_grace_time similar to other jobs
+
+   Follow the pattern used for existing jobs (omega, security_core, etc.).
+
+5.3) Backend verification:
+
+   - cd /home/runner/workspace
+   - python3 -m compileall monitors api || exit 1
+   - python3 - << 'EOF'
+   try:
+       from run import app
+       print("✅ BACKEND_IMPORT_OK (Legal Omega auditor)")
+   except Exception as e:
+       print("❌ BACKEND_IMPORT_FAILED:", e)
+       import traceback; traceback.print_exc()
+       raise SystemExit(1)
+   EOF
+
+──────────────────────────────── STEP 6 — ENDPOINT & PAGE RUNTIME CHECKS
+6.1) Test backend privacy endpoints (local dev):
+
+   - cd /home/runner/workspace
+
+   # Export request (valid)
+   curl -s -X POST http://localhost:8000/api/privacy/export \
+     -H "Content-Type: application/json" \
+     -d '{"email":"test@example.com"}' | python3 -m json.tool
+
+   # Delete request (missing email)
+   curl -s -X POST http://localhost:8000/api/privacy/delete \
+     -H "Content-Type: application/json" \
+     -d '{}' | python3 -m json.tool
+
+   # Withdraw consent (invalid email)
+   curl -s -X POST http://localhost:8000/api/privacy/consent/withdraw \
+     -H "Content-Type: application/json" \
+     -d '{"email":"bad"}' | python3 -m json.tool
+
+   # Summary endpoint
+   curl -s http://localhost:8000/api/privacy/requests/summary | python3 -m json.tool
+
+Ensure:
+- Success path returns { "success": true, ... }
+- Validation errors return { "success": false, "error": "..." }
+- Summary returns safe aggregate structure.
+
+6.2) Trigger legal auditor manually:
+
+   - cd /home/runner/workspace
+   - python3 - << 'EOF'
+   from monitors.legal_auditor import run_legal_audit
+   run_legal_audit()
+   print("✅ LEGAL_AUDIT_MANUAL_RUN_OK")
+   EOF
+
+Check that workspace-data/legal_checksums.json is created and logs do not show crashes.
+
+6.3) Frontend routes check (against live domain if accessible, or dev if not):
+
+   - cd /home/runner/workspace
+   - for r in /dpa /ai-transparency /data-rights /cookies ; do \
+       code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r" || echo "000"); \
+       printf "%-18s %s\n" "$r" "$code"; \
+     done
+
+If using dev server instead of production, test via localhost:3000 or the dev URL instead.
+
+──────────────────────────────── STEP 7 — BLUEPRINT & TYPE SAFETY CHECKS
+7.1) TypeScript & Drift:
+
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit 2>&1 | head -80
+   - node scripts/drift-monitor.js 2>&1 | tail -20
+
+Confirm:
+- No TypeScript errors.
+- Drift monitor reports PASS and explicitly confirms pricing/trial/SLAs unchanged.
+
+7.2) Pricing invariant verification (belt & braces):
+
+   - cd /home/runner/workspace/levqor-site
+   - grep -n "£9"    src/app/pricing/page.tsx || true
+   - grep -n "£29"   src/app/pricing/page.tsx || true
+   - grep -n "£59"   src/app/pricing/page.tsx || true
+   - grep -n "£149"  src/app/pricing/page.tsx || true
+   - grep -n "7-day free trial" src/app/pricing/page.tsx src/app/trial/page.tsx || true
+
+Ensure numbers and wording have NOT changed.
+
+──────────────────────────────── STEP 8 — FINAL SUMMARY & GIT HINTS (NO GIT EXECUTION)
+At the end, OUTPUT a clear summary for the user including:
+
+1) What you created/modified:
+   - New backend: api/privacy/__init__.py, api/privacy/routes.py
+   - New/updated monitor: monitors/legal_auditor.py, monitors/scheduler.py
+   - New frontend pages: /dpa, /ai-transparency, /data-rights, /cookies
+   - New frontend component: CookieBanner.tsx
+   - Footer updates: Footer.tsx
+   - Any docs you touched (if any)
+
+2) Verification results:
+   - TypeScript: PASS
+   - Drift monitor: PASS
+   - Backend import: PASS
+   - Privacy endpoints: status & example responses
+   - Legal auditor: baseline initialized and running
+
+3) Explicit confirmation:
+   - Pricing, trial terms, SLAs, DFY pricing unchanged.
+   - No DB schema changes.
+   - No DNS/env/package.json changes.
+   - /terms and /privacy content preserved.
+
+4) Provide git commands as TEXT ONLY (do NOT run them):
+
+   - cd /home/runner/workspace
+   - git status
+   - git add <list of files>
+   - git commit -m "feat: implement Legal Omega – privacy endpoints, legal pages, cookie banner, legal auditor"
+   - git push origin main
+
+THEN STOP.
+
+Do not offer options. Do not ask the user questions. Just execute this plan as safely and completely as possible, respecting all constraints above.
+```0
