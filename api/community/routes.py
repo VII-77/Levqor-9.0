@@ -161,11 +161,29 @@ def submit_workflow():
         
         submission_file = os.path.join(log_dir, "submissions.jsonl")
         
-        # Atomic write pattern (Omega standard)
+        # Atomic append pattern: Read existing, append new, write all atomically
+        existing_submissions = []
+        if os.path.exists(submission_file):
+            try:
+                with open(submission_file, 'r') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line:
+                            existing_submissions.append(json.loads(line))
+            except Exception as read_error:
+                log.warning(f"Could not read existing submissions: {read_error}")
+        
+        # Append new submission
+        existing_submissions.append(submission)
+        
+        # Atomic write: temp file + rename (Omega standard)
         temp_fd, temp_path = tempfile.mkstemp(dir=log_dir, suffix=".tmp")
         try:
-            with os.fdopen(temp_fd, 'a') as f:
-                f.write(json.dumps(submission) + '\n')
+            with os.fdopen(temp_fd, 'w') as f:
+                for sub in existing_submissions:
+                    f.write(json.dumps(sub) + '\n')
+                f.flush()
+                os.fsync(f.fileno())
             os.rename(temp_path, submission_file)
         except Exception as write_error:
             if os.path.exists(temp_path):
