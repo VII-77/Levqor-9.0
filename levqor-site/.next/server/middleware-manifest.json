@@ -1,60 +1,6 @@
 {
   "version": 3,
-  "middleware": {
-    "/": {
-      "files": [
-        "server/edge-runtime-webpack.js",
-        "server/src/middleware.js"
-      ],
-      "name": "src/middleware",
-      "page": "/",
-      "matchers": [
-        {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next\\/static|_next\\/image|favicon.ico).*))(.json)?[\\/#\\?]?$",
-          "originalSource": "/((?!api|_next/static|_next/image|favicon.ico).*)"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "env": {
-        "__NEXT_BUILD_ID": "m6gfbEdU8YiXtZApKNFY2",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "6LczMp2YE5kScOzCCFXhwQ3ewJtbY+58GxTf3i/2N6U=",
-        "__NEXT_PREVIEW_MODE_ID": "05ecef14c323b75bde6a782b3f4a7beb",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "e6fa47b4999ec91a4c345077a6fabdfa51fc3c668c5479e4148a14485d6389c8",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "a7561b045a9b7cf08160424158041fb8275a2f4a140deaf7519731cacff6714b"
-      }
-    }
-  },
-  "functions": {
-    "/api/stripe/webhook/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/app/api/stripe/webhook/route.js"
-      ],
-      "name": "app/api/stripe/webhook/route",
-      "page": "/api/stripe/webhook/route",
-      "matchers": [
-        {
-          "regexp": "^/api/stripe/webhook$",
-          "originalSource": "/api/stripe/webhook"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "env": {
-        "__NEXT_BUILD_ID": "m6gfbEdU8YiXtZApKNFY2",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "6LczMp2YE5kScOzCCFXhwQ3ewJtbY+58GxTf3i/2N6U=",
-        "__NEXT_PREVIEW_MODE_ID": "05ecef14c323b75bde6a782b3f4a7beb",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "e6fa47b4999ec91a4c345077a6fabdfa51fc3c668c5479e4148a14485d6389c8",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "a7561b045a9b7cf08160424158041fb8275a2f4a140deaf7519731cacff6714b"
-      }
-    }
-  },
-  "sortedMiddleware": [
-    "/"
-  ]
+  "middleware": {},
+  "functions": {},
+  "sortedMiddleware": []
 }

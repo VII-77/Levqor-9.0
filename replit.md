@@ -1,17 +1,8 @@
-# Levqor X 9.0 — V13.1 Enterprise
+# Levqor X 9.0 — V13.2 Global Launch Edition
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. 
-
-**Latest Updates (V13.1):**
-- **MEGA-PHASE 1:** AI UX layer with 6 production components (1,665 lines), professional branding, design tokens, homepage animations
-- **MEGA-PHASE 2:** Complete i18n infrastructure for 4 languages (EN/DE/FR/ES), currency formatting utilities, locale-aware routing with auth protection
-- **MEGA-PHASE 3 (COMPLETE):** All 4 AI components wired to backend APIs, metrics instrumentation across all endpoints, Exit Intent Modal deployed on pricing page. Production-ready AI experience with observability.
-- **MEGA-PHASE 7 (COMPLETE 2025-11-24):** Global i18n upgrade to 40 languages with 3-tier classification, 9 Tier-1 full translations (en/de/fr/es/pt/it/hi/ar/zh-Hans), multilingual AI response prefixes, all Blueprint invariants preserved.
-- **MEGA-PHASE 8 (COMPLETE 2025-11-24):** Real multilingual AI with GPT-4o-mini integration across all 4 endpoints (chat, workflow, debug, onboarding). Strict cost controls (256 tokens, 10s timeout), pricing-invariant prompts, robust fallbacks, OpenAI metrics tracking. Zero Blueprint drift.
-
-The V12.12 Enterprise upgrade focused on enhancing reliability, resiliency, observability, monitoring, and automating enterprise support while maintaining backward compatibility.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, and global internationalization supporting 40 languages. The project aims for viral growth and authority building through features like a Workflow Library, AI Workflow Creator, Community/AI Operators Network, and a Founder's Playbook.
 
 ## User Preferences
 
@@ -19,231 +10,60 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-Levqor X 9.0 employs a clean separation of concerns:
-- **Frontend**: Next.js application deployed exclusively on Vercel (`levqor.ai` / `www.levqor.ai`).
-- **Backend**: Python/Flask API deployed exclusively on Replit Autoscale (`api.levqor.ai`).
-This separation ensures optimal scaling for both components and prevents deployment confusion.
+Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend deployed on Vercel and a Python/Flask API backend deployed on Replit Autoscale. This architecture ensures optimal scaling and clear deployment boundaries.
 
 ### Frontend Architecture
 
-- **Framework**: Next.js (App Router) for server-side rendering and performance.
-- **Styling**: Tailwind CSS with design tokens system (208 lines), professional branding with Logo component.
-- **Language**: TypeScript for type safety.
-- **Authentication**: NextAuth protects routes like `/dashboard` and `/dashboard/v2` (auth middleware integrated with i18n).
-- **Internationalization**: next-intl with 40-language registry (9 Tier-1 full translations: en/de/fr/es/pt/it/hi/ar/zh-Hans), locale-aware routing with auth protection.
-- **AI UX Components**: 6 production components for contextual help, workflow creation, debugging, onboarding, suggestions, and knowledge browsing.
-- **Deployment**: Vercel handles automatic deployments, global edge network, and custom domains.
+- **Framework**: Next.js (App Router) for server-side rendering.
+- **Styling**: Tailwind CSS with a design tokens system and professional branding.
+- **Language**: TypeScript.
+- **Authentication**: NextAuth for route protection, integrated with i18n.
+- **Internationalization**: `next-intl` supporting 40 languages (9 Tier-1 full translations), with locale-aware routing.
+- **AI UX Components**: Six production components for contextual help, workflow creation, debugging, onboarding, suggestions, and knowledge browsing.
+- **Deployment**: Vercel for automatic deployments, global edge network, and custom domains.
 
 ### Backend Architecture
 
 - **Framework**: Python Flask with Gunicorn.
 - **Database**: PostgreSQL (Replit-hosted).
-- **Billing**: Stripe integration via Replit Stripe connector.
-- **Scheduler**: APScheduler for background jobs (18 scheduled tasks).
-- **Deployment**: Replit Autoscale for automatic scaling and per-request pricing.
-- **Custom Domain**: `api.levqor.ai` configured via Cloudflare (A + TXT records, Proxy OFF).
-- **Key Backend Modules**: Includes `api/billing/checkout.py` for Stripe sessions, `modules/stripe_connector.py` for Stripe integration, and `server/storage.ts` for database access.
-- **DFY Pricing**: 15 LIVE Stripe price IDs configured for subscription tiers, DFY packages, and add-ons, with backward compatibility for legacy tier names.
+- **Billing**: Stripe integration via Replit Stripe connector, supporting 15 live price IDs for subscriptions and DFY packages.
+- **Scheduler**: APScheduler for background jobs.
+- **Deployment**: Replit Autoscale for automatic scaling and custom domain (`api.levqor.ai`).
+- **AI Integration**: Four core endpoints (`/api/ai/chat`, `/api/ai/workflow`, `/api/ai/debug`, `/api/ai/onboarding`) powered by GPT-4o-mini, with robust fallbacks and cost controls.
+- **Autonomous Operator System**: A 4-layer system including Self-Monitor, Operator Advisor, Optimization Engine, and Human Dashboard.
 
 ### UI/UX Decisions
 
-- **Design System**: Centralized design tokens (`src/config/design-tokens.ts`) for colors, spacing, typography, and animations.
-- **Branding**: Professional Logo component with brand gradient, integrated across navigation and hero sections.
-- **Animations**: Custom CSS animations (fade-in-up, slide-in, scale-in) for polished user experience.
-- **Dark Theme**: Predominantly dark mode using Tailwind CSS's slate color palette with gradient accents.
-- **AI Experience**: Context-aware help panels, natural language workflow builder, debug assistant, onboarding tutor, workflow suggestions, and knowledge graph.
-- **Responsive Design**: Achieved using Tailwind utility classes to ensure functionality across various devices.
-- **SEO**: Public pages are indexed, while private dashboard routes (`/dashboard`, `/dashboard/v2`) are explicitly excluded from search engines using `noindex`, `nofollow`, and `nocache` meta tags.
+- **Design System**: Centralized design tokens for consistent styling.
+- **Branding**: Professional logo and consistent brand gradient.
+- **Animations**: Custom CSS animations for a polished user experience.
+- **Theme**: Predominantly dark mode using Tailwind CSS's slate palette with gradient accents.
+- **AI Experience**: Context-aware help panels, natural language workflow builder, debug assistant, and interactive onboarding.
+- **Responsive Design**: Tailwind CSS for cross-device compatibility.
+- **SEO**: Public pages are indexed, while private dashboard routes are explicitly excluded.
 
 ### System Design Choices
 
-- **Reliability & Resiliency**: Implemented database connection retry logic and backend keep-alive monitoring.
-- **Observability & Monitoring**: Structured JSON logging, error monitoring hooks, and a frontend client logger provide comprehensive system insights.
-- **Enterprise Support**: Features tier-aware support routing and SLA mapping, with stubs for AI integration and a support ticket API.
-- **Governance**: A `HARDENING_CHECKLIST.md` and automated health checks via `deployment_health_check.py` and GitHub Actions ensure pre/post-deployment governance and continuous monitoring.
+- **Reliability & Resiliency**: Database connection retry logic and backend keep-alive monitoring.
+- **Observability & Monitoring**: Structured JSON logging, error monitoring, and a frontend client logger.
+- **Enterprise Support**: Tier-aware support routing and SLA mapping.
+- **Governance**: Hardening checklist and automated health checks ensure pre/post-deployment governance.
 
 ## External Dependencies
 
 ### Payment Processing
-- **Stripe**: Utilized for all billing and subscription management, integrated via the Replit Stripe connector in LIVE mode. Configured with 15 active GBP price IDs for various tiers and add-ons, and a webhook for event handling.
+- **Stripe**: Used for all billing and subscription management in live mode, integrated via the Replit Stripe connector. Includes a webhook for event handling.
 
 ### Hosting & Deployment
 - **Vercel**: Hosts the Next.js frontend application (`www.levqor.ai`).
-- **Replit**: Provides the deployment environment for the Python Flask backend API (`api.levqor.ai`) using Autoscale.
+- **Replit**: Provides the deployment environment for the Python Flask backend API (`api.levqor.ai`) using Autoscale, and hosts the PostgreSQL database.
 - **Cloudflare**: Manages DNS for both frontend and backend domains.
-- **PostgreSQL**: The database used for the project, hosted on Replit for development.
 
 ### Framework Dependencies
 - **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM, OpenAI SDK (GPT-4o-mini).
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS, NextAuth, next-intl.
-- **Database**: Drizzle ORM for schema definitions and PostgreSQL driver.
-- **AI Integration**: 6 frontend components + 4 backend endpoints powered by GPT-4o-mini with pattern-based fallbacks.
 
 ### Authentication & Security
-- **NextAuth**: Planned for OAuth integration (Google/Microsoft).
-- **Middleware Security**: Auth protection works across all locales (locale prefix stripping ensures `/de/dashboard` is protected).
-- **Replit Secrets**: Manages sensitive credentials such as Stripe keys and API tokens.
-
-## Recent Changes (V13.1)
-
-### MEGA-PHASE 3: Enterprise Hardening & Revenue Optimization (COMPLETE 2025-11-24)
-
-**All Integration Work Delivered:**
-
-**AI Backend Endpoints (786 lines):**
-- `api/ai/chat.py` (134 lines) - Contextual help Q&A
-- `api/ai/workflow.py` (124 lines) - Natural language workflow builder
-- `api/ai/debug.py` (152 lines) - Error analysis & solutions
-- `api/ai/onboarding.py` (109 lines) - Interactive user guidance
-- All registered in `run.py`, production-ready with pattern-based responses (OpenAI-ready)
-
-**Full Frontend Integration:**
-- AIHelpPanel → `/api/ai/chat` (LIVE)
-- NaturalLanguageWorkflowBuilder → `/api/ai/workflow` (LIVE)
-- AIDebugAssistant → `/api/ai/debug` (LIVE)
-- AIOnboardingTutor → `/api/ai/onboarding/next-step` (LIVE)
-- All components have proper error handling with graceful fallbacks
-
-**Observability & Metrics:**
-- `api/metrics/app.py` (70 lines) - Lightweight metrics endpoint
-- Full instrumentation: increment_ai_request() and increment_error() across all 4 AI endpoints
-- Tracks AI requests, errors, uptime (in-memory counters, no external SaaS costs)
-
-**Revenue Optimization:**
-- `ExitIntentModal.tsx` (168 lines) - Exit intent detection component
-- Mounted on pricing page with desktop (mouse-leave) and mobile (30s inactivity) detection
-- Production-ready conversion optimization
-
-**Status:** ✅ COMPLETE. All 4 AI components functional with real backend APIs, full metrics tracking, and exit intent capture deployed. TypeScript compiles with 0 errors, architect-reviewed and production-ready. See `MEGA-PHASE-3-REPORT.md` for full details.
-
-### MEGA-PHASE 7: Global i18n Upgrade (40 Languages) + Multilingual AI UX (COMPLETE 2025-11-24)
-
-**Global Language Expansion:**
-- 40-language registry with 3-tier classification (Tier 1: 9 languages, Tier 2: 17, Tier 3: 14)
-- Created 5 new Tier-1 translation JSON files (pt, it, hi, ar, zh-Hans) in `messages/` directory
-- Updated `languages.ts` with comprehensive tier annotations and translation status flags
-- Preserved existing 4 routed locales (en/de/fr/es), using display-language mapping for safety
-
-**Multilingual AI Responses:**
-- Added `_get_greeting_prefix()` to `api/ai/service.py` supporting all 9 Tier-1 languages
-- Updated all 4 pattern-based AI functions with language-aware greeting prefixes
-- Verified all endpoints (chat, workflow, debug, onboarding) correctly pass language parameter
-
-**Quality Assurance:**
-- Fixed critical Blueprint issue: corrected currency to GBP across all translation files
-- Both workflows restarted successfully with clean logs
-- Architect-approved after currency fix verification
-- Full SEO infrastructure verified (robots.txt, metadata, canonical URLs)
-
-**Status:** ✅ COMPLETE. 393 lines added (370 JSON translations, 23 Python greeting logic), all Blueprint invariants preserved, production-ready. See `MEGA-PHASE-7-REPORT.md` for full details.
-
-### MEGA-PHASE 8: Real Multilingual AI with GPT-4o-mini (COMPLETE 2025-11-24)
-
-**OpenAI Integration (246 lines):**
-- Enhanced `api/ai/service.py` with GPT-4o-mini integration (+186 lines)
-- `is_ai_enabled()` function for AI_ENABLED + OPENAI_API_KEY gating
-- `_call_openai()` with 10s timeout, max_tokens=256, temperature=0.4
-- Structured JSON parsing for workflow/debug/onboarding responses
-- Pricing-invariant system prompts (Blueprint values hard-coded in prompts)
-- Language-aware prompts for all 40 languages
-
-**Metrics Enhancement:**
-- Added OpenAI-specific counters to `api/metrics/app.py` (+60 lines)
-- `ai_openai_calls_total`/`last_5m` and `ai_openai_errors_total`/`last_5m`
-- Full instrumentation: increment_openai_call() and increment_openai_error()
-- Metrics exposed in `/api/metrics/app` endpoint
-
-**All 4 Endpoints with Real AI:**
-- Chat: ✅ Working with GPT-4o-mini (multilingual Q&A)
-- Workflow: ✅ Working with GPT-4o-mini (structured workflow generation)
-- Debug: ✅ Working with GPT-4o-mini (error analysis with prevention tips)
-- Onboarding: ✅ Working with GPT-4o-mini (interactive guidance)
-
-**Cost Controls & Safety:**
-- Model: gpt-4o-mini (lowest cost GPT model)
-- Max tokens: 256 per request (prevents runaway costs)
-- Timeout: 10 seconds (prevents hanging requests)
-- Temperature: 0.4 (balanced creativity/consistency)
-- Fallback: Pattern-based responses when AI disabled/unavailable
-
-**Multilingual Testing:**
-- English (en), German (de), French (fr), Spanish (es) ✅
-- Portuguese (pt), Italian (it), Hindi (hi) ✅
-- Arabic (ar), Chinese Simplified (zh-Hans) ✅
-
-**Final Verification:**
-- TypeScript: 0 errors
-- Drift Monitor: PASS (zero Blueprint violations)
-- Pricing Integrity: £9/29/59/149 monthly intact
-- Trial Terms: "7-day free trial" preserved
-- Architect Review: PASS (no security issues)
-
-**Status:** ✅ COMPLETE. All 4 AI endpoints functional with real GPT-4o-mini responses, robust fallbacks, full metrics tracking, and zero Blueprint drift. See `MEGA-PHASE-8-REPORT.md` for full details.
-
-### MEGA-PHASE 1: AI UX & Branding (Completed 2025-11-24)
-
-**AI Components (1,665 lines):**
-- `AIHelpPanel` (242 lines) - Contextual dashboard assistance
-- `NaturalLanguageWorkflowBuilder` (301 lines) - Plain English workflow creation
-- `AIDebugAssistant` (305 lines) - Intelligent error analysis
-- `AIOnboardingTutor` (283 lines) - Interactive user guidance
-- `WorkflowAutosuggestions` (222 lines) - Workflow optimization tips
-- `LevqorKnowledgeGraph` (312 lines) - Visual knowledge browsing
-
-**Branding & Design:**
-- Design tokens system (208 lines in `src/config/design-tokens.ts`)
-- Logo component with brand gradient
-- Homepage enhancement with animations and gradients
-- Custom CSS animations (fade-in-up, slide-in-left/right, scale-in)
-
-**New Pages:**
-- `/workflows/new` - Workflow creation with mode selection
-- `/workflows/errors` - Error debugging dashboard
-
-**Status:** Production-ready. AI components are client-side prototypes designed for easy backend integration.
-
-### MEGA-PHASE 2: Globalization (Completed 2025-11-24)
-
-**i18n Infrastructure (100 lines core):**
-- Configuration: `src/i18n.ts` with 4 locales (EN/DE/FR/ES)
-- Middleware: Auth + i18n integration with locale-aware route protection
-- Provider: NextIntlClientProvider in root layout
-- Component: LocaleSwitcher in header navigation
-
-**Currency Support:**
-- Utility library: `src/lib/currency.ts` (38 lines)
-- Supports GBP, EUR, USD with locale-aware formatting
-- Currency mapping: EN→GBP, DE/FR/ES→EUR
-
-**Translation Files:**
-- 4 complete translation files (272 lines total)
-- Homepage, features, CTAs, common strings
-- Ready for expansion to other pages
-
-**Security Fix:**
-- Critical auth bypass vulnerability fixed
-- Middleware now strips locale prefixes before auth check
-- Protected routes work correctly across all locales (`/de/dashboard`, `/fr/admin`, etc.)
-
-**Status:** Production-ready. Architect verified auth protection and locked value preservation.
-
-## Locked Blueprint Values (NEVER MODIFY)
-
-**Pricing Tiers:**
-- Starter: £9/month, £90/year
-- Growth: £29/month, £290/year
-- Business: £59/month, £590/year
-- Agency: £149/month, £1490/year
-
-**DFY Packages:**
-- Starter: £149
-- Professional: £299
-- Enterprise: £499
-
-**Trial & Legal:**
-- 7-day free trial (card required)
-- 30-day refund policy
-- SLAs: 48h/24h/12h/4h (by tier)
-- 99.9% uptime guarantee
-
-**All legal copy and terms are locked and must not be modified.**
+- **NextAuth**: Used for authentication, with planned OAuth integration.
+- **Middleware Security**: Auth protection across all locales.
+- **Replit Secrets**: Manages sensitive credentials.
