@@ -358,6 +358,16 @@ def run_alert_checks():
     except Exception as e:
         log.error(f"Alert checks error: {e}")
 
+def run_omega_self_monitor():
+    """MEGA-PHASE Ω: Omega Self Monitor (every 10 minutes)"""
+    log.info("Running Omega Self Monitor...")
+    try:
+        from monitors import omega_self_monitor
+        omega_self_monitor.run()
+        log.info("✅ Omega Self Monitor complete")
+    except Exception as e:
+        log.error(f"Omega Self Monitor error: {e}")
+
 def check_security_tamper():
     """Periodic tamper detection for critical config/code files"""
     log.info("Running security tamper check...")
@@ -577,8 +587,18 @@ def init_scheduler():
             replace_existing=True
         )
         
+        # MEGA-PHASE Ω: Omega Self Monitor
+        scheduler.add_job(
+            run_omega_self_monitor,
+            'interval',
+            minutes=10,
+            id='omega_self_monitor',
+            name='Omega Self Monitor',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        log.info("✅ APScheduler initialized with 20 jobs (including 5 monitoring jobs + 1 security job)")
+        log.info("✅ APScheduler initialized with 21 jobs (including 6 monitoring jobs + 1 security job + 1 omega job)")
         return scheduler
         
     except ImportError:
