@@ -10,6 +10,7 @@
 
 import Link from 'next/link';
 import Logo from './Logo';
+import { LocaleSwitcher } from './LocaleSwitcher';
 import { useState } from 'react';
 
 export default function Header() {
@@ -58,6 +59,7 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="flex items-center gap-4">
+            <LocaleSwitcher />
             <Link 
               href="/signin" 
               className="text-neutral-700 hover:text-primary-600 font-medium transition-colors hidden sm:block"
