@@ -99,6 +99,11 @@ def track_event():
         # Structured logging
         logger.info(f"EVENT_TRACKED: type={event_type} page={page} source={data.get('source', 'unknown')} timestamp={event['timestamp']}")
         
+        # MEGA-PHASE 5: Track CTA clicks in metrics
+        if event_type == "cta_click":
+            from api.metrics.app import increment_pricing_cta_click
+            increment_pricing_cta_click()
+        
         return jsonify({
             "success": True,
             "message": "Event tracked successfully"

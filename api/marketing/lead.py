@@ -65,6 +65,11 @@ def capture_lead():
         email_masked = f"{email.split('@')[0][:3]}***@{email.split('@')[1]}"
         logger.info(f"LEAD_CAPTURED: source={lead['source']} email={email_masked} timestamp={lead['timestamp']}")
         
+        # MEGA-PHASE 5: Track trial feedback submissions in metrics
+        if lead.get('source') == 'trial_feedback':
+            from api.metrics.app import increment_trial_feedback
+            increment_trial_feedback()
+        
         return jsonify({
             "success": True,
             "message": "Lead captured successfully"

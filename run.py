@@ -918,12 +918,20 @@ from api.ai.workflow import bp as ai_workflow_bp
 from api.ai.debug import bp as ai_debug_bp
 from api.ai.onboarding import bp as ai_onboarding_bp
 from api.metrics.app import bp as app_metrics_bp
+from api.consultations.book import bp as consultation_book_bp
+from api.consultations.run import bp as consultation_run_bp
+from api.support.auto import bp as support_auto_bp
+from api.marketing.lifecycle import bp as lifecycle_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
 app.register_blueprint(ai_debug_bp)
 app.register_blueprint(ai_onboarding_bp)
 app.register_blueprint(app_metrics_bp)
+app.register_blueprint(consultation_book_bp)
+app.register_blueprint(consultation_run_bp)
+app.register_blueprint(support_auto_bp)
+app.register_blueprint(lifecycle_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():
