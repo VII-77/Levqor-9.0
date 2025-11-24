@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import DashboardTiles from "@/components/DashboardTiles";
 import AnalyticsWidget from "@/components/AnalyticsWidget";
 import AIHelpPanel from "@/components/ai/AIHelpPanel";
+import LifecycleBanner from "@/components/LifecycleBanner";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -43,6 +44,8 @@ export default async function Dashboard(){
             Welcome back, {session.user.email}
           </p>
         </div>
+        
+        <LifecycleBanner />
         
         <AnalyticsWidget />
         

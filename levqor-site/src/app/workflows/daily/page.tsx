@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Head from "next/head";
 import { designTokens } from "@/config/design-tokens";
 
 type DailyWorkflow = {
@@ -161,8 +162,21 @@ export default function WorkflowOfTheDayPage() {
   };
 
   return (
-    <main className="min-h-screen relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-secondary-50/30 -z-10" />
+    <>
+      <Head>
+        <meta property="og:title" content={`Workflow of the Day: ${workflow.name}`} />
+        <meta property="og:description" content={workflow.description} />
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://levqor.ai/workflows/daily" />
+        <meta property="og:image" content="https://levqor.ai/og-workflow-daily.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`Workflow of the Day: ${workflow.name}`} />
+        <meta name="twitter:description" content={workflow.description} />
+        <meta name="twitter:image" content="https://levqor.ai/og-workflow-daily.png" />
+      </Head>
+      
+      <main className="min-h-screen relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary-50/30 via-transparent to-secondary-50/30 -z-10" />
       
       {/* Hero Banner */}
       <section className="bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-12">
@@ -321,6 +335,7 @@ export default function WorkflowOfTheDayPage() {
           </Link>
         </div>
       </section>
-    </main>
+      </main>
+    </>
   );
 }
