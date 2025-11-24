@@ -1,0 +1,266 @@
+You are a senior Next.js / DevOps engineer operating inside Replit for the Levqor project.
+
+GOAL
+Diagnose and fully fix why **https://levqor.ai/status** still returns the generic 404 (NEXT_NOT_FOUND) even though `src/app/status/page.tsx` exists. The outcome must be:
+- `/status` works in **local dev** and **Vercel production**
+- The page renders a simple system status message (we do NOT need GrowthConsole right now)
+- All Blueprint constraints remain untouched (pricing, trials, SLAs, legal, schema, package.json).
+
+ABSOLUTE RULES (DO NOT VIOLATE)
+1. **Do NOT change any pricing or trial text**  
+   - Monthly: `£9 / £29 / £59 / £149`  
+   - Yearly: `£90 / £290 / £590 / £1,490`  
+   - DFY: `£149 / £299 / £499`  
+   - Trial: `7-day free trial`, `Card required`, `Cancel before Day 7 to avoid charges`.
+2. **Do NOT edit** terms, privacy, SLA, refund, DPA, or other legal pages.
+3. **Do NOT change** database schema or run migrations.
+4. **Do NOT modify** `package.json` or install new packages.
+5. **Do NOT modify** Stripe, auth, or middleware logic except for minimal, clearly-justified routing fixes that don’t affect protected routes.
+6. Keep changes **minimal and targeted to `/status` and its wiring only**.
+7. After every “should work” moment, you MUST verify via `curl`, `grep`, or manifest inspection and SHOW the evidence.
+
+PROJECT LAYOUT (ASSUMED)
+- Repo root: `/home/runner/workspace`
+- Frontend: `/home/runner/workspace/levqor-site` (Next.js 14 app router)
+- Backend: `/home/runner/workspace/api.*` etc. (do NOT touch for this task)
+- Status file: `levqor-site/src/app/status/page.tsx` (already exists with a simple text page)
+
+HIGH-LEVEL TASKS
+1) Confirm Git and working tree are clean.
+2) Run a **routing + build diagnostic sweep** for `/status`.
+3) Fix any issues preventing `/status` from being part of the app build or from being reachable in production.
+4) Prove the fix with:
+   - Local build manifest inspection
+   - Local dev `curl` checks
+   - Production `curl` checks against `https://levqor.ai/status`
+5) Show final diffs and a concise summary.
+
+────────────────────────
+PHASE 1 — BASELINE & SAFETY
+────────────────────────
+1. Go to the workspace root and inspect git status (read-only, no changes yet):
+
+   - `cd /home/runner/workspace`
+   - `git status --short`
+
+   Report whether there are **local changes** before you start. Do NOT stage or commit anything yet.
+
+2. Confirm the status page source exists and show its contents:
+
+   - `cd /home/runner/workspace/levqor-site`
+   - `ls -R src/app | grep -i status -n || echo "NO_STATUS_ROUTE_FOUND"`
+   - `sed -n '1,160p' src/app/status/page.tsx || echo "STATUS_PAGE_MISSING"`
+
+   Verify:
+   - File is named exactly `page.tsx` under `src/app/status/`
+   - There is a **default export** function component.
+   - If there’s no `export const dynamic = "force-dynamic"`, note it for later.
+
+3. Run a TypeScript and build sanity check (READ-ONLY, just to see if anything is broken):
+
+   - `npx tsc --noEmit 2>&1 | head -40 || echo "TSC_FAILED"`
+   - `npm run build 2>&1 | tee /tmp/next-build.log | head -80`
+
+   You’re checking: build succeeds; if it fails, stop and analyse.
+
+────────────────────────
+PHASE 2 — ROUTE REGISTRATION DIAGNOSTICS
+────────────────────────
+Goal: verify whether Next is actually building a `/status` route.
+
+1. Inspect the app paths manifest:
+
+   - `cat .next/server/app-paths-manifest.json | grep "\"/status" -n || echo "STATUS_ROUTE_MISSING_FROM_MANIFEST"`
+
+   If `/status` is **missing from this manifest**, Next is not building the route. That is the core bug.
+
+2. Inspect the tree of built app routes for anything suspicious:
+
+   - `ls -R .next/server/app | sed -n '1,160p'`
+   - `find .next/server/app -maxdepth 3 -type f -iname '*status*' | sed -n '1,40p'`
+
+   You want to know:
+   - Is there an `app/status/page.js` (or similar)?
+   - Is there any other `status` under `/api/intelligence/status` that could confuse routing?
+
+3. Check middleware / routing behaviour:
+
+   - `sed -n '1,220p' src/middleware.ts || echo "NO_MIDDLEWARE_FILE"`
+   - Look for any custom matcher or rewrites involving `/status` or a catch-all that might swallow the route.
+
+   If middleware is rejecting or redirecting `/status`, note the lines and propose a minimal, safe fix that doesn’t affect other routes.
+
+────────────────────────
+PHASE 3 — LOCAL RUNTIME CHECKS
+────────────────────────
+Now run the **dev server** and see how Next treats `/status`.
+
+1. Start dev server in the background (if not already running). If it’s already running, you may skip start but still run the checks:
+
+   - `cd /home/runner/workspace/levqor-site`
+   - `npm run dev -- --port 3000 > /tmp/next-dev.log 2>&1 &`
+   - Sleep a bit: `sleep 25`
+
+2. Hit the dev server directly (no Vercel):
+
+   - `curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/status || echo "CURL_STATUS_DEV_FAILED"`
+   - `curl -s http://127.0.0.1:3000/status | head -40`
+
+   Interpret:
+   - If HTTP 200 and HTML content clearly includes “System Status” from the TSX file → dev is OK; the problem is likely production/Vercel routing or build.
+   - If 404 or error → route is not wired correctly; fix locally first.
+
+3. Also hit root to confirm app is serving normally:
+
+   - `curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/`
+
+────────────────────────
+PHASE 4 — FIX THE /status ROUTE (LOCAL)
+────────────────────────
+You may only change what’s necessary to make `/status` a **normal, boring app route**.
+
+1. If `src/app/status/page.tsx` is not a simple default export, rewrite it to this **exact minimal safe version**:
+
+   ```tsx
+   // levqor-site/src/app/status/page.tsx
+   export const dynamic = "force-dynamic";
+
+   export default function StatusPage() {
+     return (
+       <main className="px-6 py-20 max-w-5xl mx-auto">
+         <h1 className="text-3xl font-bold mb-6">System Status</h1>
+         <p className="text-gray-600 mb-4">
+           All core Levqor systems are operational. This page is for internal
+           observability only and does not change any pricing, trial, or SLA terms.
+         </p>
+         <p className="text-gray-500 text-sm">
+           Growth metrics and advanced analytics will be shown here when the metrics
+           API is reachable. If it is temporarily unavailable, the rest of the
+           product continues to function normally.
+         </p>
+       </main>
+     );
+   }
+
+Use ONLY this content (no imports, no external components).
+
+After editing, run:
+npx tsc --noEmit 2>&1 | head -40
+
+
+2. Rebuild and re-check manifest:
+
+npm run build 2>&1 | tee /tmp/next-build.log | head -80
+
+cat .next/server/app-paths-manifest.json | grep "\"/status" -n || echo "STATUS_ROUTE_MISSING_FROM_MANIFEST_AFTER_FIX"
+
+
+If it’s still missing, something else (e.g., experimental config, edge runtime, or rogue file) is interfering. In that case:
+
+Show sed -n '1,200p' next.config.mjs || sed -n '1,200p' next.config.js || echo "NO_NEXT_CONFIG_FOUND"
+
+
+
+3. Re-run dev server /status checks after fix:
+
+Ensure dev server is running (restart if needed).
+
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000/status
+
+curl -s http://127.0.0.1:3000/status | head -40
+
+
+Confirm: HTTP 200 and the returned HTML clearly includes “System Status”.
+
+
+
+──────────────────────── PHASE 5 — PRODUCTION (VERCEL) VERIFICATION ──────────────────────── Once the local build and routing look correct, you must make sure the changes are committed and let Vercel deploy.
+
+1. Show git changes and keep them minimal:
+
+cd /home/runner/workspace
+
+git status --short
+
+
+You should ideally see only levqor-site/src/app/status/page.tsx (and maybe very small related changes if absolutely required).
+
+
+2. DO NOT actually run git commit/push yourself in this prompt. Instead, print the EXACT commands the user should run, for example:
+
+cd /home/runner/workspace
+git status --short
+git add levqor-site/src/app/status/page.tsx
+git commit -m "Fix /status route wiring (minimal safe status page)"
+git push origin main
+
+
+3. After explaining those commands, assume the user will push and Vercel will deploy. To verify production behavior, show the exact post-deploy checks you want them to run from their Replit shell:
+
+# Check /status in production
+curl -s -o /dev/null -w "%{http_code}\n" https://levqor.ai/status
+curl -s https://levqor.ai/status | head -40
+
+# Sanity check root still OK
+curl -s -o /dev/null -w "%{http_code}\n" https://levqor.ai/
+
+Explain what “success” looks like:
+
+/status → HTTP 200 and HTML including “System Status”
+
+/ → still HTTP 200 as before
+
+
+
+
+──────────────────────── PHASE 6 — BLUEPRINT & SAFETY RECONFIRMATION ──────────────────────── Before you finish, you MUST re-validate that none of the forbidden areas changed:
+
+1. Grep pricing and trial invariants (read-only):
+
+cd /home/runner/workspace/levqor-site
+grep -R "£9" -n src/app | head -10
+grep -R "7-day free trial" -n src/app || echo "TRIAL_TEXT_MISSING"
+grep -R "48h" -n src/app || echo "SLA_48H_MISSING"
+
+
+2. Confirm package.json and database schema files untouched by showing only status, not diffs:
+
+cd /home/runner/workspace
+git status --short | grep "package.json" || echo "NO_PKG_CHANGES"
+git status --short | grep -i "prisma\\|schema\\|migration" || echo "NO_SCHEMA_CHANGES"
+
+
+
+Report explicitly that:
+
+Pricing/trials/SLAs are unchanged.
+
+No legal pages were touched.
+
+No schema or package.json changes.
+
+
+──────────────────────── OUTPUT FORMAT ──────────────────────── At the end, provide a concise human-readable summary with:
+
+1. ROOT CAUSE (your best explanation of why /status was 404 / NEXT_NOT_FOUND).
+
+
+2. WHAT YOU CHANGED (file list + 1–2 line description per file).
+
+
+3. EVIDENCE:
+
+Manifest line showing /status present.
+
+Local dev curl HTTP code + first few HTML lines for /status.
+
+
+
+4. DEPLOY INSTRUCTIONS for the user (the git commands and the curl checks to run after Vercel deploys).
+
+
+5. CONFIRMATION that all Blueprint constraints are still respected.
+
+
+
+Remember: verify every assumption with real commands (curl, grep, manifests) and show their outputs. Do not guess.

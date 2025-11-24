@@ -16,6 +16,13 @@ const bypassI18nPaths = ['/status', '/robots.txt', '/sitemap.xml']
 
 export default auth((req) => {
   const url = req.nextUrl.clone()
+  const pathname = url.pathname
+  
+  // Bypass middleware for Next.js internal data requests (critical for client-side navigation)
+  // Without this, /_next/data/*/status.json gets rewritten by i18n and causes 404
+  if (pathname.startsWith('/_next/data/')) {
+    return NextResponse.next()
+  }
   
   // Canonical domain redirect: www → naked domain
   if (url.hostname === 'www.levqor.ai') {
@@ -24,7 +31,6 @@ export default auth((req) => {
   }
 
   const isAuthenticated = !!req.auth
-  const pathname = url.pathname
 
   // Bypass i18n middleware for specific paths (serve directly without locale prefix)
   if (bypassI18nPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
@@ -49,5 +55,6 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  // Exclude API routes, Next.js internals, and static assets from middleware
+  matcher: ['/((?!api|_next/static|_next/image|_next/data|favicon.ico).*)'],
 }
