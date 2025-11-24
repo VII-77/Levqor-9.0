@@ -1,0 +1,351 @@
+You are a senior backend + full-stack + security engineer working on the Levqor X 9.0 platform.
+
+ENVIRONMENT & CONTEXT
+- Monorepo root: /home/runner/workspace
+- Backend: Flask app in run.py, deployed on Replit Autoscale at https://api.levqor.ai
+- Frontend: Next.js app in levqor-site, deployed on Vercel at https://levqor.ai
+- Security Core v13.0 is already implemented (rate limiting, audit logging, tamper detection, etc).
+- AI endpoints already exist and are LIVE in stub mode:
+  - api/ai/chat.py            → POST /api/ai/chat
+  - api/ai/workflow.py        → POST /api/ai/workflow
+  - api/ai/debug.py           → POST /api/ai/debug
+  - api/ai/onboarding.py      → POST /api/ai/onboarding/next-step
+- Multilingual infrastructure is LIVE:
+  - 40 languages registry: levqor-site/src/config/languages.ts
+  - Language selection in UI via LocaleSwitcher
+  - Language is passed from frontend → backend and validated in api/ai/utils.py
+- Metrics & observability are LIVE:
+  - api/metrics/app.py
+  - Security/metrics helpers already wired into AI endpoints
+- Current AI behavior:
+  - All AI endpoints use deterministic, pattern-based STUB logic (no OpenAI calls yet).
+  - This must remain as a fallback when AI is disabled or fails.
+
+HARD, NON-NEGOTIABLE RULES (DO NOT BREAK)
+1) DO NOT modify any pricing, trial, or DFY values:
+   - Monthly plans: £9 / £29 / £59 / £149
+   - Yearly plans: £90 / £290 / £590 / £1,490
+   - DFY packages: £149 / £299 / £499
+   - Trial: “7-day free trial • Card required • Cancel before Day 7 to avoid charges”
+   - SLAs: 48h / 24h / 12h / 4h response targets
+2) DO NOT change any legal or policy text (Terms, Privacy, SLA, Refunds, etc).
+3) DO NOT change database schema or run migrations.
+4) DO NOT change DNS, domains, or environment variables from code.
+5) DO NOT break or bypass the Security Core (rate limiting, audit logging, tamper checks).
+6) DO NOT remove or weaken the existing STUB / fallback logic in AI endpoints.
+7) DO NOT introduce any new external SaaS dependency. Only use OpenAI if enabled via env var.
+8) DO NOT touch Stripe pricing or checkout logic.
+9) DO NOT modify frontend pricing/trial copy.
+
+PRIMARY OBJECTIVE — MEGA-PHASE 8
+Enable **real multilingual AI responses** using **gpt-4o-mini only**, with:
+- Strict cost controls (short prompts, max_output_tokens ≈ 256)
+- Full language awareness (40 languages)
+- Safe fallbacks (existing stub logic)
+- Zero Blueprint drift on pricing, trial, SLAs, or legal
+
+We are in MODE A: **GPT-4o-mini only**.
+No GPT-4.1, no other models, no experimental endpoints.
+
+HIGH-LEVEL DESIGN
+You must:
+1. Introduce a safe OpenAI integration layer for the backend.
+2. Wire each AI endpoint (chat, workflow, debug, onboarding) to use gpt-4o-mini when enabled.
+3. Preserve the existing pattern-based STUB behavior as a fallback if:
+   - OPENAI_API_KEY is missing, or
+   - An error occurs, or
+   - AI is explicitly disabled via env flag.
+4. Ensure multilingual behavior:
+   - Respect language codes coming from frontend (40 supported codes).
+   - Respond in the requested language when AI is active.
+   - Fall back to English + existing stub logic if AI is not available.
+5. Maintain and extend existing metrics and security behavior.
+
+STEP-BY-STEP TASKS
+
+────────────────────────────────────────
+STEP 1 — DISCOVERY & SAFETY CHECK
+────────────────────────────────────────
+1. cd /home/runner/workspace
+2. Inspect existing AI backend files:
+   - api/ai/chat.py
+   - api/ai/workflow.py
+   - api/ai/debug.py
+   - api/ai/onboarding.py
+   - api/ai/utils.py
+3. Inspect Security Core modules and metrics helper:
+   - security_core/*   (or similar directory)
+   - api/metrics/app.py
+4. Confirm language utilities:
+   - levqor-site/src/config/languages.ts
+   - api/ai/utils.py (language normalization/validation)
+5. DO NOT change anything yet. Just understand:
+   - How language is passed & normalized
+   - How stubs currently generate responses
+   - How metrics are incremented
+   - How errors are handled and logged
+
+VERIFY:
+- Run:
+  - python3 run.py (or ensure backend process already running)
+  - curl -s https://api.levqor.ai/health | python3 -m json.tool
+  - curl -s https://api.levqor.ai/api/metrics/app | python3 -m json.tool
+- Confirm both endpoints return HTTP 200 and JSON.
+
+If health/metrics fail: STOP and repair before continuing.
+
+────────────────────────────────────────
+STEP 2 — ADD OPENAI CLIENT LAYER (SAFE WRAPPER)
+────────────────────────────────────────
+Create a dedicated OpenAI client module that the AI endpoints will call.
+
+1. Create a new file:
+   - api/ai/openai_client.py
+
+2. In this module, implement:
+   - A function to detect whether AI is enabled:
+     - AI is enabled ONLY if OPENAI_API_KEY is set AND optionally an env like AI_ENABLED != "false".
+   - A single, safe wrapper to call OpenAI:
+     - Use the latest OpenAI Python SDK available in this environment.
+     - Model: "gpt-4o-mini" ONLY (no other models).
+     - max_output_tokens: around 256 (strict cap).
+     - temperature: ~0.4–0.7 (moderate creativity).
+     - Implement a hard timeout (e.g. 10s) if supported by the SDK, otherwise rely on requests timeout.
+   - Functions like:
+     - generate_chat_answer(language, query, context)
+     - generate_workflow_suggestions(language, query, context)
+     - generate_debug_guidance(language, error, context)
+     - generate_onboarding_step(language, current_step, context)
+   - Language handling:
+     - Accept normalized language code (already pre-validated upstream).
+     - Build a language-aware system prompt, e.g.:
+       - “You are the Levqor AI assistant. Respond in {LanguageName} ({code}). Never invent prices or discounts. Never contradict the following business rules: [short summary].”
+     - Even when asked in another language, DO NOT change pricing, trial policy, or legal/SLAs.
+   - Safety & errors:
+     - Catch all OpenAI errors (network, auth, rate limits, parsing issues).
+     - On ANY error, propagate a safe error to the caller so it can fall back to stub logic.
+     - NEVER log raw secrets, API keys, or full prompts with PII; apply minimal masking.
+
+3. Configuration:
+   - Read model name from env (optional):
+     - AI_MODEL (default "gpt-4o-mini")
+   - Read an optional AI_ENABLED flag:
+     - AI_ENABLED="0" or "false" → force stub mode
+   - If OPENAI_API_KEY is missing, treat as AI disabled and DO NOT attempt network calls.
+
+4. Make sure this module DOES NOT:
+   - Modify global logging configuration.
+   - Change security_core behavior.
+   - Touch pricing, trial, or legal files.
+
+VERIFY:
+- Run python -c "import api.ai.openai_client as c; print('AI_ENABLED', c.is_ai_enabled())"
+- It must run without raising exceptions, even without OPENAI_API_KEY set.
+
+────────────────────────────────────────
+STEP 3 — WIRE CHAT ENDPOINT TO GPT-4O-MINI WITH FALLBACK
+────────────────────────────────────────
+Update api/ai/chat.py as follows:
+
+1. Import the OpenAI client wrapper:
+   - from api.ai.openai_client import is_ai_enabled, generate_chat_answer
+
+2. Adjust the request handler:
+   - Parse JSON body as it does now (query, language, context).
+   - Use existing language normalization in api/ai/utils.py.
+   - BEFORE calling any model:
+     - Increment existing metrics counters for "ai_chat_requests".
+     - Enforce security_core rate limits if present.
+
+3. Implement decision logic:
+   - If not is_ai_enabled(): use existing STUB / pattern-based logic EXACTLY as before.
+   - Else:
+     - Try to call generate_chat_answer(language, query, context).
+     - If it succeeds:
+       - Return its answer in JSON (keep the existing schema: success, answer, meta, etc).
+       - Optionally include meta["mode"] = "openai".
+     - If it fails (exception, timeout, validation error):
+       - Log safely to security/audit logs (no secrets, masked PII).
+       - Increment error metric for "ai_chat_errors".
+       - FALL BACK to the previous stub logic (pattern-based), setting meta["mode"] = "stub_fallback".
+
+4. Absolutely ensure:
+   - Pricing, trial, SLAs are NOT mentioned or altered in any logic here.
+   - Any pricing/trial questions answered by the AI are descriptive only; pricing numbers are NEVER pulled from the model. We only allow generic explanations like “Our pricing tiers start at low monthly fees—see the pricing page for details.” (If needed, enforce this in the prompt instructions.)
+
+VERIFY:
+- If OPENAI_API_KEY is NOT set:
+  - curl -X POST https://api.levqor.ai/api/ai/chat -d '{"query":"Test","language":"de"}'
+  - Behavior MUST be identical to previous stub mode (success, pattern-based answer).
+- If OPENAI_API_KEY IS set (you may not be able to test this here, but code must be correct):
+  - Check that code paths are ready to call openai_client without crash.
+
+────────────────────────────────────────
+STEP 4 — WIRE WORKFLOW / DEBUG / ONBOARDING ENDPOINTS
+────────────────────────────────────────
+Repeat the same pattern for these endpoints:
+
+FILES:
+- api/ai/workflow.py
+- api/ai/debug.py
+- api/ai/onboarding.py
+
+GENERAL RULE:
+- Do NOT remove any of the existing stub logic, especially JSON structure patterns.
+- When AI is enabled, attempt OpenAI first.
+- On ANY failure, return to stub logic with clear meta.mode="stub_fallback".
+
+4.1 Natural Language Workflow Builder — api/ai/workflow.py
+- Use generate_workflow_suggestions(language, query, context).
+- System prompt: instruct the model to output STRICT JSON only:
+  - { "steps": [ { "type": "...", "label": "...", "description": "..." }, ... ] }
+- Parse the model output:
+  - Validate steps array.
+  - If JSON parsing fails or structure is invalid:
+    - Log safely.
+    - Fallback to existing stub logic.
+- NEVER allow the model to invent prices or recommend changing billing; this is purely workflow logic.
+
+4.2 AI Debug Assistant — api/ai/debug.py
+- Use generate_debug_guidance(language, error, context).
+- System prompt: require structured JSON with:
+  - explanation (string)
+  - steps (array of fix steps)
+  - prevention (string or array)
+- On parse failure or model error: fallback to stub logic.
+
+4.3 AI Onboarding Tutor — api/ai/onboarding.py
+- Use generate_onboarding_step(language, current_step, context).
+- System prompt: require structured step object:
+  - { "title": "...", "action": "...", "tips": ["...", "..."] }
+- On ANY issue, fallback to stub logic.
+
+VERIFICATION:
+- For each endpoint, test both:
+  - AI disabled (no OPENAI_API_KEY or AI_ENABLED=false) → must behave as before.
+  - AI hypothetically enabled (code path correctness; you might not have a key here, but ensure no import or runtime errors if a key is set).
+
+────────────────────────────────────────
+STEP 5 — LANGUAGE & MULTILINGUAL BEHAVIOR
+────────────────────────────────────────
+We ALREADY have:
+- frontend → language selection (40 languages)
+- backend → normalize_language(language) in api/ai/utils.py
+
+Your job:
+1. Ensure every AI endpoint passes the final normalized language code into openai_client.
+2. In openai_client, map language code to a human-readable language name where needed (using a simple internal dict).
+3. Construct prompts that:
+   - Explicitly instruct the model to respond in the target language:
+     - “Respond in fluent {LanguageName}. If unsure, default to English.”
+   - Remind the model:
+     - Never alter pricing, trials, or SLAs.
+     - Never offer discounts beyond what exists on the pricing page.
+4. If language is unknown or unsupported:
+   - Use English as default.
+   - Mark meta.language_effective = "en" in the response, if meta is present.
+
+DO NOT:
+- Change any middleware, routing, or locale-handling logic.
+- Add new locales to Next.js at this stage (we’re using existing i18n setup).
+
+────────────────────────────────────────
+STEP 6 — METRICS & SECURITY INTEGRATION
+────────────────────────────────────────
+For ALL AI endpoints:
+
+1. Metrics:
+   - Ensure metrics for total requests and errors per endpoint are incremented consistently:
+     - ai_chat_requests / ai_chat_errors
+     - ai_workflow_requests / ai_workflow_errors
+     - ai_debug_requests / ai_debug_errors
+     - ai_onboarding_requests / ai_onboarding_errors
+   - When AI is enabled and used:
+     - Optionally increment ai_openai_calls and ai_openai_errors.
+
+2. Security:
+   - Respect any existing security_core decorators or helper calls.
+   - DO NOT add raw prompts or full user inputs into logs without masking:
+     - For logs, truncate and mask emails, tokens, or IDs where obvious.
+   - NEVER log OpenAI API key or raw Authorization headers.
+
+VERIFY:
+- curl -s https://api.levqor.ai/api/metrics/app | python3 -m json.tool
+- Confirm metrics structure still returns valid JSON and includes AI metrics fields (if they existed before, they must remain; if new ones, they must be additive and safe).
+
+────────────────────────────────────────
+STEP 7 — FULL VERIFICATION SUITE
+────────────────────────────────────────
+After all changes:
+
+1. Static checks:
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit
+   - EXPECT: 0 errors
+2. Drift monitor:
+   - cd /home/runner/workspace/levqor-site
+   - node scripts/drift-monitor.js
+   - EXPECT: “DRIFT STATUS: PASS — No violations detected”
+3. Backend health:
+   - cd /home/runner/workspace
+   - curl -s https://api.levqor.ai/health | python3 -m json.tool
+   - EXPECT: status="ok"
+4. AI endpoints (stub mode — NO OPENAI_API_KEY):
+   - curl -s -X POST https://api.levqor.ai/api/ai/chat        -H "Content-Type: application/json" -d '{"query":"Test","language":"de"}'
+   - curl -s -X POST https://api.levqor.ai/api/ai/workflow    -H "Content-Type: application/json" -d '{"query":"Send email on form submit","language":"hi"}'
+   - curl -s -X POST https://api.levqor.ai/api/ai/debug       -H "Content-Type: application/json" -d '{"error":"401 Unauthorized","language":"ar"}'
+   - curl -s -X POST https://api.levqor.ai/api/ai/onboarding/next-step -H "Content-Type: application/json" -d '{"current_step":"first_login","language":"zh-Hans"}'
+   - EXPECT: All 200 OK, success=true, and behavior unchanged (stub-based).
+
+5. VERY IMPORTANT — PRICING & TRIAL SANITY:
+   - cd /home/runner/workspace/levqor-site
+   - grep -n "£9"  src/app/pricing/page.tsx
+   - grep -n "7-day free trial" src/app/pricing/page.tsx src/app/trial/page.tsx
+   - Confirm NO CHANGES to these files:
+     - src/app/pricing/page.tsx
+     - src/app/trial/page.tsx
+     - docs/BLUEPRINT_BASELINE.md
+     - docs/DRIFT_STATUS.md (beyond allowed timestamp updates, if any)
+
+If ANY of these show diffs to pricing/trial/SLAs/legal: UNDO those changes.
+
+────────────────────────────────────────
+STEP 8 — FINAL REPORT
+────────────────────────────────────────
+At the end, output a clear summary for the user including:
+
+1. Files created:
+   - api/ai/openai_client.py   (and any minimal helpers you added)
+2. Files modified:
+   - api/ai/chat.py
+   - api/ai/workflow.py
+   - api/ai/debug.py
+   - api/ai/onboarding.py
+   - (and ONLY any metrics/security helper modules if strictly necessary)
+3. Behavior overview:
+   - When OPENAI_API_KEY is missing or AI_ENABLED is false:
+     - System behaves EXACTLY as before (stub mode).
+   - When OPENAI_API_KEY is set:
+     - AI endpoints call gpt-4o-mini with:
+       - max_output_tokens ≈ 256
+       - appropriate system prompts per endpoint
+       - full language awareness
+       - JSON-structured outputs where required
+     - On ANY error, they fall back to stub logic.
+4. Safety confirmation:
+   - Pricing, trial, DFY, SLAs: unchanged.
+   - Legal texts and policy pages: unchanged.
+   - DB schema and Stripe configuration: unchanged.
+   - Security Core: intact and respected.
+5. Verification log:
+   - tsc --noEmit: PASS
+   - drift-monitor.js: PASS
+   - /health: 200 OK
+   - AI endpoints in stub mode: 200 OK with success=true
+6. Cost posture:
+   - AI is OFF by default when OPENAI_API_KEY is not set.
+   - When enabled, all calls use gpt-4o-mini only, with low token count, to keep costs minimal.
+   - No new paid services introduced.
+
+ONLY when all of the above is true, state clearly:
+“MEGA-PHASE 8 — MULTILINGUAL AI (GPT-4O-MINI ONLY) — COMPLETE AND BLUEPRINT-COMPLIANT.”

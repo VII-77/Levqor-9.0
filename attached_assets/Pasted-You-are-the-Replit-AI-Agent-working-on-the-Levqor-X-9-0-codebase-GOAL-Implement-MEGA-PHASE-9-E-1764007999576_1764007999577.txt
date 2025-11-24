@@ -1,0 +1,415 @@
+You are the Replit AI Agent working on the Levqor X 9.0 codebase.
+
+GOAL
+Implement **MEGA-PHASE 9 — ENTERPRISE MODE + FULL PLATFORM HARDENING** as an additive, backward-compatible layer on top of the existing Levqor X 9.0 system.
+
+You MUST:
+- Preserve all locked business invariants (pricing, trials, SLAs, legal, architecture).
+- Avoid any database schema changes.
+- Avoid any DNS / domain changes.
+- Avoid any breaking changes to existing flows.
+- Integrate with the existing security core, AI engine, metrics, and scheduler.
+- Verify everything with real commands (NO “should work” assumptions).
+
+ABSOLUTE LOCKS (DO NOT TOUCH)
+- Pricing (monthly): £9 / £29 / £59 / £149
+- Pricing (yearly): £90 / £290 / £590 / £1490
+- DFY: £149 / £299 / £499
+- Trial: 7-day free on ALL tiers, card required, “Cancel before Day 7 to avoid charges”
+- SLAs: 48h / 24h / 12h / 4h support response times
+- Architecture: Frontend = Next.js (levqor-site), Backend = Flask/Gunicorn (api.levqor.ai)
+- Legal/policy text: all /terms, /privacy, /sla, /refunds, etc.
+- DB schema: NO migrations, NO new tables, NO column changes.
+
+GENERAL RULES
+- Work in `/home/runner/workspace`.
+- Use small, incremental edits with clear structure.
+- After each major change, run verification: health checks, TypeScript, drift monitor.
+- Prefer reusing existing modules (security core, metrics, scheduler, etc.) over creating new ones from scratch.
+- NEVER trust “build succeeded” alone; always run explicit checks (curl, grep, etc.).
+- If any step fails, STOP, diagnose, and repair before continuing.
+
+====================================================================
+STEP 0 — INITIAL SANITY & INVENTORY
+====================================================================
+1) Confirm repo structure and current phase status:
+
+- Show top-level layout:
+  - `cd /home/runner/workspace && ls`
+- Confirm key directories:
+  - `ls levqor-site`
+  - `find . -maxdepth 3 -type f -name "SECURITY_CORE*.md" -o -name "SECURITY_CORE_TESTS*.md" -o -name "MEGA-PHASE-*.md"`
+
+2) Verify both workflows are running and healthy:
+
+- Backend:
+  - `curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "BACKEND_HEALTH_FAIL"`
+- Frontend:
+  - `for r in / /pricing /trial /status /consultation ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-15s %s\n" "$r" "$code"; done`
+
+3) Confirm drift monitor and TypeScript are clean BEFORE changes:
+
+- `cd levqor-site && npx tsc --noEmit 2>&1 | head -50`
+- `cd levqor-site && node scripts/drift-monitor.js 2>&1 | tail -20`
+
+If any of these show critical errors, STOP and fix before proceeding.
+
+====================================================================
+STEP 1 — ZERO-TRUST API GATEWAY (SOFTWARE LAYER ONLY)
+====================================================================
+Goal: Add a **software-level zero-trust layer** on top of the existing security core without breaking existing endpoints.
+
+1) Discover existing security core:
+
+- `cd /home/runner/workspace && find . -maxdepth 4 -type f -iname "*security*core*py" -o -iname "*security*core*.md"`
+- Grep security core usage:
+  - `grep -RIn "SecurityCore" . | head -40`
+  - `grep -RIn "tamper" monitors security_core* run.py | head -40`
+
+2) Implement or extend an API gateway module:
+
+- If a `security_core/api_gateway.py` (or similar) exists, open and extend it.
+- If not, create `security_core/api_gateway.py` with:
+  - IP reputation hooks (reuse existing IP reputation utilities if they exist).
+  - Lightweight request fingerprinting (path, method, IP, user-agent hash).
+  - Geo hint support from headers if available (do not add new dependencies).
+  - Hooks to:
+    - Check rate limiting (reuse existing rate limiter from security core if present).
+    - Increment security metrics.
+    - Log suspicious patterns (e.g. repeated 4xx/5xx from same IP/route).
+
+Requirements:
+- The gateway MUST be wired via Flask `before_request` / `after_request` or app-wide hooks in `run.py`.
+- MUST be configurable through existing `security_core/config.py` (or similar) — if present, add toggles like `ENABLE_API_GATEWAY`, thresholds, etc.
+- For now, DO NOT block traffic by default. Instead:
+  - Log suspicious events as `SECURITY_EVENT: {ip, path, reason}`.
+  - If a setting like `BLOCK_HIGH_RISK_IPS` is added, default it to `False`.
+
+3) Integrate in `run.py`:
+
+- Locate app creation and existing security core integration:
+  - `grep -n "Flask(" run.py`
+  - `grep -n "APScheduler" run.py`
+- Register a central `init_api_gateway(app)` or equivalent after app creation and BEFORE blueprints are registered (or as early as safe).
+- Ensure any error paths DO NOT break the app; log and continue.
+
+4) Verification:
+
+- Run local import check:
+  - `cd /home/runner/workspace && python3 - << 'EOF'
+from run import app
+print("✅ BACKEND_IMPORT_OK_WITH_API_GATEWAY")
+EOF`
+- Hit live APIs to ensure nothing broke:
+  - `curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "HEALTH_FAIL_AFTER_GATEWAY"`
+  - `curl -s https://api.levqor.ai/api/usage/summary | python3 -m json.tool || echo "USAGE_SUMMARY_FAIL_AFTER_GATEWAY"`
+
+====================================================================
+STEP 2 — ENTERPRISE RBAC v1 (LOGIC-ONLY, NO BREAKING CHANGES)
+====================================================================
+Goal: Implement a **role & permissions model** as a reusable utility layer, but enforce it only on new enterprise endpoints to avoid regressions.
+
+1) Create RBAC config and utilities:
+
+- Add `levqor-site/docs/RBAC_MODEL.md` describing:
+  - Roles: `owner`, `admin`, `editor`, `viewer`
+  - Example permissions: manage_users, view_billing, view_ai_logs, manage_workflows, view_security_logs
+  - Principle: least privilege, but initial enforcement only on new enterprise dashboards.
+
+- In backend (e.g. `/home/runner/workspace/api` or `security_core` or a new `enterprise/rbac.py`), create a module:
+  - Define roles and permission matrix as pure Python data structures.
+  - Helper functions:
+    - `get_current_user()` (stub using existing auth context; if unavailable, assume anonymous).
+    - `get_user_role(user)` (for now, default “owner” or “admin” to avoid breaking; log actual behavior).
+    - `has_permission(user, permission)` returning bool and logging.
+
+- Add a `@require_permission("perm_name")` decorator that:
+  - For now, **does NOT 403 existing endpoints**.
+  - Will be used ONLY on new enterprise endpoints introduced in Step 4.
+  - If unauthorized, return 403 on those new endpoints with JSON `{ "error": "forbidden", "reason": "missing_permission" }`.
+
+2) Verification:
+
+- Run a quick script to import RBAC module and evaluate permissions:
+  - `python3 - << 'EOF'
+from <your_rbac_module> import has_permission
+print("RBAC_SMOKE_TEST:", has_permission(None, "view_billing"))
+EOF`
+
+(Replace `<your_rbac_module>` with the actual path.)
+
+====================================================================
+STEP 3 — TENANT CONTEXT (SOFT MULTI-TENANCY, NO DB CHANGES)
+====================================================================
+Goal: Introduce a **tenant context** for analytics and AI logging without changing schemas.
+
+1) Implement tenant context util:
+
+- New module: `tenant/context.py` (or similar):
+  - Functions:
+    - `get_tenant_id_from_request(request)`:
+      - Priority: header `X-Levqor-Tenant`, else `X-Tenant-Id`, else fallback to `'default'`.
+      - Sanitize & clamp to a safe string (e.g. alphanumerics + dashes).
+    - `attach_tenant_to_g(request)`:
+      - Store `g.tenant_id`.
+    - `get_tenant_id()`:
+      - Return `getattr(g, "tenant_id", "default")`.
+
+2) Integrate with `run.py`:
+
+- In a `before_request` hook:
+  - Call `attach_tenant_to_g(request)`.
+  - Log tenant in a debug-level structured log for some key endpoints (e.g. AI, marketing, usage).
+
+3) Wire tenant context into key existing backend modules:
+
+- AI endpoints: `api/ai/chat.py`, `api/ai/workflow.py`, `api/ai/debug.py`, `api/ai/onboarding.py`:
+  - When logging or recording metrics, include `tenant_id`.
+- Marketing endpoints: `api/marketing/lead.py`, `api/marketing/events.py`.
+- Metrics endpoint: `api/metrics/app.py`:
+  - Optionally surface aggregated metrics across tenants; keep it simple (no per-tenant breakdown yet).
+
+You MUST NOT break existing JSON shapes. Only add extra fields to logs and internal metrics.
+
+4) Verification:
+
+- Local smoke tests:
+  - `python3 - << 'EOF'
+from run import app
+print("TENANT_IMPORT_OK")
+EOF`
+- Hit live APIs with and without tenant headers:
+  - `curl -s -H "X-Levqor-Tenant: acme-agency" https://api.levqor.ai/api/ai/chat -d '{"query":"test"}' -H "Content-Type: application/json" | head -40 || echo "AI_CHAT_TENANT_FAIL"`
+  - If AI endpoints require auth or specific payload, just ensure they respond; you can also log via simpler endpoints like `/api/usage/summary`.
+
+====================================================================
+STEP 4 — ENTERPRISE DASHBOARD & API (READ-ONLY, NON-BREAKING)
+====================================================================
+Goal: Add **enterprise-grade dashboards and endpoints** for admins, powered by existing metrics & logs. Read-only, no state changes.
+
+BACKEND
+
+1) Implement enterprise dashboard API:
+
+- Create a module, e.g. `api/enterprise/dashboard.py` with a Flask Blueprint:
+  - `GET /api/enterprise/overview`
+    - Returns aggregate metrics:
+      - users (stub or derived if no table)
+      - workflows
+      - runs
+      - ai_requests
+      - ai_errors
+      - leads
+      - consultations_booked
+      - consultations_run
+    - Use existing metrics/usage/marketing JSON where possible.
+  - `GET /api/enterprise/security-logs`
+    - Returns recent security events (from security core logs, IP reputation, tamper detection).
+    - If no log file yet, return empty list with safe defaults.
+  - `GET /api/enterprise/ai-logs`
+    - Returns an anonymised/aggregated view from AI logs (if you created them in previous phases).
+    - Do NOT include raw prompt text or PII; keep it high-level (counts, types, timestamps).
+
+- All these routes MUST:
+  - Be read-only.
+  - Use `@require_permission("view_enterprise_dashboard")` (from Step 2).
+  - Use tenant context for logging (`tenant_id`).
+
+2) Register the Blueprint in `run.py`:
+
+- Add import and `app.register_blueprint(enterprise_bp)`.
+
+FRONTEND
+
+3) Create enterprise dashboard pages (Next.js app):
+
+- Under `levqor-site/src/app/dashboard/enterprise/`:
+  - `page.tsx`:
+    - Server or client component that:
+      - Calls `/api/enterprise/overview` (via `NEXT_PUBLIC_API_URL`) and displays key metrics in cards.
+      - Includes top-level sections: Usage, AI, Security, Revenue.
+    - You can initially mock UI using the live API; handle failures gracefully with an error state.
+  - `security/page.tsx`:
+    - Lists security events from `/api/enterprise/security-logs`.
+  - `ai/page.tsx`:
+    - Lists AI usage metrics, error counts, maybe last few error categories.
+
+All enterprise dashboard pages must:
+- Use existing layout system from `/dashboard/v2` if applicable.
+- Respect the `robots: { index: false, follow: false }` rule (no indexing).
+- Avoid any pricing copy or marketing text changes.
+
+4) Add an “Enterprise” entry point in the app navigation:
+
+- In `Header.tsx` or dashboard navigation component:
+  - Add a link to `/dashboard/enterprise` for signed-in users only (if you can detect auth; otherwise show but let backend/middleware enforce).
+  - Do NOT modify existing nav items text or order in a way that breaks design; only append.
+
+Verification:
+
+- Build check:
+  - `cd levqor-site && npx tsc --noEmit 2>&1 | head -80`
+- Route check (live, HTTP only):
+  - `for r in /dashboard/enterprise /dashboard/enterprise/security /dashboard/enterprise/ai ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-35s %s\n" "$r" "$code"; done`
+  - These may return 302/401/403 depending on auth; that is acceptable. The key is: NOT 404/500.
+
+====================================================================
+STEP 5 — ENTERPRISE AI LOGGING & COMPLIANCE MODE
+====================================================================
+Goal: Ensure AI usage is logged in a **compliance-friendly, privacy-safe** manner.
+
+1) Implement AI logging module if not already present:
+
+- Create `api/ai/logging.py` (or similar):
+  - Functions:
+    - `log_ai_event(kind, language, tenant_id, meta)`:
+      - Append a JSONL entry to `workspace-data/ai_events.jsonl`.
+      - Mask any obvious PII in meta where reasonable (e.g., email-like strings, long tokens).
+    - `summarize_ai_usage()`:
+      - Return aggregate counts per endpoint, language, tenant.
+
+2) Integrate AI logging into AI endpoints:
+
+- In each AI endpoint file:
+  - After a successful response, call `log_ai_event(...)` with:
+    - kind: "chat" / "workflow" / "debug" / "onboarding".
+    - language: the normalized language from MEGA-PHASE 4B.
+    - tenant_id: from Step 3.
+    - meta: include non-PII info like `{ "status": "success", "pattern": pattern_name }`.
+  - On error, log an event with `"status": "error"` and reason (non-sensitive).
+
+3) Optional: Add summary to `/api/metrics/app`:
+
+- Add a field like `"ai_events_last_24h": <count>` using `summarize_ai_usage()` or a cheap approximation.
+
+Verification:
+
+- Trigger some AI calls using curl or minimal payload.
+- Confirm `workspace-data/ai_events.jsonl` is created and contains well-formed JSON lines.
+- Ensure no stack traces or secrets are stored in this file.
+
+====================================================================
+STEP 6 — ENTERPRISE QUEUE ABSTRACTION (SOFT, NO REAL QUEUE)
+====================================================================
+Goal: Add a **queue/task abstraction** for long-running tasks WITHOUT adding external dependencies.
+
+1) Create a queue abstraction module:
+
+- Example file: `infra/tasks.py` or `enterprise/tasks.py`:
+  - `def queue_task(name: str, payload: dict) -> str:`:
+    - For now, log to `workspace-data/tasks.jsonl` with a generated task_id.
+    - Optionally, schedule an APScheduler job that picks up tasks from this file and processes them synchronously.
+  - `def get_task_status(task_id: str) -> dict:`:
+    - Stub implementation returning `"status": "completed"` once written.
+
+2) Use the abstraction in ONE low-risk area:
+
+- Example: when generating AI onboarding suggestions or consultation briefs, instead of doing heavy work inline, log a “queued” task but still process inline for now.
+- The goal is to introduce the pattern, not change behavior.
+
+Verification:
+
+- Trigger the code path.
+- Confirm `tasks.jsonl` is being appended to.
+- Confirm the main user-facing behavior is unchanged.
+
+====================================================================
+STEP 7 — DOCUMENTATION & HARDENING CHECKLIST
+====================================================================
+Goal: Bring documentation in line with MEGA-PHASE 9 and capture the enterprise posture.
+
+1) Create/update docs:
+
+- `levqor-site/docs/ENTERPRISE_OVERVIEW.md`:
+  - Summarize:
+    - Zero-trust API gateway.
+    - RBAC v1 model.
+    - Tenant context.
+    - Enterprise dashboards.
+    - AI logging & compliance.
+    - Queue abstraction.
+- `levqor-site/docs/SECURITY_ZERO_TRUST.md`:
+  - Describe:
+    - How IP reputation, rate limiting, and gateway behave.
+    - What is logged vs not logged.
+- `levqor-site/docs/ENTERPRISE_CHECKLIST.md`:
+  - Final checklist:
+    - API gateway active.
+    - RBAC utilities available.
+    - Tenant context wired.
+    - Enterprise dashboards accessible.
+    - AI logging active.
+    - Queue abstraction in place.
+    - All tests passing, zero drift.
+
+2) Update existing governance docs:
+
+- `levqor-site/docs/LAUNCH_RUNBOOK.md`:
+  - Add a short section “Enterprise Mode Checks” referencing the above docs.
+- `levqor-site/docs/DRIFT_STATUS.md`:
+  - Update timestamp and mention that MEGA-PHASE 9 has been applied; ensure you DO NOT change baseline version identifiers incorrectly.
+- `levqor-site/docs/BLUEPRINT_BASELINE.md`:
+  - Append a concise section noting that enterprise mode is layered on top of existing blueprint, without altering locked values.
+
+====================================================================
+STEP 8 — FINAL VERIFICATION MATRIX (MANDATORY)
+====================================================================
+You MUST run and report these before finishing:
+
+1) TypeScript:
+
+- `cd /home/runner/workspace/levqor-site && npx tsc --noEmit 2>&1 | head -80`
+
+2) Drift Monitor:
+
+- `cd /home/runner/workspace/levqor-site && node scripts/drift-monitor.js 2>&1 | tail -20`
+
+3) Backend import:
+
+- `cd /home/runner/workspace && python3 - << 'EOF'
+from run import app
+print("✅ BACKEND_IMPORT_OK_MEGA_PHASE_9")
+EOF`
+
+4) Core endpoints:
+
+- `curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "HEALTH_FAIL"`
+- `curl -s https://api.levqor.ai/api/usage/summary | python3 -m json.tool || echo "USAGE_SUMMARY_FAIL"`
+- `curl -s https://api.levqor.ai/api/metrics/app | python3 -m json.tool | head -80 || echo "METRICS_FAIL"`
+
+5) New enterprise endpoints (OK if 401/403, just not 404/500):
+
+- `for r in /api/enterprise/overview /api/enterprise/security-logs /api/enterprise/ai-logs ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://api.levqor.ai$r"); printf "%-40s %s\n" "$r" "$code"; done`
+
+6) Frontend reachability:
+
+- `for r in /dashboard/enterprise /dashboard/enterprise/security /dashboard/enterprise/ai ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-40s %s\n" "$r" "$code"; done`
+
+7) Business invariants (grep):
+
+- `cd /home/runner/workspace/levqor-site && grep -RIn "£9" src/app/pricing/page.tsx && grep -RIn "£29" src/app/pricing/page.tsx && grep -RIn "£59" src/app/pricing/page.tsx && grep -RIn "£149" src/app/pricing/page.tsx`
+- `grep -RIn "7-day free trial" src/app/pricing/page.tsx src/app/trial/page.tsx`
+- `grep -RIn "Card required" src/app/pricing/page.tsx src/app/trial/page.tsx`
+- `grep -RIn "48h" -R src | head -10`
+
+If any of these commands fail (non-zero exit or obviously wrong outputs), you MUST fix the underlying issue before returning the final report.
+
+====================================================================
+STEP 9 — FINAL REPORT (RETURN TO USER)
+====================================================================
+At the end, provide a structured summary in plain text (no git commands), including:
+
+- What modules were created/modified (file list).
+- How the zero-trust gateway works, and that it DOES NOT break existing flows.
+- How RBAC v1 is wired and where it is enforced (only new enterprise endpoints).
+- How tenant context works and which endpoints now use it.
+- What the new enterprise dashboard APIs and pages do.
+- How AI logging and queue abstraction behave, and their current limitations.
+- Verification results (TypeScript, drift, health, metrics, new endpoints).
+- Explicit confirmation that:
+  - Pricing, trial terms, SLAs, legal text, and DB schema remain unchanged.
+  - No existing public routes were removed or renamed.
+  - No new external services or costs were introduced.
+
+DO NOT perform git operations. Only modify the working tree and run tests/commands as described.
+```0
