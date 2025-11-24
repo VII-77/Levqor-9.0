@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { GrowthConsole } from '@/components/status/GrowthConsole'
 
 export const metadata: Metadata = {
   title: 'System status & uptime – Levqor',
@@ -133,6 +134,8 @@ export default function StatusPage() {
             </p>
           </div>
         </section>
+
+        <GrowthConsole />
         
         <section>
           <h2 className="text-2xl font-semibold mb-3">Usage Data & ROI</h2>
