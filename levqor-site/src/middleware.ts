@@ -11,6 +11,9 @@ const intlMiddleware = createIntlMiddleware({
   localePrefix: 'as-needed',
 })
 
+// Paths that should bypass i18n middleware entirely (no locale prefix)
+const bypassI18nPaths = ['/status', '/robots.txt', '/sitemap.xml']
+
 export default auth((req) => {
   const url = req.nextUrl.clone()
   
@@ -22,6 +25,11 @@ export default auth((req) => {
 
   const isAuthenticated = !!req.auth
   const pathname = url.pathname
+
+  // Bypass i18n middleware for specific paths (serve directly without locale prefix)
+  if (bypassI18nPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
+    return NextResponse.next()
+  }
 
   // Strip locale prefix for auth check to support localized protected routes
   // Matches: /en/dashboard, /de/dashboard, /fr/dashboard, /es/dashboard
