@@ -1,5 +1,9 @@
 "use client";
 import { useState } from "react";
+import LeadCaptureInline from "@/components/LeadCaptureInline";
+import PageViewTracker from "@/components/PageViewTracker";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import CurrencySwitcher from "@/components/CurrencySwitcher";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
 
@@ -311,6 +315,15 @@ export default function PricingPage() {
 
   return (
     <main className="mx-auto max-w-6xl p-6">
+      <PageViewTracker page="/pricing" />
+      
+      {/* Display Preferences (Language & Currency) */}
+      <div className="mb-6 flex items-center justify-end gap-3">
+        <span className="text-xs text-gray-500 hidden sm:inline">Display preferences:</span>
+        <LanguageSwitcher />
+        <CurrencySwitcher />
+      </div>
+      
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-3">Simple, transparent pricing</h1>
@@ -654,6 +667,11 @@ export default function PricingPage() {
           onClose={() => setNotifyModal(null)}
         />
       )}
+
+      {/* Lead Capture */}
+      <div className="mt-16">
+        <LeadCaptureInline source="pricing" />
+      </div>
 
       {/* VAT Notice */}
       <div className="mt-8 text-xs text-center text-gray-500">

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import LeadCaptureInline from "@/components/LeadCaptureInline";
+import PageViewTracker from "@/components/PageViewTracker";
 
 export const metadata: Metadata = {
   title: "Start your 7-day Levqor trial",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
 export default function TrialPage() {
   return (
     <main className="mx-auto max-w-3xl px-4 py-16 space-y-8">
+      <PageViewTracker page="/trial" />
       <h1 className="text-4xl font-bold text-gray-900">Free Trial Terms</h1>
       
       <div className="space-y-6 text-gray-700 leading-relaxed">
@@ -170,6 +173,11 @@ export default function TrialPage() {
           <Link href="/pricing" className="text-blue-600 hover:underline font-medium">
             Start Free Trial →
           </Link>
+        </div>
+
+        {/* Lead Capture */}
+        <div className="mt-12">
+          <LeadCaptureInline source="trial" />
         </div>
 
         <p className="text-sm text-gray-500 mt-12 italic">

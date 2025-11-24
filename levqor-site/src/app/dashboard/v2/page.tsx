@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import type { Metadata } from 'next'
+import type { Metadata } from 'next';
+import OnboardingChecklist from "@/components/OnboardingChecklist";
+import HelpPanel from "@/components/HelpPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,8 @@ export default async function DashboardV2() {
           </p>
         </div>
         
+        <OnboardingChecklist />
+        
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h2 className="text-xl font-semibold text-blue-900 mb-2">
             🚧 Dashboard V2 (Development)
@@ -37,6 +41,8 @@ export default async function DashboardV2() {
           </p>
         </div>
       </div>
+      
+      <HelpPanel />
     </main>
   );
 }

@@ -3,7 +3,11 @@ import { useState } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
 
-export default function LeadCaptureInline() {
+type LeadCaptureInlineProps = {
+  source?: string;
+};
+
+export default function LeadCaptureInline({ source = "inline_capture" }: LeadCaptureInlineProps) {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,7 +23,7 @@ export default function LeadCaptureInline() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          source: "inline_capture",
+          source,
           timestamp: new Date().toISOString()
         })
       });
