@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { Metadata } from 'next';
 import OnboardingChecklist from "@/components/OnboardingChecklist";
 import HelpPanel from "@/components/HelpPanel";
+import AIHelpPanel from "@/components/ai/AIHelpPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +44,7 @@ export default async function DashboardV2() {
       </div>
       
       <HelpPanel />
+      <AIHelpPanel context="dashboard" />
     </main>
   );
 }
