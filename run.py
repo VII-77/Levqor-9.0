@@ -840,6 +840,7 @@ from api.billing.webhooks import bp as billing_webhooks_bp
 from api.admin.insights import bp as admin_insights_bp
 from api.admin.runbooks import bp as admin_runbooks_bp
 from api.admin.postmortem import bp as admin_postmortem_bp
+from api.usage.summary import bp as usage_summary_bp
 from ops.admin.insights import bp as ops_insights_bp
 from ops.admin.runbooks import bp as ops_runbooks_bp
 from ops.admin.postmortem import bp as ops_postmortem_bp
@@ -872,6 +873,7 @@ app.register_blueprint(insights_report_bp)
 app.register_blueprint(partner_registry_bp)
 app.register_blueprint(marketplace_listings_bp)
 app.register_blueprint(intelligence_bp)
+app.register_blueprint(usage_summary_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():

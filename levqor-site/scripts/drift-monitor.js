@@ -12,7 +12,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const BASELINE = {
-  version: 'v12.13',
+  version: 'v12.15 Hybrid',
   routes: {
     public: ['/', '/pricing', '/guarantee', '/how-it-works', '/support', '/integrations', '/about', '/careers'],
     auth: ['/signin', '/dashboard', '/dashboard/v2'],
@@ -377,7 +377,7 @@ function checkEnterpriseFiles() {
 }
 
 function main() {
-  console.log('\n🔍 Levqor Blueprint Drift Monitor v12.12\n');
+  console.log('\n🔍 Levqor Blueprint Drift Monitor v12.15 Hybrid\n');
   console.log('============================================\n');
   
   checkPricingFile();

@@ -1,9 +1,10 @@
-# Levqor Blueprint Baseline v12.13
+# Levqor Blueprint Baseline v12.15 Hybrid
 
-**Locked:** November 23, 2025  
+**Version:** v12.15 Hybrid – November 2025  
+**Locked:** November 24, 2025  
 **Status:** PRODUCTION VERIFIED  
 **Drift Detection:** ZERO DRIFT  
-**Authority:** Frontend Release Engineering Verification  
+**Authority:** Frontend + Backend Release Engineering Verification  
 **Model:** Workflows + Runs + AI Credits + Seats (NOT capsules)
 
 ---
@@ -238,15 +239,87 @@ All 9 new policy pages verified:
 
 ---
 
-## BASELINE LOCK DECLARATION — v12.13
+## V12.15 HYBRID – WHAT'S NEW
 
-**This baseline represents the verified, production-ready state of Levqor's frontend as of November 23, 2025 (Blueprint v12.13).**
+### Backend Enhancements
 
-### Key v12.13 Changes from v8.0
-1. **Trial extended to ALL tiers** (was Growth/Agency only)
-2. **Trial wording standardized** with clear card requirement messaging
-3. **Support SLAs explicitly documented** per tier (48h/24h/12h/4h)
-4. **Pricing model confirmed** as Workflows + Runs + AI Credits (no capsules)
+**NEW: Usage Summary API**
+- **Endpoint:** `GET /api/usage/summary`
+- **Purpose:** Provides aggregate usage metrics across the platform
+- **Response Format:**
+  ```json
+  {
+    "status": "ok",
+    "workflows": <int>,    // Total workflows
+    "runs": <int>,         // Total runs
+    "ai_credits": <int>,   // Total AI credits consumed
+    "source": "database" | "stub"
+  }
+  ```
+- **Status:** Implemented with graceful fallback to stub data when metrics tables unavailable
+- **Architecture:** Flask Blueprint registered at `/api/usage`, defensive error handling, production-ready
+
+### "Hybrid" Uniqueness: Self-Healing Automation WOW Factors
+
+**What makes v12.15 "Hybrid":**
+
+1. **Self-Healing Intelligence**
+   - 18 scheduled automation jobs (APScheduler-based)
+   - Drift monitor enforces Blueprint compliance automatically
+   - Intelligence monitoring cycle detects and reports anomalies
+   - Automatic health checks prevent silent failures
+
+2. **Enterprise Governance Suite**
+   - Pre/post deployment hardening checklist (9 critical areas)
+   - Automated deployment health checks (GitHub Actions hourly)
+   - Blueprint drift detection with PASS/FAIL enforcement
+   - Comprehensive legal documentation (GDPR/CCPA compliant)
+
+3. **Support Automation Architecture**
+   - Tier-aware ticket routing (48h/24h/12h/4h SLA mapping)
+   - AI integration stubs for intelligent ticket classification
+   - Correlation IDs for end-to-end request tracing
+   - Enterprise-grade error monitoring hooks
+
+4. **Resilience & Monitoring**
+   - Database connection retry logic
+   - Backend keep-alive monitoring
+   - Enhanced /health endpoint with uptime metrics
+   - Structured JSON logging for observability
+
+5. **Zero-Drift Deployment Model**
+   - Locked pricing, trials, SLAs, and policies
+   - Frontend (Vercel) + Backend (Replit) separation enforced
+   - Automatic verification of 23+ blueprint routes
+   - Cross-environment deployment validation
+
+**Production Architecture:**
+- **Frontend:** Next.js on Vercel → levqor.ai / www.levqor.ai
+- **Backend:** Flask/Gunicorn on Replit Autoscale → api.levqor.ai
+- **Database:** PostgreSQL (Replit-hosted, development instance)
+- **Billing:** Stripe via Replit connector (LIVE mode, 15 price IDs)
+- **DNS:** Cloudflare-managed with automated SSL
+
+---
+
+## BASELINE LOCK DECLARATION — v12.15 HYBRID
+
+**This baseline represents the verified, production-ready state of Levqor's full-stack platform as of November 24, 2025 (Blueprint v12.15 Hybrid).**
+
+**Locked Values (DO NOT MODIFY):**
+- ✅ Pricing: £9/£29/£59/£149 (monthly) + £90/£290/£590/£1490 (yearly)
+- ✅ DFY Packages: £149/£299/£499 (one-time)
+- ✅ Allowances: Workflows (5/20/100/500), Runs (2K/10K/50K/250K), AI Credits (1K/5K/20K/100K)
+- ✅ Seats: 1/3/5/10 per tier
+- ✅ Trial: 7 days on ALL 4 tiers, card required, no charge if cancelled before Day 7
+- ✅ Support SLAs: 48h/24h/12h/4h for Starter/Launch/Growth/Agency
+- ✅ 23 blueprint routes (all verified)
+- ✅ Enterprise legal documentation (Terms: 3,380 words, Privacy: 3,013 words)
+
+**Architecture Lock:**
+- Frontend deployment target: **Vercel ONLY** (levqor.ai)
+- Backend deployment target: **Replit Autoscale ONLY** (api.levqor.ai)
+- NO backend on Vercel, NO frontend on Replit
 
 ### What This Locks
 1. All 23 blueprint-required routes must remain accessible
@@ -257,12 +330,14 @@ All 9 new policy pages verified:
 6. Checkout must always route to `https://api.levqor.ai/api/billing/checkout`
 7. Authentication must continue to protect `/dashboard` and `/admin` routes only
 8. Canonical domain `levqor.ai` must remain the primary public domain
+9. Usage summary API must remain at `/api/usage/summary`
 
 ### What This Authorizes
 - **Feature Additions:** New pages/routes may be added if they do not conflict with blueprint
 - **Bug Fixes:** Code may be modified to fix bugs that prevent blueprint compliance
 - **Performance:** Infrastructure changes that improve speed without changing functionality
 - **Security:** Security patches that enhance protection without weakening terms
+- **Monitoring:** Addition of observability, logging, and alerting systems
 
 ### What This Forbids
 - **Price Changes:** No tier prices may be reduced or removed without explicit approval
@@ -270,6 +345,7 @@ All 9 new policy pages verified:
 - **Route Removal:** No blueprint-required routes may be deleted
 - **Backend Bypass:** No direct backend endpoints may be added to frontend; all must route through `api.levqor.ai`
 - **Domain Changes:** No changes to canonical domain structure without governance review
+- **Architecture Violation:** No deployment of backend to Vercel or frontend to Replit
 
 ---
 
@@ -282,6 +358,14 @@ Every deployment must:
 3. Test `/pricing` for all 4 tier names and correct prices
 4. Test all 12 policy page routes return 200
 5. Test checkout endpoints respond with LIVE Stripe sessions
+6. Verify `/api/usage/summary` returns status=ok
+7. Run drift monitor: `node levqor-site/scripts/drift-monitor.js` → EXIT CODE 0
+
+**Enforcement Tools:**
+- Drift monitor: `levqor-site/scripts/drift-monitor.js` (v12.15 baseline)
+- Hardening checklist: `levqor-site/docs/HARDENING_CHECKLIST.md`
+- Deployment health: `levqor-site/scripts/deployment_health_check.py`
+- GitHub Actions: Hourly drift + health checks
 
 ### Breach Protocol
 If any blueprint requirement is violated:
@@ -294,10 +378,10 @@ If any blueprint requirement is violated:
 
 ## FINAL CERTIFICATION
 
-✅ **Blueprint Baseline v8.0-Final-Nov23 is ACTIVE**
+✅ **Blueprint Baseline v12.15 Hybrid is ACTIVE**
 
-**Registered By:** Frontend Release Engineering  
-**Date:** November 23, 2025  
+**Registered By:** Full-Stack Release Engineering  
+**Date:** November 24, 2025  
 **Authority:** Levqor Platform Governance  
 **Status:** LOCKED AND VERIFIED  
 
@@ -305,4 +389,4 @@ No further changes permitted without explicit compliance review.
 
 ---
 
-*This file is maintained as the authoritative source of truth for the Levqor frontend's agreed specifications, pricing, policy terms, and technical architecture. Do not modify without governance approval.*
+*This file is maintained as the authoritative source of truth for the Levqor full-stack platform's agreed specifications, pricing, policy terms, and technical architecture. Do not modify without governance approval.*
