@@ -10,8 +10,6 @@ import sys
 import jwt
 from datetime import datetime, timedelta
 
-from security_core import rate_limit, audit, validation, ip_reputation, config as sec_config
-
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 log = logging.getLogger("levqor")
 
@@ -129,29 +127,6 @@ def _log_in():
     if rate_check:
         return rate_check
 
-@app.before_request
-def security_core_before_request():
-    if not getattr(sec_config, "SECURITY_CORE_ENABLED", True):
-        return None
-    
-    path = request.path or ""
-    
-    if path.startswith("/static") or path in ("/health", "/favicon.ico"):
-        return None
-    
-    ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "unknown"
-    
-    suspicious = ip_reputation.is_suspicious_ip(ip)
-    if suspicious:
-        audit.audit_security_event("suspicious_ip", {"ip": ip, "path": path})
-    
-    if not rate_limit.check_rate_limit(ip, path):
-        audit.audit_security_event("rate_limit_block", {"ip": ip, "path": path})
-        return jsonify({"error": "Too many requests"}), 429
-    
-    rate_limit.record_hit(ip, path)
-    return None
-
 @app.after_request
 def add_headers(r):
     r.headers["Access-Control-Allow-Origin"] = "https://levqor.ai"
@@ -175,13 +150,6 @@ def on_error(e):
     
     cid = request.headers.get("X-Request-ID") or request.headers.get("X-Correlation-ID", "unknown")
     debug = os.getenv("INTEL_DEBUG_ERRORS", "false").lower() in ("1", "true", "yes", "on")
-    
-    audit.audit_security_event("unhandled_exception", {
-        "path": request.path,
-        "method": request.method,
-        "type": type(e).__name__,
-        "correlation_id": cid
-    })
     
     # Pass through HTTP exceptions (404, etc.)
     if isinstance(e, HTTPException):

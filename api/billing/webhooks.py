@@ -6,6 +6,8 @@ import os
 import logging
 from flask import Blueprint, request, jsonify
 
+from security_core import audit, config as sec_config
+
 bp = Blueprint("billing_webhooks", __name__, url_prefix="/api/billing")
 log = logging.getLogger("levqor.webhooks")
 
@@ -50,9 +52,10 @@ def stripe_webhook():
             log.error("Webhook secret not configured")
             return jsonify({"error": "webhook_secret_not_configured"}), 500
         
-        # Verify webhook signature
+        # Verify webhook signature with tolerance
         event = stripe.Webhook.construct_event(
-            payload, sig_header, webhook_secret
+            payload, sig_header, webhook_secret,
+            tolerance=sec_config.STRIPE_TOLERANCE_SECONDS
         )
         
         # Log the event
@@ -79,9 +82,20 @@ def stripe_webhook():
         
     except ValueError as e:
         log.error(f"Invalid payload: {e}")
+        ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "unknown"
+        audit.audit_security_event("stripe_webhook_invalid_payload", {
+            "reason": "invalid_json",
+            "ip": ip
+        })
         return jsonify({"error": "invalid_payload"}), 400
     except stripe.error.SignatureVerificationError as e:
         log.error(f"Invalid signature: {e}")
+        ip = request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "unknown"
+        audit.audit_security_event("stripe_webhook_invalid_signature", {
+            "reason": str(e)[:100],
+            "sig": "masked",
+            "ip": ip
+        })
         return jsonify({"error": "invalid_signature"}), 400
     except Exception as e:
         log.error(f"Webhook processing error: {e}")
@@ -110,8 +124,15 @@ def handle_subscription_updated(subscription):
     """Handle subscription updates (upgrades, downgrades, status changes)"""
     subscription_id = subscription.get('id')
     status = subscription.get('status')
+    customer_id = subscription.get('customer', 'unknown')
     
     log.info(f"Subscription updated: {subscription_id} (new status: {status})")
+    
+    audit.audit_security_event("subscription_update", {
+        "customer_id": customer_id[-8:] if len(customer_id) > 8 else customer_id,
+        "subscription_id": subscription_id[-8:] if len(subscription_id) > 8 else subscription_id,
+        "new_status": status,
+    })
     
     # TODO: Update user subscription status
     # execute_query(

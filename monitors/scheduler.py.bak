@@ -4,10 +4,7 @@ Automated Task Scheduler - APScheduler integration for periodic jobs
 import os
 import logging
 import subprocess
-import json
 from datetime import datetime
-
-from security_core import tamper_check, audit
 
 log = logging.getLogger("levqor.scheduler")
 
@@ -358,48 +355,6 @@ def run_alert_checks():
     except Exception as e:
         log.error(f"Alert checks error: {e}")
 
-def check_security_tamper():
-    """Periodic tamper detection for critical config/code files"""
-    log.info("Running security tamper check...")
-    
-    critical_files = [
-        "run.py",
-        "security_core/config.py",
-        "levqor-site/docs/BLUEPRINT_BASELINE.md"
-    ]
-    
-    checksums_file = "security_checksums.json"
-    
-    try:
-        current_checksums = tamper_check.compute_config_checksum(critical_files)
-        
-        if os.path.exists(checksums_file):
-            with open(checksums_file, "r") as f:
-                stored_checksums = json.load(f)
-            
-            changed_files = tamper_check.verify_checksums(stored_checksums, current_checksums)
-            
-            if changed_files:
-                for file in changed_files:
-                    audit.audit_security_event("config_tamper_detected", {
-                        "file": file,
-                        "timestamp": datetime.utcnow().isoformat()
-                    })
-                log.warning(f"Tamper detected in {len(changed_files)} files: {changed_files}")
-            else:
-                log.info("✅ Security tamper check: No changes detected")
-        else:
-            with open(checksums_file, "w") as f:
-                json.dump(current_checksums, f, indent=2)
-            log.info(f"✅ Initialized security checksums baseline for {len(current_checksums)} files")
-            audit.audit_security_event("security_baseline_initialized", {
-                "files": list(current_checksums.keys()),
-                "count": len(current_checksums)
-            })
-            
-    except Exception as e:
-        log.error(f"Security tamper check error: {e}")
-
 def init_scheduler():
     """Initialize and start APScheduler"""
     try:
@@ -568,17 +523,8 @@ def init_scheduler():
             replace_existing=True
         )
         
-        scheduler.add_job(
-            check_security_tamper,
-            'interval',
-            hours=6,
-            id='security_tamper_check',
-            name='Security tamper check',
-            replace_existing=True
-        )
-        
         scheduler.start()
-        log.info("✅ APScheduler initialized with 20 jobs (including 5 monitoring jobs + 1 security job)")
+        log.info("✅ APScheduler initialized with 19 jobs (including 5 monitoring jobs for Go/No-Go)")
         return scheduler
         
     except ImportError:
