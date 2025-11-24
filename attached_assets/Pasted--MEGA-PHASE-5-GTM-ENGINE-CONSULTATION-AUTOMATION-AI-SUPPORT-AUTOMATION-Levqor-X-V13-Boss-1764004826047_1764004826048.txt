@@ -1,0 +1,843 @@
+# MEGA-PHASE 5 — GTM ENGINE + CONSULTATION AUTOMATION + AI SUPPORT AUTOMATION
+# Levqor X — V13+ Boss Mode
+
+# ABSOLUTE RULES (DO NOT BREAK)
+# - Do NOT modify pricing (£9/£29/£59/£149), yearly (£90/£290/£590/£1490), DFY (£149/£299/£499).
+# - Do NOT change trial rules (7-day free, card required, cancel before Day 7).
+# - Do NOT change SLAs (48h / 24h / 12h / 4h).
+# - Do NOT edit legal/policy copy (terms, privacy, refund, SLA, etc.).
+# - Do NOT alter DB schema, DNS, auth middleware, Stripe plans, or environment variables.
+# - All changes must be additive, reversible, hydration-safe, and must pass TypeScript and drift checks.
+# - Re-use existing patterns: Security Core, metrics, marketing events, AI endpoints, design tokens.
+# - Frontend: Next.js app in levqor-site; Backend: Flask app in api/* and run.py.
+
+cd /home/runner/workspace
+
+echo "=== MEGA-PHASE 5 START ==="
+
+###############################################
+# STEP 0 — CONTEXT & SAFETY SANITY CHECK
+###############################################
+
+ls -1
+ls -1 levqor-site/src/app || true
+ls -1 api || true
+
+# Confirm this is the Levqor repo with existing AI + marketing endpoints
+grep -R "api/ai/chat" -n api || true
+grep -R "api/marketing/lead" -n api || true
+grep -R "usage_export_bp" -n api || true
+
+###############################################
+# STEP 1 — CONSULTATION AUTOMATION (NO HUMAN)
+###############################################
+# Goal: Fully AI-driven consultations. User never has to manually run them.
+
+# 1.1 Backend: /api/consultations/book
+# - File: api/consultations/book.py
+# - Blueprint: consultations_bp, url_prefix="/api/consultations"
+# - Route: POST /api/consultations/book
+# - Input JSON:
+#   { "name": string, "email": string, "timezone": string, "duration": 60|120, "preferred_time": string }
+# - Validation:
+#   - name: non-empty
+#   - email: use existing email validation pattern from api/marketing/lead.py
+#   - duration: must be 60 or 120
+#   - timezone: non-empty string
+# - Behavior:
+#   - Mask email in logs (abc***@domain.com)
+#   - Append record to workspace-data/consultations.json:
+#     [ { name, email, timezone, duration, preferred_time, created_at_iso } ]
+#   - Return JSON:
+#     {
+#       "success": true,
+#       "message": "Consultation booked",
+#       "brief": "...short AI-style preparation guidance text...",
+#       "duration": 60|120
+#     }
+# - On validation error: success=false, error="..."
+
+mkdir -p api/consultations workspace-data
+
+cat > api/consultations/book.py << 'EOF'
+from flask import Blueprint, request, jsonify
+import json, os, datetime, re
+
+consultations_bp = Blueprint("consultations", __name__)
+
+DATA_PATH = os.path.join(os.getcwd(), "workspace-data", "consultations.json")
+
+EMAIL_RE = re.compile(r".+@.+\..+")
+
+def _mask_email(email: str) -> str:
+    if not email or "@" not in email:
+        return "invalid"
+    local, domain = email.split("@", 1)
+    if len(local) <= 3:
+        return local + "***@" + domain
+    return local[:3] + "***@" + domain
+
+def _load_consultations():
+    if not os.path.exists(DATA_PATH):
+        return []
+    try:
+        with open(DATA_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+def _save_consultations(data):
+    os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
+    with open(DATA_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+@consultations_bp.route("/book", methods=["POST"])
+def book_consultation():
+    try:
+        payload = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "invalid_json"}), 400
+
+    name = (payload.get("name") or "").strip()
+    email = (payload.get("email") or "").strip()
+    timezone = (payload.get("timezone") or "").strip()
+    preferred_time = (payload.get("preferred_time") or "").strip()
+    duration = payload.get("duration")
+
+    if not name:
+        return jsonify({"success": False, "error": "name is required"}), 400
+    if not email:
+        return jsonify({"success": False, "error": "email is required"}), 400
+    if not EMAIL_RE.match(email):
+        return jsonify({"success": False, "error": "invalid_email"}), 400
+    if duration not in (60, 120):
+        return jsonify({"success": False, "error": "duration must be 60 or 120"}), 400
+    if not timezone:
+        return jsonify({"success": False, "error": "timezone is required"}), 400
+
+    record = {
+        "name": name,
+        "email": email,
+        "timezone": timezone,
+        "preferred_time": preferred_time,
+        "duration": duration,
+        "created_at": datetime.datetime.utcnow().isoformat() + "Z"
+    }
+
+    data = _load_consultations()
+    data.append(record)
+    _save_consultations(data)
+
+    masked = _mask_email(email)
+    print(f"[CONSULTATION_BOOKED] duration={duration} tz={timezone} email={masked}")
+
+    brief = (
+        "Thanks for booking your consultation. "
+        "Before the call, write down 3–5 workflows you want Levqor to automate, "
+        "export your recent usage if available, and note any tools you rely on "
+        "(CRMs, email providers, chat platforms). The AI consultation will focus "
+        "on getting you from 'ideas' to 'deployable workflows' within your 60–120 minute slot."
+    )
+
+    return jsonify({
+        "success": True,
+        "message": "Consultation booked",
+        "brief": brief,
+        "duration": duration
+    }), 200
+EOF
+
+# 1.2 Backend: /api/consultations/run
+# - File: api/consultations/run.py
+# - Route: POST /api/consultations/run
+# - Input:
+#   { "topic": string, "context": { ... }, "language": string optional }
+# - Behavior:
+#   - Use same pattern-based AI logic style as api/ai/chat.py / api/ai/workflow.py
+#   - Return structured consultation plan:
+#     {
+#       "success": true,
+#       "summary": "...",
+#       "phases": [
+#         { "title": "...", "steps": ["...", "..."] }
+#       ],
+#       "risks": ["...", "..."],
+#       "recommendations": ["...", "..."],
+#       "duration_hint": 60|120
+#     }
+
+cat > api/consultations/run.py << 'EOF'
+from flask import Blueprint, request, jsonify
+
+consultations_run_bp = Blueprint("consultations_run", __name__)
+
+def _build_plan(topic: str):
+    t = (topic or "").lower()
+    if "pricing" in t:
+        phases = [
+            {
+                "title": "Clarify your pricing and plans",
+                "steps": [
+                    "List your current plans and what each includes.",
+                    "Identify which plans generate the most support load.",
+                    "Define your ideal customer for each tier."
+                ]
+            },
+            {
+                "title": "Connect Levqor to your pricing pages",
+                "steps": [
+                    "Audit existing workflows that touch Stripe, billing emails, or churn.",
+                    "Add events to track trials, upgrades, cancellations.",
+                    "Define at least one lifecycle nudge for each plan."
+                ]
+            },
+            {
+                "title": "Automate upgrade and retention",
+                "steps": [
+                    "Set up triggers for trial expiring and low-usage customers.",
+                    "Design one win-back campaign for cancelled users.",
+                    "Measure uplift using Levqor’s usage and ROI exports."
+                ]
+            }
+        ]
+        risks = [
+            "Overcomplicating pricing with too many experimental tiers.",
+            "Not measuring the impact of lifecycle nudges."
+        ]
+        recommendations = [
+            "Start with the tiers you already have and focus on activation.",
+            "Add new workflows only when they clearly support a business goal."
+        ]
+        return phases, risks, recommendations, 60
+
+    phases = [
+        {
+            "title": "Clarify your objectives",
+            "steps": [
+                "Write down the 2–3 outcomes you want from Levqor (e.g., fewer manual tasks, faster onboarding, better reporting).",
+                "List your core tools (email, CRM, chat, billing).",
+                "Rank workflows by impact vs. effort."
+            ]
+        },
+        {
+            "title": "Design your first workflows",
+            "steps": [
+                "Use the Natural Language Workflow Builder to sketch 3 workflows in plain English.",
+                "Identify required triggers, conditions, and actions.",
+                "Decide which workflows you want to launch in the first week."
+            ]
+        },
+        {
+            "title": "Deploy and measure",
+            "steps": [
+                "Turn on one workflow at a time and verify end-to-end.",
+                "Use usage exports to track runs and AI credits.",
+                "Define a simple ROI metric (time saved per run × hourly rate)."
+            ]
+        }
+    ]
+    risks = [
+        "Starting too many workflows at once without validation.",
+        "Not defining clear success metrics for automation."
+    ]
+    recommendations = [
+        "Keep the first consultation focused on one team or one process.",
+        "Document every workflow in Levqor so changes stay transparent."
+    ]
+    return phases, risks, recommendations, 60
+
+@consultations_run_bp.route("/run", methods=["POST"])
+def run_consultation():
+    try:
+        payload = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "invalid_json"}), 400
+
+    topic = (payload.get("topic") or "").strip()
+    language = (payload.get("language") or "en").lower()
+
+    phases, risks, recommendations, duration_hint = _build_plan(topic)
+
+    print(f"[CONSULTATION_RUN] topic={topic[:60]} lang={language}")
+
+    summary = (
+        "This AI consultation plan is designed to move you from ideas to working automation. "
+        "We’ll clarify your goals, design high-impact workflows, and establish a simple way "
+        "to measure value so you know what Levqor is delivering."
+    )
+
+    return jsonify({
+        "success": True,
+        "summary": summary,
+        "phases": phases,
+        "risks": risks,
+        "recommendations": recommendations,
+        "duration_hint": duration_hint
+    }), 200
+EOF
+
+# 1.3 Register blueprints in run.py
+python3 - << 'EOF'
+import io, os, re, textwrap
+path = "run.py"
+src = open(path, "r", encoding="utf-8").read()
+
+if "consultations_bp" not in src:
+    src = src.replace(
+        "from api.usage.export import bp as usage_export_bp",
+        "from api.usage.export import bp as usage_export_bp\nfrom api.consultations.book import consultations_bp\nfrom api.consultations.run import consultations_run_bp"
+    )
+if "app.register_blueprint(consultations_bp" not in src:
+    src = src.replace(
+        "app.register_blueprint(usage_export_bp)",
+        "app.register_blueprint(usage_export_bp)\napp.register_blueprint(consultations_bp, url_prefix=\"/api/consultations\")\napp.register_blueprint(consultations_run_bp, url_prefix=\"/api/consultations\")"
+    )
+
+open(path, "w", encoding="utf-8").write(src)
+print("Updated run.py with consultation blueprints")
+EOF
+
+# 1.4 Frontend page: /consultation
+cat > levqor-site/src/app/consultation/page.tsx << 'EOF'
+"use client";
+
+import React, { useState } from "react";
+
+const DURATIONS = [
+  { value: 60, label: "60 minutes" },
+  { value: 120, label: "120 minutes" },
+];
+
+export default function ConsultationPage() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [timezone, setTimezone] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
+  const [duration, setDuration] = useState<number>(60);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{ brief: string; duration: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.levqor.ai";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/consultations/book`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          timezone,
+          preferred_time: preferredTime,
+          duration,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || "Something went wrong");
+      } else {
+        setResult({ brief: data.brief, duration: data.duration });
+      }
+    } catch (err) {
+      setError("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="max-w-3xl mx-auto py-16 px-4 space-y-8">
+      <section>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Book your AI consultation</h1>
+        <p className="text-gray-600">
+          Levqor&apos;s consultation is powered by AI. You book a slot, share your context,
+          and the system will generate a structured plan, step-by-step guidance, and follow-up
+          recommendations. You don&apos;t need to be on live calls for this to work.
+        </p>
+      </section>
+
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name</label>
+            <input
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Timezone</label>
+            <input
+              placeholder="e.g. Europe/London"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              value={timezone}
+              onChange={e => setTimezone(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Preferred time (optional)</label>
+            <input
+              placeholder="e.g. Tomorrow 3pm"
+              className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+              value={preferredTime}
+              onChange={e => setPreferredTime(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div>
+          <span className="block text-sm font-medium text-gray-700 mb-1">Duration</span>
+          <div className="flex gap-4">
+            {DURATIONS.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setDuration(opt.value)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border ${
+                  duration === opt.value
+                    ? "bg-primary-600 text-white border-primary-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:border-primary-400"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full inline-flex justify-center items-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-60"
+        >
+          {loading ? "Booking..." : "Book AI consultation"}
+        </button>
+      </form>
+
+      {result && (
+        <section className="bg-primary-50 border border-primary-100 rounded-2xl p-6 space-y-2">
+          <h2 className="text-xl font-semibold text-gray-900">You&apos;re booked</h2>
+          <p className="text-sm text-gray-700">
+            Your {result.duration}-minute AI consultation is now scheduled. Here&apos;s how to get the most from it:
+          </p>
+          <p className="text-sm text-gray-800 whitespace-pre-line">{result.brief}</p>
+        </section>
+      )}
+    </main>
+  );
+}
+EOF
+
+###############################################
+# STEP 2 — AI-FIRST SUPPORT AUTOMATION
+###############################################
+
+mkdir -p api/support
+
+cat > api/support/auto.py << 'EOF'
+from flask import Blueprint, request, jsonify
+
+support_auto_bp = Blueprint("support_auto", __name__)
+
+SENSITIVE_KEYWORDS = [
+    "breach", "hacked", "hack", "security", "leak", "gdpr", "ccpa",
+    "stolen", "fraud", "chargeback", "illegal", "lawsuit"
+]
+
+BILLING_KEYWORDS = [
+    "charge", "charged", "refund", "invoice", "billing", "payment",
+    "card declined", "overcharged"
+]
+
+def _needs_escalation(text: str) -> bool:
+    t = (text or "").lower()
+    if any(k in t for k in SENSITIVE_KEYWORDS):
+        return True
+    if any(k in t for k in BILLING_KEYWORDS):
+        return True
+    return False
+
+@support_auto_bp.route("/auto", methods=["POST"])
+def auto_support():
+    try:
+        payload = request.get_json(force=True) or {}
+    except Exception:
+        return jsonify({"success": False, "error": "invalid_json"}), 400
+
+    question = (payload.get("question") or "").strip()
+    error_code = (payload.get("error_code") or "").strip()
+    language = (payload.get("language") or "en").lower()
+
+    if not question and not error_code:
+        return jsonify({"success": False, "error": "question_or_error_required"}), 400
+
+    text = question + " " + error_code
+    escalate = _needs_escalation(text)
+
+    if "401" in text or "unauthorized" in text.lower():
+        answer = (
+            "This looks like an authentication or permission problem. "
+            "Check that your API keys or integrations are correct, ensure the account "
+            "has access to the resource, and retry after refreshing your credentials."
+        )
+    elif "timeout" in text.lower():
+        answer = (
+            "This appears to be a timeout. Start by reducing the amount of data per run, "
+            "increase any client-side timeout values where safe, and consider splitting "
+            "large workflows into smaller steps."
+        )
+    else:
+        answer = (
+            "Here is a general approach to resolving issues in Levqor: "
+            "1) Re-run the workflow with a small test case. "
+            "2) Check the logs or usage summary for errors. "
+            "3) Isolate the external integration (email, chat, billing) and test it separately. "
+            "4) If this still fails and the problem involves billing, security, or data rights, "
+            "it will be escalated to a human-operated support channel."
+        )
+
+    print(f"[SUPPORT_AUTO] lang={language} escalate={escalate} snippet={text[:80]}")
+
+    return jsonify({
+        "success": True,
+        "answer": answer,
+        "escalation_required": escalate
+    }), 200
+EOF
+
+python3 - << 'EOF'
+path = "run.py"
+src = open(path, "r", encoding="utf-8").read()
+if "support_auto_bp" not in src:
+    src = src.replace(
+        "from api.consultations.run import consultations_run_bp",
+        "from api.consultations.run import consultations_run_bp\nfrom api.support.auto import support_auto_bp"
+    )
+if "support_auto_bp" not in src:
+    src = src.replace(
+        "app.register_blueprint(consultations_run_bp, url_prefix=\"/api/consultations\")",
+        "app.register_blueprint(consultations_run_bp, url_prefix=\"/api/consultations\")\napp.register_blueprint(support_auto_bp, url_prefix=\"/api/support\")"
+    )
+open(path, "w", encoding="utf-8").write(src)
+print("Registered support_auto_bp")
+EOF
+
+# 2.2 Frontend: AI Support Center at /support
+cat > levqor-site/src/app/support/page.tsx << 'EOF'
+"use client";
+
+import React, { useState } from "react";
+
+export default function SupportPage() {
+  const [question, setQuestion] = useState("");
+  const [errorCode, setErrorCode] = useState("");
+  const [answer, setAnswer] = useState<string | null>(null);
+  const [escalation, setEscalation] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.levqor.ai";
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setAnswer(null);
+    setEscalation(null);
+    setLoading(true);
+    try {
+      const res = await fetch(`${apiBase}/api/support/auto`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question,
+          error_code: errorCode || undefined,
+          language: "en"
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setErr(data.error || "Something went wrong");
+      } else {
+        setAnswer(data.answer);
+        setEscalation(!!data.escalation_required);
+      }
+    } catch (e) {
+      setErr("Network error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main className="max-w-3xl mx-auto py-16 px-4 space-y-8">
+      <section>
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Support center</h1>
+        <p className="text-gray-600">
+          Start with AI-powered support. Most questions are resolved instantly. 
+          If your request involves billing, security, or data rights, it will be 
+          escalated to a human-operated channel automatically.
+        </p>
+      </section>
+
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-sm rounded-2xl p-6 border border-gray-100">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">What do you need help with?</label>
+          <textarea
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            rows={4}
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">
+            Error code or message (optional)
+          </label>
+          <input
+            className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+            placeholder="e.g. 401 Unauthorized from Slack"
+            value={errorCode}
+            onChange={e => setErrorCode(e.target.value)}
+          />
+        </div>
+
+        {err && <p className="text-sm text-red-600">{err}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full inline-flex justify-center items-center rounded-xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-60"
+        >
+          {loading ? "Thinking..." : "Ask AI support"}
+        </button>
+      </form>
+
+      {answer && (
+        <section className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-3">
+          <h2 className="text-lg font-semibold text-gray-900">AI response</h2>
+          <p className="text-sm text-gray-800 whitespace-pre-line">{answer}</p>
+          {escalation !== null && (
+            <p className="text-xs text-gray-600">
+              {escalation
+                ? "This request is sensitive (billing, security, or data rights). A human-operated channel will review it."
+                : "This request appears safe to fully handle via AI. You can follow these steps immediately."}
+            </p>
+          )}
+        </section>
+      )}
+    </main>
+  );
+}
+EOF
+
+###############################################
+# STEP 3 — LIFECYCLE ENGINE (TRIAL → UPGRADE)
+###############################################
+
+mkdir -p scripts/automation workspace-data
+
+cat > scripts/automation/lifecycle_tick.py << 'EOF'
+import json, os, datetime
+
+PATH = os.path.join(os.getcwd(), "workspace-data", "lifecycle.json")
+
+BUCKETS = [1, 3, 6, 7, 10, 30]
+
+def _load():
+    if not os.path.exists(PATH):
+        return []
+    try:
+        with open(PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return []
+
+def _save(data):
+    os.makedirs(os.path.dirname(PATH), exist_ok=True)
+    with open(PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def main():
+    data = _load()
+    now = datetime.datetime.utcnow().isoformat() + "Z"
+    for bucket in BUCKETS:
+        data.append({
+            "bucket_day": bucket,
+            "created_at": now
+        })
+        print(f"[LIFECYCLE_TICK] bucket_day={bucket}")
+    _save(data)
+
+if __name__ == "__main__":
+    main()
+EOF
+
+python3 - << 'EOF'
+# Register lifecycle_tick in scheduler if not present
+path = "monitors/scheduler.py"
+if not os.path.exists(path):
+    print("scheduler.py not found, skipping lifecycle scheduler wiring")
+else:
+    src = open(path, "r", encoding="utf-8").read()
+    if "lifecycle_tick.py" not in src:
+        idx = src.rfind("scheduler.add_job")
+        if idx == -1:
+            # append simple job
+            src += """
+
+def lifecycle_tick_job():
+    import subprocess, sys, os
+    cmd = [sys.executable, os.path.join(os.getcwd(), "scripts", "automation", "lifecycle_tick.py")]
+    subprocess.run(cmd, check=False)
+
+scheduler.add_job(lifecycle_tick_job, "cron", hour=2, minute=0, id="lifecycle_tick", name="Daily lifecycle tick")
+"""
+        else:
+            src += """
+
+def lifecycle_tick_job():
+    import subprocess, sys, os
+    cmd = [sys.executable, os.path.join(os.getcwd(), "scripts", "automation", "lifecycle_tick.py")]
+    subprocess.run(cmd, check=False)
+
+scheduler.add_job(lifecycle_tick_job, "cron", hour=2, minute=0, id="lifecycle_tick", name="Daily lifecycle tick")
+"""
+        open(path, "w", encoding="utf-8").write(src)
+        print("Registered lifecycle_tick_job")
+EOF
+
+###############################################
+# STEP 4 — REVENUE FUNNEL INSTRUMENTATION
+###############################################
+
+# CTA click logging already exists via /api/marketing/events; keep using it from frontend.
+# Exit intent modal already implemented in MEGA-PHASE 3. No further change required here.
+
+###############################################
+# STEP 5 — METRICS EXTENSION
+###############################################
+
+# Extend /api/metrics/app to add new counters if file exists
+python3 - << 'EOF'
+import os, re
+
+path = "api/metrics/app.py"
+if not os.path.exists(path):
+    print("metrics/app.py not found, skipping")
+else:
+    src = open(path, "r", encoding="utf-8").read()
+    if "consultations_booked" not in src:
+        # naive extension: add keys into METRICS dict and output
+        src = src.replace(
+            "METRICS = {",
+            "METRICS = {\n    \"consultations_booked\": 0,\n    \"consultations_run\": 0,\n    \"support_auto_requests\": 0,\n    \"support_auto_escalations\": 0,\n    \"lifecycle_ticks\": 0,\n    \"pricing_cta_clicks\": 0,\n    \"trial_feedback_submissions\": 0,"
+        )
+        open(path, "w", encoding="utf-8").write(src)
+        print("Extended METRICS in metrics/app.py")
+EOF
+
+# Wire metrics increments into new endpoints
+python3 - << 'EOF'
+# Best-effort: if metrics.app is importable, add increments by editing files
+import os, textwrap
+
+try:
+    import api.metrics.app  # type: ignore
+    HAS_METRICS = True
+except Exception:
+    HAS_METRICS = False
+
+if not HAS_METRICS:
+    print("metrics.app not importable, skipping metric wiring")
+else:
+    def patch_file(path, marker, code):
+        if not os.path.exists(path):
+            return
+        src = open(path, "r", encoding="utf-8").read()
+        if marker in src:
+            return
+        if "from api.metrics.app import increment_metric" not in src:
+            src = src.replace(
+                "from flask import Blueprint, request, jsonify",
+                "from flask import Blueprint, request, jsonify\nfrom api.metrics.app import increment_metric"
+            )
+        src = src.replace(
+            "@consultations_bp.route(\"/book\", methods=[\"POST\"])",
+            "@consultations_bp.route(\"/book\", methods=[\"POST\"])\n" + code
+        )
+        open(path, "w", encoding="utf-8").write(src)
+
+    patch_file(
+        "api/consultations/book.py",
+        "increment_metric(\"consultations_booked\"",
+        "def _increment_metrics():\n    try:\n        increment_metric(\"consultations_booked\")\n    except Exception:\n        pass\n\n"
+    )
+
+print("Metric wiring best-effort complete")
+EOF
+
+###############################################
+# STEP 6 — VERIFICATION
+###############################################
+
+cd /home/runner/workspace/levqor-site
+echo "=== TypeScript Check ==="
+npx tsc --noEmit || echo "TSC failed"
+
+echo "=== Drift Monitor ==="
+node scripts/drift-monitor.js || echo "DRIFT MONITOR FAILED"
+
+cd /home/runner/workspace
+
+echo "=== Backend Smoke Tests ==="
+python3 - << 'EOF'
+import requests, json
+
+base = "https://api.levqor.ai"
+def try_post(path, payload):
+    try:
+        r = requests.post(base + path, json=payload, timeout=10)
+        print(path, r.status_code, r.text[:200])
+    except Exception as e:
+        print(path, "ERROR", e)
+
+try_post("/api/consultations/book", {
+    "name": "Test User",
+    "email": "test@example.com",
+    "timezone": "Europe/London",
+    "duration": 60,
+    "preferred_time": "Tomorrow 3pm"
+})
+
+try_post("/api/support/auto", {
+    "question": "I have an issue with my workflow timing out.",
+    "error_code": "",
+    "language": "en"
+})
+EOF
+
+echo "=== MEGA-PHASE 5 COMPLETE (if TSC + DRIFT are green) ==="
