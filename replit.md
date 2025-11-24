@@ -9,6 +9,7 @@ Levqor X is a comprehensive data backup and retention management platform offeri
 - **MEGA-PHASE 2:** Complete i18n infrastructure for 4 languages (EN/DE/FR/ES), currency formatting utilities, locale-aware routing with auth protection
 - **MEGA-PHASE 3 (COMPLETE):** All 4 AI components wired to backend APIs, metrics instrumentation across all endpoints, Exit Intent Modal deployed on pricing page. Production-ready AI experience with observability.
 - **MEGA-PHASE 7 (COMPLETE 2025-11-24):** Global i18n upgrade to 40 languages with 3-tier classification, 9 Tier-1 full translations (en/de/fr/es/pt/it/hi/ar/zh-Hans), multilingual AI response prefixes, all Blueprint invariants preserved.
+- **MEGA-PHASE 8 (COMPLETE 2025-11-24):** Real multilingual AI with GPT-4o-mini integration across all 4 endpoints (chat, workflow, debug, onboarding). Strict cost controls (256 tokens, 10s timeout), pricing-invariant prompts, robust fallbacks, OpenAI metrics tracking. Zero Blueprint drift.
 
 The V12.12 Enterprise upgrade focused on enhancing reliability, resiliency, observability, monitoring, and automating enterprise support while maintaining backward compatibility.
 
@@ -73,10 +74,10 @@ This separation ensures optimal scaling for both components and prevents deploym
 - **PostgreSQL**: The database used for the project, hosted on Replit for development.
 
 ### Framework Dependencies
-- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM.
+- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM, OpenAI SDK (GPT-4o-mini).
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS, NextAuth, next-intl.
 - **Database**: Drizzle ORM for schema definitions and PostgreSQL driver.
-- **AI Components**: 6 client-side prototypes ready for backend integration.
+- **AI Integration**: 6 frontend components + 4 backend endpoints powered by GPT-4o-mini with pattern-based fallbacks.
 
 ### Authentication & Security
 - **NextAuth**: Planned for OAuth integration (Google/Microsoft).
@@ -135,6 +136,49 @@ This separation ensures optimal scaling for both components and prevents deploym
 - Full SEO infrastructure verified (robots.txt, metadata, canonical URLs)
 
 **Status:** ✅ COMPLETE. 393 lines added (370 JSON translations, 23 Python greeting logic), all Blueprint invariants preserved, production-ready. See `MEGA-PHASE-7-REPORT.md` for full details.
+
+### MEGA-PHASE 8: Real Multilingual AI with GPT-4o-mini (COMPLETE 2025-11-24)
+
+**OpenAI Integration (246 lines):**
+- Enhanced `api/ai/service.py` with GPT-4o-mini integration (+186 lines)
+- `is_ai_enabled()` function for AI_ENABLED + OPENAI_API_KEY gating
+- `_call_openai()` with 10s timeout, max_tokens=256, temperature=0.4
+- Structured JSON parsing for workflow/debug/onboarding responses
+- Pricing-invariant system prompts (Blueprint values hard-coded in prompts)
+- Language-aware prompts for all 40 languages
+
+**Metrics Enhancement:**
+- Added OpenAI-specific counters to `api/metrics/app.py` (+60 lines)
+- `ai_openai_calls_total`/`last_5m` and `ai_openai_errors_total`/`last_5m`
+- Full instrumentation: increment_openai_call() and increment_openai_error()
+- Metrics exposed in `/api/metrics/app` endpoint
+
+**All 4 Endpoints with Real AI:**
+- Chat: ✅ Working with GPT-4o-mini (multilingual Q&A)
+- Workflow: ✅ Working with GPT-4o-mini (structured workflow generation)
+- Debug: ✅ Working with GPT-4o-mini (error analysis with prevention tips)
+- Onboarding: ✅ Working with GPT-4o-mini (interactive guidance)
+
+**Cost Controls & Safety:**
+- Model: gpt-4o-mini (lowest cost GPT model)
+- Max tokens: 256 per request (prevents runaway costs)
+- Timeout: 10 seconds (prevents hanging requests)
+- Temperature: 0.4 (balanced creativity/consistency)
+- Fallback: Pattern-based responses when AI disabled/unavailable
+
+**Multilingual Testing:**
+- English (en), German (de), French (fr), Spanish (es) ✅
+- Portuguese (pt), Italian (it), Hindi (hi) ✅
+- Arabic (ar), Chinese Simplified (zh-Hans) ✅
+
+**Final Verification:**
+- TypeScript: 0 errors
+- Drift Monitor: PASS (zero Blueprint violations)
+- Pricing Integrity: £9/29/59/149 monthly intact
+- Trial Terms: "7-day free trial" preserved
+- Architect Review: PASS (no security issues)
+
+**Status:** ✅ COMPLETE. All 4 AI endpoints functional with real GPT-4o-mini responses, robust fallbacks, full metrics tracking, and zero Blueprint drift. See `MEGA-PHASE-8-REPORT.md` for full details.
 
 ### MEGA-PHASE 1: AI UX & Branding (Completed 2025-11-24)
 
