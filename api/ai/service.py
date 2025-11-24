@@ -246,6 +246,31 @@ def _extract_next_step(text: str) -> str:
     return lines[0] if lines else text[:100]
 
 
+def _get_greeting_prefix(language: str) -> str:
+    """
+    Get language-appropriate greeting prefix for responses.
+    MEGA-PHASE 7: Supports all 9 Tier-1 languages.
+    
+    Args:
+        language: Normalized language code (en, de, fr, es, pt, it, hi, ar, zh-hans)
+    
+    Returns:
+        Greeting string appropriate for the language, empty for English
+    """
+    greetings = {
+        "en": "",  # No prefix for English (default)
+        "de": "Hallo! ",  # German
+        "fr": "Bonjour! ",  # French
+        "es": "¡Hola! ",  # Spanish
+        "pt": "Olá! ",  # Portuguese
+        "it": "Ciao! ",  # Italian
+        "hi": "नमस्ते! ",  # Hindi
+        "ar": "مرحباً! ",  # Arabic
+        "zh-hans": "你好！",  # Chinese Simplified
+    }
+    return greetings.get(language.lower(), "")
+
+
 def _pattern_based_response(
     task: str,
     language: str,
@@ -254,29 +279,31 @@ def _pattern_based_response(
     """
     Fallback to existing pattern-based logic.
     This preserves all existing behavior when OpenAI is not available.
+    MEGA-PHASE 7: Now includes language-aware response prefixes.
     """
     if task == "chat":
-        return _pattern_chat(payload)
+        return _pattern_chat(payload, language)
     elif task == "workflow":
-        return _pattern_workflow(payload)
+        return _pattern_workflow(payload, language)
     elif task == "debug":
-        return _pattern_debug(payload)
+        return _pattern_debug(payload, language)
     elif task == "onboarding":
-        return _pattern_onboarding(payload)
+        return _pattern_onboarding(payload, language)
     
     return {"success": False, "error": "Unknown task type"}
 
 
-def _pattern_chat(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Pattern-based chat (existing logic from api/ai/chat.py)."""
+def _pattern_chat(payload: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
+    """Pattern-based chat (existing logic from api/ai/chat.py) with multilingual support."""
     query = payload.get("query", "").lower()
     context = payload.get("context", {})
+    greeting = _get_greeting_prefix(language)
     
     if any(word in query for word in ["workflow", "create", "build"]):
         return {
             "success": True,
             "answer": (
-                "To create a workflow in Levqor, go to the Workflows section in your dashboard. "
+                f"{greeting}To create a workflow in Levqor, go to the Workflows section in your dashboard. "
                 "You can use our Natural Language Builder to describe what you want in plain English, "
                 "or use the visual builder for more control."
             ),
@@ -285,61 +312,63 @@ def _pattern_chat(payload: Dict[str, Any]) -> Dict[str, Any]:
                 {"step": 2, "action": "Click 'New Workflow'"},
                 {"step": 3, "action": "Choose Natural Language or Visual mode"}
             ],
-            "meta": {"ai_backend": "pattern", "language": "en"}
+            "meta": {"ai_backend": "pattern", "language": language}
         }
     
     elif any(word in query for word in ["pricing", "cost", "price", "plan"]):
         return {
             "success": True,
             "answer": (
-                "Levqor offers 4 pricing tiers: Starter (£9/mo), Growth (£29/mo), "
+                f"{greeting}Levqor offers 4 pricing tiers: Starter (£9/mo), Growth (£29/mo), "
                 "Business (£59/mo), and Agency (£149/mo). All plans include a 7-day free trial. "
                 "View full details at levqor.ai/pricing"
             ),
-            "meta": {"ai_backend": "pattern", "language": "en"}
+            "meta": {"ai_backend": "pattern", "language": language}
         }
     
     elif any(word in query for word in ["trial", "free"]):
         return {
             "success": True,
             "answer": (
-                "All Levqor plans include a 7-day free trial. Card required, but you won't be "
+                f"{greeting}All Levqor plans include a 7-day free trial. Card required, but you won't be "
                 "charged if you cancel before Day 7. Start your trial on the pricing page."
             ),
-            "meta": {"ai_backend": "pattern", "language": "en"}
+            "meta": {"ai_backend": "pattern", "language": language}
         }
     
     else:
         return {
             "success": True,
             "answer": (
-                "I can help you with workflows, pricing, trials, support, and data management. "
+                f"{greeting}I can help you with workflows, pricing, trials, support, and data management. "
                 "For specific questions, please contact our support team."
             ),
-            "meta": {"ai_backend": "pattern", "language": "en"}
+            "meta": {"ai_backend": "pattern", "language": language}
         }
 
 
-def _pattern_workflow(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Pattern-based workflow builder."""
+def _pattern_workflow(payload: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
+    """Pattern-based workflow builder with multilingual support."""
     description = payload.get("description", "").lower()
+    greeting = _get_greeting_prefix(language)
     
     return {
         "success": True,
         "steps": [
-            {"step": 1, "action": "Define trigger (when should workflow run?)"},
+            {"step": 1, "action": f"{greeting}Define trigger (when should workflow run?)"},
             {"step": 2, "action": "Add conditions (optional filters)"},
             {"step": 3, "action": "Configure actions (what should happen?)"},
             {"step": 4, "action": "Test workflow with sample data"},
             {"step": 5, "action": "Activate workflow"}
         ],
-        "meta": {"ai_backend": "pattern", "language": "en"}
+        "meta": {"ai_backend": "pattern", "language": language}
     }
 
 
-def _pattern_debug(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Pattern-based debug assistance."""
+def _pattern_debug(payload: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
+    """Pattern-based debug assistance with multilingual support."""
     error = payload.get("error", "").lower()
+    greeting = _get_greeting_prefix(language)
     
     suggestions = [
         "Check your workflow configuration for missing fields",
@@ -350,28 +379,29 @@ def _pattern_debug(payload: Dict[str, Any]) -> Dict[str, Any]:
     
     return {
         "success": True,
-        "explanation": "Based on the error, here are some debugging steps to try.",
+        "explanation": f"{greeting}Based on the error, here are some debugging steps to try.",
         "suggestions": suggestions,
-        "meta": {"ai_backend": "pattern", "language": "en"}
+        "meta": {"ai_backend": "pattern", "language": language}
     }
 
 
-def _pattern_onboarding(payload: Dict[str, Any]) -> Dict[str, Any]:
-    """Pattern-based onboarding guidance."""
+def _pattern_onboarding(payload: Dict[str, Any], language: str = "en") -> Dict[str, Any]:
+    """Pattern-based onboarding guidance with multilingual support."""
     current_step = payload.get("current_step", 0)
+    greeting = _get_greeting_prefix(language)
     
     steps_map = {
-        0: "Welcome! Let's get you started by creating your first workflow.",
-        1: "Great! Now connect your first integration (email, Slack, or CRM).",
-        2: "Perfect! Test your workflow with sample data to make sure it works.",
-        3: "Excellent! You're ready to activate your workflow and automate."
+        0: f"{greeting}Welcome! Let's get you started by creating your first workflow.",
+        1: f"{greeting}Great! Now connect your first integration (email, Slack, or CRM).",
+        2: f"{greeting}Perfect! Test your workflow with sample data to make sure it works.",
+        3: f"{greeting}Excellent! You're ready to activate your workflow and automate."
     }
     
-    guidance = steps_map.get(current_step, "Continue exploring Levqor features!")
+    guidance = steps_map.get(current_step, f"{greeting}Continue exploring Levqor features!")
     
     return {
         "success": True,
         "guidance": guidance,
         "next_step": guidance,
-        "meta": {"ai_backend": "pattern", "language": "en"}
+        "meta": {"ai_backend": "pattern", "language": language}
     }
