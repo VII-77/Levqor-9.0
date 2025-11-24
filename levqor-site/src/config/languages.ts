@@ -69,8 +69,8 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "es", label: "Spanish", nativeLabel: "Español", region: "Europe", routedLocale: "es", hasTranslations: true },
   
   // TIER 1 new additions (translation files added in MEGA-PHASE 7)
-  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
-  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "en", hasTranslations: true },
+  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "en", hasTranslations: true },
   
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: PARTIAL / FUTURE FULL (17 languages)
@@ -120,7 +120,7 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "fa", label: "Persian (Farsi)", nativeLabel: "فارسی", region: "Middle East", routedLocale: "en", hasTranslations: false },
   
   // TIER 1 South Asian (translations added in MEGA-PHASE 7)
-  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "en", hasTranslations: true },
   
   // South Asian Tier 3
   { code: "ta", label: "Tamil", nativeLabel: "தமிழ்", region: "South Asia", routedLocale: "en", hasTranslations: false },
@@ -130,10 +130,10 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "gu", label: "Gujarati", nativeLabel: "ગુજરાતી", region: "South Asia", routedLocale: "en", hasTranslations: false },
   
   // TIER 1 Middle Eastern (translation added in MEGA-PHASE 7)
-  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "en", hasTranslations: true },
   
   // TIER 1 East Asian (translation added in MEGA-PHASE 7)
-  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "en", hasTranslations: true },
   
   // East Asian Tier 3
   { code: "zh-Hant", label: "Chinese (Traditional)", nativeLabel: "繁體中文", region: "East Asia", routedLocale: "en", hasTranslations: false },
