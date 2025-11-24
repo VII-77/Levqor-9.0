@@ -1,9 +1,11 @@
 from flask import Blueprint, request, jsonify
 import json
 import os
+import logging
 from datetime import datetime
 
 lead_bp = Blueprint('lead', __name__)
+logger = logging.getLogger(__name__)
 
 LEADS_FILE = 'data/marketing_leads.json'
 
@@ -19,11 +21,15 @@ def capture_lead():
         data = request.get_json()
         
         if not data:
-            return jsonify({"error": "No data provided"}), 400
+            return jsonify({"success": False, "error": "No data provided"}), 400
         
-        email = data.get('email')
+        email = data.get('email', '').strip()
         if not email:
-            return jsonify({"error": "Email is required"}), 400
+            return jsonify({"success": False, "error": "email is required"}), 400
+        
+        # Email format validation
+        if '@' not in email or len(email) < 3:
+            return jsonify({"success": False, "error": "Invalid email format"}), 400
         
         lead = {
             "email": email,
@@ -55,10 +61,15 @@ def capture_lead():
         with open(LEADS_FILE, 'w') as f:
             json.dump(leads, f, indent=2)
         
+        # Structured logging with masked email
+        email_masked = f"{email.split('@')[0][:3]}***@{email.split('@')[1]}"
+        logger.info(f"LEAD_CAPTURED: source={lead['source']} email={email_masked} timestamp={lead['timestamp']}")
+        
         return jsonify({
             "success": True,
             "message": "Lead captured successfully"
         }), 201
         
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"LEAD_CAPTURE_ERROR: {str(e)}")
+        return jsonify({"success": False, "error": "Internal server error"}), 500

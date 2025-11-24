@@ -1,0 +1,14 @@
+[
+  {
+    "event_type": "page_view",
+    "email": "",
+    "user_id": "",
+    "properties": {},
+    "timestamp": "2025-11-24T13:19:11.332345",
+    "metadata": {
+      "ip": "127.0.0.1",
+      "user_agent": "curl/8.14.1",
+      "referrer": ""
+    }
+  }
+]

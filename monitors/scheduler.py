@@ -136,6 +136,70 @@ def update_kv_costs():
     except Exception as e:
         log.error(f"KV cost update failed: {e}")
 
+def run_marketing_rollup():
+    """Daily marketing rollup - aggregate leads and events"""
+    log.info("Running marketing rollup...")
+    try:
+        import json
+        from pathlib import Path
+        from collections import Counter
+        
+        # Read marketing leads
+        leads_file = Path('data/marketing_leads.json')
+        events_file = Path('data/marketing_events.json')
+        
+        lead_count = 0
+        event_count = 0
+        pricing_views = 0
+        trial_views = 0
+        event_types = Counter()
+        sources = Counter()
+        
+        # Aggregate leads from last 24h
+        if leads_file.exists():
+            with open(leads_file, 'r') as f:
+                try:
+                    leads = json.load(f)
+                    from datetime import datetime, timedelta
+                    cutoff = (datetime.utcnow() - timedelta(days=1)).isoformat()
+                    recent_leads = [l for l in leads if l.get('timestamp', '') > cutoff]
+                    lead_count = len(recent_leads)
+                    for lead in recent_leads:
+                        sources[lead.get('source', 'unknown')] += 1
+                except (json.JSONDecodeError, Exception) as e:
+                    log.warning(f"Error reading leads file: {e}")
+        
+        # Aggregate events from last 24h
+        if events_file.exists():
+            with open(events_file, 'r') as f:
+                try:
+                    events = json.load(f)
+                    from datetime import datetime, timedelta
+                    cutoff = (datetime.utcnow() - timedelta(days=1)).isoformat()
+                    recent_events = [e for e in events if e.get('timestamp', '') > cutoff]
+                    event_count = len(recent_events)
+                    for event in recent_events:
+                        event_types[event.get('event_type', 'unknown')] += 1
+                        page = event.get('properties', {}).get('page', '')
+                        if not page:
+                            # Check top-level page field (used by PageViewTracker)
+                            page = event.get('page', '')
+                        if page == '/pricing':
+                            pricing_views += 1
+                        elif page == '/trial':
+                            trial_views += 1
+                except (json.JSONDecodeError, Exception) as e:
+                    log.warning(f"Error reading events file: {e}")
+        
+        # Log aggregated metrics
+        log.info(f"MARKETING_ROLLUP: leads={lead_count} events={event_count} pricing_views={pricing_views} trial_views={trial_views}")
+        log.info(f"MARKETING_SOURCES: {dict(sources)}")
+        log.info(f"MARKETING_EVENT_TYPES: {dict(event_types)}")
+        log.info("✅ Marketing rollup complete")
+        
+    except Exception as e:
+        log.error(f"Marketing rollup error: {e}")
+
 def run_growth_retention():
     """Daily growth retention aggregation by source"""
     log.info("Running growth retention aggregation...")
@@ -350,6 +414,14 @@ def init_scheduler():
         )
         
         scheduler.add_job(
+            run_marketing_rollup,
+            CronTrigger(hour=3, minute=0, timezone='UTC'),
+            id='marketing_rollup',
+            name='Daily marketing rollup',
+            replace_existing=True
+        )
+        
+        scheduler.add_job(
             run_governance_report,
             CronTrigger(day_of_week='sun', hour=9, minute=0, timezone='Europe/London'),
             id='governance_report',
@@ -452,7 +524,7 @@ def init_scheduler():
         )
         
         scheduler.start()
-        log.info("✅ APScheduler initialized with 18 jobs (including 5 monitoring jobs for Go/No-Go)")
+        log.info("✅ APScheduler initialized with 19 jobs (including 5 monitoring jobs for Go/No-Go)")
         return scheduler
         
     except ImportError:
