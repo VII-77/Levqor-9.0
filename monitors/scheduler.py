@@ -362,11 +362,37 @@ def run_omega_self_monitor():
     """MEGA-PHASE Ω: Omega Self Monitor (every 10 minutes)"""
     log.info("Running Omega Self Monitor...")
     try:
+        from run import app
         from monitors import omega_self_monitor
-        omega_self_monitor.run()
+        with app.app_context():
+            omega_self_monitor.run()
         log.info("✅ Omega Self Monitor complete")
     except Exception as e:
         log.error(f"Omega Self Monitor error: {e}")
+
+def run_omega_operator():
+    """MEGA-PHASE Ω: Omega Operator Advisor (every 15 minutes)"""
+    log.info("Running Omega Operator Advisor...")
+    try:
+        from run import app
+        from monitors import omega_operator
+        with app.app_context():
+            omega_operator.run()
+        log.info("✅ Omega Operator Advisor complete")
+    except Exception as e:
+        log.error(f"Omega Operator Advisor error: {e}")
+
+def run_omega_optimizer():
+    """MEGA-PHASE Ω: Omega Optimization Engine (every 30 minutes)"""
+    log.info("Running Omega Optimization Engine...")
+    try:
+        from run import app
+        from monitors import omega_optimizer
+        with app.app_context():
+            omega_optimizer.run()
+        log.info("✅ Omega Optimization Engine complete")
+    except Exception as e:
+        log.error(f"Omega Optimization Engine error: {e}")
 
 def check_security_tamper():
     """Periodic tamper detection for critical config/code files"""
@@ -597,8 +623,28 @@ def init_scheduler():
             replace_existing=True
         )
         
+        # MEGA-PHASE Ω: Omega Operator Advisor
+        scheduler.add_job(
+            run_omega_operator,
+            'interval',
+            minutes=15,
+            id='omega_operator_advisor',
+            name='Omega Operator Advisor',
+            replace_existing=True
+        )
+        
+        # MEGA-PHASE Ω: Omega Optimization Engine
+        scheduler.add_job(
+            run_omega_optimizer,
+            'interval',
+            minutes=30,
+            id='omega_optimization_engine',
+            name='Omega Optimization Engine',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        log.info("✅ APScheduler initialized with 21 jobs (including 6 monitoring jobs + 1 security job + 1 omega job)")
+        log.info("✅ APScheduler initialized with 23 jobs (including 6 monitoring jobs + 1 security job + 3 omega jobs)")
         return scheduler
         
     except ImportError:

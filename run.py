@@ -940,6 +940,9 @@ from api.support.auto import bp as support_auto_bp
 from api.marketing.lifecycle import bp as lifecycle_bp
 from api.referrals.routes import bp as referrals_bp
 from api.knowledge.search import bp as knowledge_bp
+from api.omega.operator import bp as omega_operator_bp
+from api.omega.optimizations import bp as omega_optimizations_bp
+from api.omega.dashboard import bp as omega_dashboard_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -952,6 +955,9 @@ app.register_blueprint(support_auto_bp)
 app.register_blueprint(lifecycle_bp)
 app.register_blueprint(referrals_bp)
 app.register_blueprint(knowledge_bp)
+app.register_blueprint(omega_operator_bp)
+app.register_blueprint(omega_optimizations_bp)
+app.register_blueprint(omega_dashboard_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():

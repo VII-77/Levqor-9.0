@@ -1,0 +1,37 @@
+{
+  "generated_at": "2025-11-24T19:17:36.289214Z",
+  "task_count": 3,
+  "tasks": [
+    {
+      "id": "ai_zero_activity_202511241917",
+      "severity": "info",
+      "category": "ai",
+      "description": "Zero AI activity in last 5 minutes",
+      "recommended_action": "Normal in dev/low-traffic periods. In production, verify AI endpoints are discoverable and CTAs are visible.",
+      "evidence": {
+        "requests_last_5m": 0
+      }
+    },
+    {
+      "id": "gtm_zero_consultations_202511241917",
+      "severity": "warn",
+      "category": "gtm",
+      "description": "No consultations booked since last restart",
+      "recommended_action": "Review consultation CTA visibility on /pricing and /consultation pages. Check lifecycle nudges for trial users. Verify /api/marketing/consultation/book endpoint is functional.",
+      "evidence": {
+        "consultations_booked": 0,
+        "pricing_cta_clicks": 0
+      }
+    },
+    {
+      "id": "gtm_low_cta_202511241917",
+      "severity": "info",
+      "category": "gtm",
+      "description": "Low pricing CTA engagement",
+      "recommended_action": "Normal in dev. In production, A/B test CTA copy (e.g., 'Start Free Trial' vs 'Get Started'). Consider adding urgency ('7-day trial, no commitment').",
+      "evidence": {
+        "pricing_cta_clicks": 0
+      }
+    }
+  ]
+}

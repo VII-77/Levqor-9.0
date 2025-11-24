@@ -15,28 +15,30 @@ LOG_FILE = Path("workspace-data/omega_self_monitor.log")
 
 
 def get_health_status():
-    """Check backend health via internal function call (no external network)"""
+    """Check backend health via internal function call (with app context)"""
     try:
         from run import app
-        with app.test_client() as client:
-            response = client.get('/health')
-            if response.status_code == 200:
-                return {"status": "OK", "data": response.get_json()}
-            return {"status": "WARN", "error": f"HTTP {response.status_code}"}
+        with app.app_context():
+            with app.test_client() as client:
+                response = client.get('/health')
+                if response.status_code == 200:
+                    return {"status": "OK", "data": response.get_json()}
+                return {"status": "WARN", "error": f"HTTP {response.status_code}"}
     except Exception as e:
         return {"status": "CRITICAL", "error": str(e)}
 
 
 def get_metrics_status():
-    """Check metrics endpoint via internal call"""
+    """Check metrics endpoint via internal call (with app context)"""
     try:
         from run import app
-        with app.test_client() as client:
-            response = client.get('/api/metrics/app')
-            if response.status_code == 200:
-                data = response.get_json()
-                return {"status": "OK", "data": data}
-            return {"status": "WARN", "error": f"HTTP {response.status_code}"}
+        with app.app_context():
+            with app.test_client() as client:
+                response = client.get('/api/metrics/app')
+                if response.status_code == 200:
+                    data = response.get_json()
+                    return {"status": "OK", "data": data}
+                return {"status": "WARN", "error": f"HTTP {response.status_code}"}
     except Exception as e:
         return {"status": "CRITICAL", "error": str(e)}
 
