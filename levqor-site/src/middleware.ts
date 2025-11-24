@@ -23,8 +23,14 @@ export default auth((req) => {
   const isAuthenticated = !!req.auth
   const pathname = url.pathname
 
+  // Strip locale prefix for auth check to support localized protected routes
+  // Matches: /en/dashboard, /de/dashboard, /fr/dashboard, /es/dashboard
+  const pathWithoutLocale = pathname.replace(/^\/(en|de|fr|es)(\/|$)/, '$2')
+
   const protectedPaths = ['/dashboard', '/admin']
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path))
+  const isProtectedPath = protectedPaths.some(path => 
+    pathWithoutLocale.startsWith(path)
+  )
 
   if (isProtectedPath && !isAuthenticated) {
     return NextResponse.redirect(new URL('/signin', req.url))
