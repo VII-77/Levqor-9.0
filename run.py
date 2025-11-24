@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, g
 from jsonschema import validate, ValidationError, FormatChecker
 from time import time
 from uuid import uuid4
@@ -10,7 +10,8 @@ import sys
 import jwt
 from datetime import datetime, timedelta
 
-from security_core import rate_limit, audit, validation, ip_reputation, config as sec_config
+from security_core import rate_limit, audit, validation, ip_reputation, config as sec_config, api_gateway
+from tenant.context import attach_tenant_to_g, get_tenant_id
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 log = logging.getLogger("levqor")
@@ -54,6 +55,12 @@ app = Flask(__name__,
     static_url_path='/public')
 
 app.config["MAX_CONTENT_LENGTH"] = int(os.environ.get("MAX_CONTENT_LENGTH", 512 * 1024))
+
+# Initialize API Gateway (MEGA-PHASE 9)
+try:
+    api_gateway.init_api_gateway(app)
+except Exception as e:
+    log.warning(f"API Gateway initialization failed (non-critical): {e}")
 
 API_KEYS = set((os.environ.get("API_KEYS") or "").split(",")) - {""}
 API_KEYS_NEXT = set((os.environ.get("API_KEYS_NEXT") or "").split(",")) - {""}
@@ -121,9 +128,17 @@ def protected_path_throttle():
 
 @app.before_request
 def _log_in():
-    log.info("in %s %s ip=%s ua=%s", request.method, request.path,
+    # Attach tenant context early (MEGA-PHASE 9)
+    try:
+        attach_tenant_to_g(request)
+    except Exception as e:
+        log.warning(f"Failed to attach tenant context: {e}")
+    
+    tenant_id = get_tenant_id() if hasattr(g, 'tenant_id') else 'default'
+    log.info("in %s %s ip=%s ua=%s tenant=%s", request.method, request.path,
              request.headers.get("X-Forwarded-For", request.remote_addr),
-             request.headers.get("User-Agent", "-"))
+             request.headers.get("User-Agent", "-"),
+             tenant_id)
     
     rate_check = protected_path_throttle()
     if rate_check:
@@ -244,7 +259,8 @@ def public_metrics():
     })
 
 @app.post("/audit")
-def audit():
+def audit_endpoint():
+    """Audit event endpoint (renamed to avoid shadowing security_core.audit module)"""
     if not request.is_json:
         return bad_request("Content-Type must be application/json")
     
