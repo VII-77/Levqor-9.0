@@ -1,10 +1,11 @@
 """
-AI Chat Endpoint - Contextual help and Q&A
+AI Chat Endpoint - Contextual help and Q&A with multilingual support (MEGA-PHASE 4B)
 Currently uses pattern matching; designed for easy OpenAI integration
 """
 from flask import Blueprint, request, jsonify
 import logging
 import re
+from api.ai.utils import normalize_language, get_language_display_name
 
 bp = Blueprint("ai_chat", __name__, url_prefix="/api/ai/chat")
 log = logging.getLogger("levqor.ai.chat")
@@ -33,6 +34,7 @@ def ai_chat():
         
         query = data.get("query", "").strip()
         context = data.get("context", {})
+        language = normalize_language(data.get("language", "en"))
         
         if not query or len(query) < 3:
             return jsonify({
@@ -46,7 +48,7 @@ def ai_chat():
                 "error": "Query too long (max 500 characters)"
             }), 422
         
-        log.info(f"AI chat request: query_length={len(query)}, page={context.get('page', 'unknown')}")
+        log.info(f"AI chat request: query_length={len(query)}, page={context.get('page', 'unknown')}, language={language}")
         
         answer, steps = _generate_answer(query, context)
         

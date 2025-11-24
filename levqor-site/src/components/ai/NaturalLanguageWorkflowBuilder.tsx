@@ -10,6 +10,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getCurrentLanguageCode, hasFullTranslations } from '@/config/languages';
 
 interface WorkflowStep {
   id: string;
@@ -33,6 +34,7 @@ export default function NaturalLanguageWorkflowBuilder({ onWorkflowCreated, clas
   // Call real AI backend endpoint
   const processNaturalLanguage = async (text: string): Promise<WorkflowStep[]> => {
     try {
+      const currentLanguage = getCurrentLanguageCode();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/workflow`, {
         method: 'POST',
         headers: {
@@ -40,6 +42,7 @@ export default function NaturalLanguageWorkflowBuilder({ onWorkflowCreated, clas
         },
         body: JSON.stringify({
           query: text,
+          language: currentLanguage,
           context: {
             timestamp: new Date().toISOString(),
           },

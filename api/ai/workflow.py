@@ -1,10 +1,11 @@
 """
-AI Workflow Builder Endpoint - Natural language to workflow steps
+AI Workflow Builder Endpoint - Natural language to workflow steps with multilingual support (MEGA-PHASE 4B)
 Currently uses pattern matching; designed for easy OpenAI integration
 """
 from flask import Blueprint, request, jsonify
 import logging
 import re
+from api.ai.utils import normalize_language, get_language_display_name
 
 bp = Blueprint("ai_workflow", __name__, url_prefix="/api/ai/workflow")
 log = logging.getLogger("levqor.ai.workflow")
@@ -33,6 +34,7 @@ def ai_workflow():
         
         query = data.get("query", "").strip()
         context = data.get("context", {})
+        language = normalize_language(data.get("language", "en"))
         
         if not query or len(query) < 5:
             return jsonify({
@@ -46,7 +48,7 @@ def ai_workflow():
                 "error": "Description too long (max 1000 characters)"
             }), 422
         
-        log.info(f"AI workflow request: query_length={len(query)}")
+        log.info(f"AI workflow request: query_length={len(query)}, language={language}")
         
         steps = _generate_workflow_steps(query, context)
         

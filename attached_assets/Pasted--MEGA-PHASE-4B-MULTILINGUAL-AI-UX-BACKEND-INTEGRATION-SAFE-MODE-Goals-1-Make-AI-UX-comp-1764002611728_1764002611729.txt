@@ -1,0 +1,261 @@
+# MEGA-PHASE 4B — MULTILINGUAL AI UX & BACKEND INTEGRATION (SAFE MODE)
+# Goals:
+# 1) Make AI UX components language-aware (read current language and send it to backend).
+# 2) Make AI backend endpoints accept a "language" field and log/use it safely (still stub-mode).
+# 3) Do NOT change pricing, legal text, routing, or database schema.
+# 4) Keep all non-EN languages falling back to English content/logic, just carry language code through.
+
+You are working in this repo:
+- Root: /home/runner/workspace
+- Frontend: /home/runner/workspace/levqor-site
+- Backend: Flask app with run.py and api/ submodules
+- i18n + languages:
+  - levqor-site/src/config/languages.ts      # NEW 40-language registry
+  - levqor-site/src/components/LocaleSwitcher.tsx
+  - levqor-site/src/i18n/*                   # existing EN/DE/FR/ES system
+
+ABSOLUTE RULES (DO NOT VIOLATE):
+- DO NOT change any pricing numbers.
+  - Monthly must remain: £9 / £29 / £59 / £149
+  - Yearly must remain: £90 / £290 / £590 / £1,490
+  - DFY must remain: £149 / £299 / £499
+- DO NOT change any trial or refund text or behavior.
+  - Keep: “7-day free trial · Card required · Cancel before Day 7 to avoid charges”
+- DO NOT modify SLAs (48h / 24h / 12h / 4h).
+- DO NOT modify legal/policy text (terms, privacy, refunds, SLA, etc.).
+- DO NOT modify database schema.
+- DO NOT change routing structure or add new locales to URL paths.
+- DO NOT introduce any external services or LLM calls (NO OpenAI usage in this step).
+- KEEP security_core behavior unchanged (no weakening).
+
+==================================================
+STEP 0 — CONTEXT & SAFETY CHECK
+==================================================
+1. Confirm repo structure and key files exist:
+
+   - /home/runner/workspace/run.py
+   - /home/runner/workspace/api/ai/chat.py
+   - /home/runner/workspace/api/ai/workflow.py
+   - /home/runner/workspace/api/ai/debug.py
+   - /home/runner/workspace/api/ai/onboarding.py
+   - /home/runner/workspace/api/metrics/app.py
+   - /home/runner/workspace/levqor-site/src/config/languages.ts
+   - /home/runner/workspace/levqor-site/src/components/LocaleSwitcher.tsx
+   - /home/runner/workspace/levqor-site/src/components/ai/AIHelpPanel.tsx
+   - /home/runner/workspace/levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx
+   - /home/runner/workspace/levqor-site/src/components/ai/AIDebugAssistant.tsx
+   - /home/runner/workspace/levqor-site/src/components/ai/AIOnboardingTutor.tsx
+
+2. Run:
+   - cd /home/runner/workspace/levqor-site && npx tsc --noEmit
+   - cd /home/runner/workspace/levqor-site && node scripts/drift-monitor.js
+
+   If there are any errors, STOP and only report them. Do not attempt fixes outside the scope described below.
+
+==================================================
+STEP 1 — FRONTEND: MAKE AI COMPONENTS LANGUAGE-AWARE
+==================================================
+Goal: All AI components should know which language the user selected and send that through to the backend, but behavior remains effectively English-only for now.
+
+A) Add a minimal language utility hook (if not already present):
+
+- File: levqor-site/src/config/languages.ts
+  - If there isn’t a helper already, add a small function:
+
+    - getCurrentLanguageCode(): LanguageCode
+      - Reads from (in order of priority):
+        1) localStorage key used by LocaleSwitcher (e.g. "levqor_language")
+        2) Fallback to 'en'
+      - On server (no window), always return 'en'.
+
+  Make sure this helper does NOT touch URLs and does NOT change routing.
+
+B) Wire language into AIHelpPanel:
+
+- File: levqor-site/src/components/ai/AIHelpPanel.tsx
+
+  - Import the new helper from config/languages.ts.
+  - When building the payload for POST /api/ai/chat, include:
+
+    {
+      ...existingPayload,
+      language: currentLanguageCode   // e.g. 'en', 'de', 'fr', 'es', 'hi', 'ar', ...
+    }
+
+  - If the language is not one of the fully translated ones (en, de, fr, es), show a tiny, non-intrusive note in the panel footer:
+    “AI answers are currently in English while we add full <LanguageName> support.”
+
+  - This note MUST be purely presentational, no business logic changes.
+
+C) Wire language into NaturalLanguageWorkflowBuilder:
+
+- File: levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx
+
+  - Import current language helper.
+  - For POST /api/ai/workflow, add the same "language" field to the request body.
+  - Add a small, subtle text under the input box:
+    “Describe your workflow in any language — Levqor will process it using English behind the scenes for now.”
+    (This is explanatory only, no behavior change.)
+
+D) Wire language into AIDebugAssistant:
+
+- File: levqor-site/src/components/ai/AIDebugAssistant.tsx
+
+  - Add "language" to the payload for POST /api/ai/debug.
+  - If language is not 'en', show a subtle line:
+    “Debug explanations are currently provided in English.”
+
+E) Wire language into AIOnboardingTutor:
+
+- File: levqor-site/src/components/ai/AIOnboardingTutor.tsx
+
+  - Add "language" to POST /api/ai/onboarding/next-step payload.
+  - Non-EN note similar to above:
+    “Onboarding tips are currently in English while we roll out full localization.”
+
+F) SAFETY CHECK:
+
+- Make sure no AI component attempts:
+  - To translate text locally.
+  - To change any pricing/plan names/values based on language.
+- These components MUST remain client-only, no SSR language tricks.
+
+==================================================
+STEP 2 — BACKEND: ACCEPT LANGUAGE FIELD SAFELY
+==================================================
+Goal: AI endpoints accept a “language” field, validate it against the 40-language set, and log it — but still use existing stub logic.
+
+A) Introduce a shared language validation helper:
+
+- If there is no central place yet, create:
+
+  File: api/ai/utils.py (or reuse an existing shared file in api/ai)
+
+  - Implement:
+
+    ALLOWED_LANG_CODES = {...}    # match the codes in src/config/languages.ts, lowercased
+
+    def normalize_language(lang: str) -> str:
+        """
+        Returns a safe language code.
+        - If lang in ALLOWED_LANG_CODES: return normalized code
+        - Else: return 'en'
+        """
+        # Be defensive: handle None, empty string, unexpected types.
+
+B) Update each AI endpoint to accept language:
+
+1) File: api/ai/chat.py
+
+   - Parse "language" from JSON body (default 'en').
+   - Normalize via normalize_language().
+   - Include normalized language in:
+     - Any audit logs.
+     - Any metrics/observability calls (if present).
+   - Do NOT change the response content logic yet; keep stub pattern-based behavior.
+
+2) File: api/ai/workflow.py
+
+   - Same as above: accept "language", normalize, log.
+   - Keep step generation logic as-is (stub English).
+
+3) File: api/ai/debug.py
+
+   - Same: accept "language", normalize, log.
+   - No change in explanation content logic.
+
+4) File: api/ai/onboarding.py
+
+   - Same: accept "language", normalize, log.
+
+C) Metrics endpoint:
+
+- File: api/metrics/app.py
+
+  - If easy and low-risk, extend metrics to track:
+    - per-language AI request counts (e.g. ai_requests_by_language)
+  - Keep it in-memory and optional; if this complicates code, skip it and only log language in existing metrics.
+
+D) SECURITY CORE COMPLIANCE:
+
+- Ensure no language value is ever logged with full PII.
+- Make sure any logging uses existing security/audit helpers if available.
+- Do NOT add any external calls or non-deterministic behavior.
+
+==================================================
+STEP 3 — SMALL UX POLISH FOR 40-LANGUAGE EXPERIENCE
+==================================================
+Goal: Make the 40-language setup feel intentional without any routing or SEO change.
+
+A) LocaleSwitcher visual hints:
+
+- File: levqor-site/src/components/LocaleSwitcher.tsx
+
+  - If not already present, for any language where hasTranslations === false:
+    - Show a subtle suffix, e.g. “(UI in English)” or keep the existing “(English)” badge.
+  - Ensure the dropdown remains:
+    - Scrollable
+    - Accessible (ARIA attributes)
+    - Mobile-friendly
+
+B) No routing changes:
+
+- DO NOT touch middleware.ts.
+- DO NOT modify i18n locales list.
+- DO NOT change URL structure.
+
+==================================================
+STEP 4 — VERIFICATION & REGRESSION
+==================================================
+1) TypeScript:
+
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit
+
+   If any errors: fix only the directly related TS issues in the new/modified code.
+
+2) Drift Monitor:
+
+   - cd /home/runner/workspace/levqor-site
+   - node scripts/drift-monitor.js
+
+   Must remain: DRIFT STATUS: PASS — 0 violations
+   If anything fails related to metadata or pricing: undo your change and report.
+
+3) Quick Backend Tests (api.levqor.ai):
+
+   Make real HTTP requests (curl) to confirm endpoints accept language:
+
+   - POST /api/ai/chat            with {"query":"Hi","language":"de"}
+   - POST /api/ai/workflow        with {"prompt":"Create a workflow","language":"hi"}
+   - POST /api/ai/debug           with {"error_message":"timeout","language":"ar"}
+   - POST /api/ai/onboarding/next-step with {"current_step":"start","language":"zh-Hans"}
+
+   Expectations:
+   - HTTP 200
+   - success: true in body
+   - No stack traces, no internal error leaks
+
+4) Frontend Smoke:
+
+   - Confirm /pricing, /trial, /status still return HTTP 200.
+   - Confirm LocaleSwitcher renders correctly and still works.
+   - Confirm AI panels still open and behave normally (even if answers remain English).
+
+==================================================
+STEP 5 — FINAL REPORT
+==================================================
+In your final message back to the user, provide:
+
+1) List of files changed (frontend + backend).
+2) Exactly how language is now passed from UI → backend.
+3) Confirmation that:
+   - Pricing, trial, DFY, SLAs, legal texts are untouched.
+   - No DB schema changes.
+   - No routing changes.
+   - No external AI APIs were introduced.
+4) Example JSON payloads hitting each AI endpoint showing the new "language" field.
+5) Any limitations or TODOs:
+   - e.g. “Currently all AI responses are still English-only; language is logged and ready for future multilingual AI.”
+
+If ANY step could not be completed safely, stop there and explain clearly what blocked you and what remains to be done.

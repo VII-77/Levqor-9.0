@@ -14,6 +14,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { getCurrentLanguageCode, hasFullTranslations } from '@/config/languages';
 
 interface TutorialStep {
   id: string;
@@ -90,11 +91,13 @@ export default function AIOnboardingTutor({
     
     // Call backend API to log onboarding progress (optional analytics)
     try {
+      const currentLanguage = getCurrentLanguageCode();
       await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/onboarding/next-step`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           current_step: step.id,
+          language: currentLanguage,
           context: { progress: currentStep / ONBOARDING_STEPS.length },
         }),
       });

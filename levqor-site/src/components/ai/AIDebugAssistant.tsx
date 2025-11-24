@@ -10,6 +10,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getCurrentLanguageCode, hasFullTranslations } from '@/config/languages';
 
 interface WorkflowError {
   step: string;
@@ -38,6 +39,7 @@ export default function AIDebugAssistant({ error, onFixSuggested, className = ''
   // Call real AI backend endpoint
   const analyzeError = async (err: WorkflowError): Promise<DebugSuggestion> => {
     try {
+      const currentLanguage = getCurrentLanguageCode();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/debug`, {
         method: 'POST',
         headers: {
@@ -45,6 +47,7 @@ export default function AIDebugAssistant({ error, onFixSuggested, className = ''
         },
         body: JSON.stringify({
           error: `${err.errorCode}: ${err.errorMessage}`,
+          language: currentLanguage,
           context: {
             step: err.step,
             timestamp: err.timestamp,

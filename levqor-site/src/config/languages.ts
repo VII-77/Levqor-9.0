@@ -124,3 +124,26 @@ export function getRoutedLocale(code: LanguageCode): "en" | "de" | "fr" | "es" {
 export function hasFullTranslations(code: LanguageCode): boolean {
   return LANGUAGE_MAP[code]?.hasTranslations || false;
 }
+
+/**
+ * Get the current language code from localStorage or fallback to English
+ * Safe for both client and server environments
+ */
+export function getCurrentLanguageCode(): LanguageCode {
+  // Server-side safety: return default
+  if (typeof window === 'undefined') {
+    return 'en';
+  }
+  
+  try {
+    const storedLang = localStorage.getItem('levqor-display-language');
+    if (storedLang && LANGUAGE_MAP[storedLang as LanguageCode]) {
+      return storedLang as LanguageCode;
+    }
+  } catch (error) {
+    // Fail safely if localStorage is unavailable
+    console.warn('Could not access localStorage for language preference');
+  }
+  
+  return 'en';
+}

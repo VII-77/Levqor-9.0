@@ -15,6 +15,7 @@
 
 import { useState, useEffect } from 'react';
 import { designTokens } from '@/config/design-tokens';
+import { getCurrentLanguageCode, LANGUAGE_MAP, hasFullTranslations } from '@/config/languages';
 
 interface AIHelpPanelProps {
   context?: string;
@@ -101,6 +102,7 @@ export default function AIHelpPanel({ context = 'general', className = '' }: AIH
     setIsLoading(true);
     
     try {
+      const currentLanguage = getCurrentLanguageCode();
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/chat`, {
         method: 'POST',
         headers: {
@@ -108,6 +110,7 @@ export default function AIHelpPanel({ context = 'general', className = '' }: AIH
         },
         body: JSON.stringify({
           query: query.trim(),
+          language: currentLanguage,
           context: {
             page: context,
             timestamp: new Date().toISOString(),
@@ -265,13 +268,20 @@ export default function AIHelpPanel({ context = 'general', className = '' }: AIH
       </div>
 
       {/* Footer */}
-      <div className="border-t border-neutral-200 p-3 bg-neutral-50 text-center">
-        <a
-          href="/docs"
-          className="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors"
-        >
-          View Full Documentation →
-        </a>
+      <div className="border-t border-neutral-200 p-3 bg-neutral-50">
+        {!hasFullTranslations(getCurrentLanguageCode()) && (
+          <p className="text-xs text-neutral-600 mb-2 text-center">
+            AI answers are currently in English while we add full {LANGUAGE_MAP[getCurrentLanguageCode()]?.nativeLabel || 'language'} support.
+          </p>
+        )}
+        <div className="text-center">
+          <a
+            href="/docs"
+            className="text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors"
+          >
+            View Full Documentation →
+          </a>
+        </div>
       </div>
     </div>
   );

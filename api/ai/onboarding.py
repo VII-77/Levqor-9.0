@@ -1,9 +1,10 @@
 """
-AI Onboarding Assistant Endpoint - Interactive user guidance
+AI Onboarding Assistant Endpoint - Interactive user guidance with multilingual support (MEGA-PHASE 4B)
 Currently uses pattern matching; designed for easy OpenAI integration
 """
 from flask import Blueprint, request, jsonify
 import logging
+from api.ai.utils import normalize_language, get_language_display_name
 
 bp = Blueprint("ai_onboarding", __name__, url_prefix="/api/ai/onboarding")
 log = logging.getLogger("levqor.ai.onboarding")
@@ -32,8 +33,9 @@ def get_next_step():
         
         current_step = data.get("current_step", "").strip()
         context = data.get("context", {})
+        language = normalize_language(data.get("language", "en"))
         
-        log.info(f"AI onboarding request: current_step={current_step}")
+        log.info(f"AI onboarding request: current_step={current_step}, language={language}")
         
         next_step = _get_next_onboarding_step(current_step, context)
         

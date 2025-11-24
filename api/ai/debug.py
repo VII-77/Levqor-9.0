@@ -1,10 +1,11 @@
 """
-AI Debug Assistant Endpoint - Error analysis and solutions
+AI Debug Assistant Endpoint - Error analysis and solutions with multilingual support (MEGA-PHASE 4B)
 Currently uses pattern matching; designed for easy OpenAI integration
 """
 from flask import Blueprint, request, jsonify
 import logging
 import re
+from api.ai.utils import normalize_language, get_language_display_name
 
 bp = Blueprint("ai_debug", __name__, url_prefix="/api/ai/debug")
 log = logging.getLogger("levqor.ai.debug")
@@ -33,6 +34,7 @@ def ai_debug():
         
         error = data.get("error", "").strip()
         context = data.get("context", {})
+        language = normalize_language(data.get("language", "en"))
         
         if not error or len(error) < 5:
             return jsonify({
@@ -46,7 +48,7 @@ def ai_debug():
                 "error": "Error message too long (max 2000 characters)"
             }), 422
         
-        log.info(f"AI debug request: error_length={len(error)}, component={context.get('component', 'unknown')}")
+        log.info(f"AI debug request: error_length={len(error)}, component={context.get('component', 'unknown')}, language={language}")
         
         explanation, steps, prevention = _analyze_error(error, context)
         
