@@ -71,6 +71,37 @@ export default function StatusPage() {
         </section>
         
         <section>
+          <h2 className="text-2xl font-semibold mb-3">Business Metrics (MEGA-PHASE 5)</h2>
+          <p className="text-gray-600 mb-4">
+            Live GTM Engine metrics tracked by our observability system:
+          </p>
+          <a 
+            href="https://api.levqor.ai/api/metrics/app" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition font-medium mb-4"
+          >
+            <span>View Live Metrics</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <h4 className="font-medium text-sm mb-2">Tracked Metrics:</h4>
+            <ul className="text-sm text-gray-700 space-y-1">
+              <li>• Consultation bookings & AI consultations run</li>
+              <li>• AI support automation requests & escalations</li>
+              <li>• Lifecycle nudge engine ticks (Day 1/3/6/7/10/30)</li>
+              <li>• Pricing CTA clicks & trial feedback submissions</li>
+              <li>• AI request volume & error rates</li>
+            </ul>
+            <p className="text-xs text-gray-500 mt-3">
+              Metrics are in-memory counters. Production would use Redis/TimescaleDB for persistence.
+            </p>
+          </div>
+        </section>
+        
+        <section>
           <h2 className="text-2xl font-semibold mb-3">Usage Data & ROI</h2>
           <p className="text-gray-600 mb-4">
             Download your workflow usage data from the last 30 days to calculate ROI and track automation value.

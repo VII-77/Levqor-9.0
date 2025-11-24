@@ -457,6 +457,35 @@ export default function PricingPage() {
         </div>
       </div>
 
+      {/* Bundle Offers - MEGA-PHASE 5 */}
+      <div className="mb-12">
+        <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-2xl p-8">
+          <h2 className="text-2xl font-bold mb-3 text-center">💡 Bundle & Save</h2>
+          <p className="text-center text-gray-700 mb-4">
+            Combine subscription plans with DFY packages or add-ons for maximum value
+          </p>
+          <div className="grid md:grid-cols-2 gap-6 mt-6">
+            <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <h3 className="font-semibold text-lg mb-2">🚀 Growth + DFY Professional</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Perfect for scaling teams: Get the Growth tier (£59/mo) plus expert DFY setup (£299 one-time) for a complete turnkey solution with advanced workflows and priority support.
+              </p>
+              <p className="text-xs text-blue-600 font-medium">Recommended for teams of 3-5 users</p>
+            </div>
+            <div className="bg-white rounded-xl p-5 border border-gray-200">
+              <h3 className="font-semibold text-lg mb-2">⚡ Scale + White Label</h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Built for agencies: Combine the Agency tier (£149/mo) with White Label add-on (£99/mo) to manage client workflows under your own brand with enterprise-grade support.
+              </p>
+              <p className="text-xs text-blue-600 font-medium">Ideal for agencies managing 10+ clients</p>
+            </div>
+          </div>
+          <p className="text-center text-sm text-gray-500 mt-4">
+            All bundles include our 7-day free trial and 30-day refund policy
+          </p>
+        </div>
+      </div>
+
       {/* Add-Ons */}
       <div className="mb-12">
         <h2 className="text-2xl font-bold mb-4 text-center">Add-Ons</h2>
