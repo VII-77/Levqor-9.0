@@ -1,0 +1,179 @@
+Here is the exact full prompt for Replit AI Agent to fix /status permanently and deploy cleanly.
+
+Paste this entire block as one message into the agent:
+
+
+---
+
+REPLIT AI AGENT — FIX STATUS ROUTE + HARDEN STATUS PAGE
+
+Objective:
+Fix the /status route not being built by Next.js, fully harden the StatusPage, ensure GrowthConsole no longer crashes, rebuild locally, verify manifest, and prepare clean commit for Vercel.
+
+
+---
+
+PHASE 1 — REPLACE /status PAGE WITH A GUARANTEED-WORKING VERSION
+
+1. Open this file:
+
+
+
+levqor-site/src/app/status/page.tsx
+
+2. Replace all content with this exact code:
+
+
+
+// src/app/status/page.tsx
+
+import GrowthConsole from "@/components/status/GrowthConsole";
+
+export const dynamic = "force-dynamic";
+
+export default function StatusPage() {
+  return (
+    <main className="min-h-screen bg-black text-white">
+      <section className="mx-auto max-w-6xl px-6 py-16 space-y-10">
+        <header className="space-y-3">
+          <h1 className="text-3xl font-bold tracking-tight">System status</h1>
+          <p className="text-sm text-gray-400">
+            Live view of Levqor&apos;s health, usage and growth signals. All core
+            pricing, trial and SLA guarantees remain locked.
+          </p>
+        </header>
+
+        <GrowthConsole />
+      </section>
+    </main>
+  );
+}
+
+3. Save the file.
+
+
+
+
+---
+
+PHASE 2 — VERIFY GROWTHCONSOLE IS PRESENT AND VALID
+
+1. Ensure this file exists:
+
+
+
+levqor-site/src/components/status/GrowthConsole.tsx
+
+2. DO NOT change its logic except:
+
+
+
+Confirm it does not crash on invalid backend responses.
+
+Ensure it has:
+
+JSON validation
+
+safe defaults
+
+fallback UI
+
+no unguarded access to undefined fields
+
+
+
+(If missing, notify in the logs.)
+
+
+---
+
+PHASE 3 — LOCAL BUILD + MANIFEST CHECK
+
+Run:
+
+cd /home/runner/workspace/levqor-site
+npm install
+npm run build
+
+Then:
+
+cat .next/server/app-paths-manifest.json | grep '"/status"' -n || echo "STATUS_ROUTE_MISSING"
+
+Expected:
+You see a line containing "/status"
+If instead you see STATUS_ROUTE_MISSING, STOP and diagnose why.
+
+
+---
+
+PHASE 4 — WORKFLOW VALIDATION
+
+Check:
+
+cd /home/runner/workspace/levqor-site
+npx tsc --noEmit
+
+Then restart both workflows:
+
+cd /home/runner/workspace
+sudo sv restart levqor-backend || true
+sudo sv restart levqor-frontend || true
+
+Ensure no errors in logs.
+
+
+---
+
+PHASE 5 — GIT COMMIT + PUSH (for Vercel deploy)
+
+In workspace root:
+
+cd /home/runner/workspace
+
+git add levqor-site/src/app/status/page.tsx
+git add levqor-site/src/components/status/GrowthConsole.tsx || true
+
+git commit -m "Fix /status route + harden GrowthConsole (V13.4)"
+git push origin main
+
+Confirm the push succeeded.
+
+
+---
+
+PHASE 6 — POST-DEPLOY VERIFICATION
+
+After Vercel finishes building:
+
+Run:
+
+curl -s -o /dev/null -w "%{http_code}\n" https://levqor.ai/status
+
+Expected output:
+
+200
+
+If 404 → read build logs, verify manifest again, and notify.
+
+
+---
+
+SUCCESS CRITERIA
+
+/status loads in browser
+
+Status page does not crash
+
+GrowthConsole renders safely even if backend returns 404 JSON
+
+Vercel deploy completes with no runtime error
+
+Page appears in .next/server/app-paths-manifest.json
+
+Page passes all Blueprint rules (no pricing, trial, SLA changes)
+
+
+
+---
+
+Run all steps and return full logs for each phase.

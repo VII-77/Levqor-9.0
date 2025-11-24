@@ -227,3 +227,5 @@ export function GrowthConsole() {
     </section>
   );
 }
+
+export default GrowthConsole;

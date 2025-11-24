@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import { GrowthConsole } from '@/components/status/GrowthConsole'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'System status & uptime – Levqor',
   description: 'View Levqor system health, uptime metrics, and live API status.',
