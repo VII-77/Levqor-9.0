@@ -315,9 +315,11 @@ curl -s -X POST https://api.levqor.ai/api/marketing/lead \
   - run.py
   - security_core/config.py
   - levqor-site/docs/BLUEPRINT_BASELINE.md
+  - api/config/regions.py (MEGA-PHASE 10)
 - **Frequency:** Every 6 hours
 - **Method:** SHA-256 checksums
 - **Baseline:** security_checksums.json (auto-initialized)
+- **Note:** Critical files include region config and architecture baseline. Update checksums intentionally after verified architecture changes.
 
 ### 7. JWT/HMAC Utilities
 - **Algorithm:** HMAC-SHA256

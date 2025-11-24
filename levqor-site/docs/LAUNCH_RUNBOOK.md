@@ -55,12 +55,19 @@ curl https://api.levqor.ai/health
 
 ### 4. Backend Health & Monitoring
 - [ ] Verify /health endpoint returns 200
-- [ ] Check scheduler is running (18 tasks)
+- [ ] Check scheduler is running (20 tasks)
 - [ ] Verify database connections stable
 - [ ] Test /api/usage/summary endpoint
 - [ ] Test /api/usage/export CSV download
 - [ ] Verify Stripe webhooks receiving events
 - [ ] Check Sentry error tracking active
+- [ ] Verify /api/metrics/app includes "region": "eu-west"
+
+**Multi-Region Readiness (MEGA-PHASE 10)**:
+- DEFAULT_REGION: eu-west (current deployment)
+- Supported regions: eu-west, us-east, ap-south (config-based)
+- Region observable in metrics endpoint and AI request logs
+- Future expansion: Additional regions without API surface changes
 
 **Commands**:
 ```bash
@@ -69,6 +76,9 @@ curl https://api.levqor.ai/health | jq
 
 # Usage API
 curl https://api.levqor.ai/api/usage/summary | jq
+
+# Metrics with region info
+curl https://api.levqor.ai/api/metrics/app | jq .region
 
 # CSV export
 curl -O https://api.levqor.ai/api/usage/export

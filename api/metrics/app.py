@@ -5,6 +5,7 @@ Provides lightweight observability without external SaaS dependencies
 from flask import Blueprint, jsonify
 from time import time
 import logging
+from api.config.regions import get_current_region
 
 bp = Blueprint("app_metrics", __name__, url_prefix="/api/metrics")
 log = logging.getLogger("levqor.metrics")
@@ -123,6 +124,7 @@ def get_app_metrics():
     
     return jsonify({
         "status": "ok",
+        "region": get_current_region(),
         "uptime_seconds": uptime_seconds,
         "ai_requests_last_5m": _metrics_store["ai_requests_last_5m"],
         "ai_requests_total": _metrics_store["ai_requests_total"],

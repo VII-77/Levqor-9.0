@@ -71,6 +71,38 @@ export default function StatusPage() {
         </section>
         
         <section>
+          <h2 className="text-2xl font-semibold mb-3">Operations & Region (MEGA-PHASE 10)</h2>
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 mb-6">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                eu-west
+              </div>
+              <div className="flex-1">
+                <p className="text-gray-700 mb-2">
+                  Levqor X currently operates from a primary EU region (eu-west) with future support 
+                  planned for additional regions (us-east, ap-south).
+                </p>
+                <p className="text-sm text-gray-600">
+                  All regions will share the same API surface and pricing. Region information is 
+                  observable in metrics and logs for operational transparency.
+                </p>
+              </div>
+            </div>
+            <a 
+              href="https://api.levqor.ai/api/metrics/app" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 transition font-medium text-sm"
+            >
+              <span>View Raw Metrics (JSON)</span>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          </div>
+        </section>
+        
+        <section>
           <h2 className="text-2xl font-semibold mb-3">Business Metrics (MEGA-PHASE 5)</h2>
           <p className="text-gray-600 mb-4">
             Live GTM Engine metrics tracked by our observability system:
@@ -94,6 +126,7 @@ export default function StatusPage() {
               <li>• Lifecycle nudge engine ticks (Day 1/3/6/7/10/30)</li>
               <li>• Pricing CTA clicks & trial feedback submissions</li>
               <li>• AI request volume & error rates</li>
+              <li>• Region deployment info (MEGA-PHASE 10)</li>
             </ul>
             <p className="text-xs text-gray-500 mt-3">
               Metrics are in-memory counters. Production would use Redis/TimescaleDB for persistence.

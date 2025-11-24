@@ -110,6 +110,13 @@
 - **Protocol:** HTTPS only
 - **Format:** JSON REST API
 
+### Multi-Region Deployment (MEGA-PHASE 10)
+- **Logical Regions:** eu-west (primary), us-east, ap-south
+- **Current Deployment:** eu-west only (London/Dublin)
+- **Region Observability:** Exposed in `/api/metrics/app` response and AI endpoint logs
+- **Future Support:** Config-based multi-region expansion with same API surface
+- **No Infrastructure Changes:** Region logic is purely logical/config-based for forward compatibility
+
 ### Frontend API Configuration
 - **Environment Variable:** `NEXT_PUBLIC_API_URL` (fallback: `https://api.levqor.ai`)
 - **Used By:** All checkout, auth, and integration endpoints

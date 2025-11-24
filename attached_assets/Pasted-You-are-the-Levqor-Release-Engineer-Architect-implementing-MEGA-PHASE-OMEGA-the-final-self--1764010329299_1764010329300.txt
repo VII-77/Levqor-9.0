@@ -1,0 +1,371 @@
+You are the Levqor Release Engineer & Architect implementing MEGA-PHASE Ω (OMEGA) — the final “self-evolving auto-operator” layer for Levqor X.
+
+You are operating in this repo:
+- Root: /home/runner/workspace
+- Frontend: /home/runner/workspace/levqor-site (Next.js)
+- Backend: /home/runner/workspace (Flask/Gunicorn, api.levqor.ai)
+- Existing systems: SECURITY_CORE, metrics, marketing engine, consultations, support auto, lifecycle, AI UX, 40-language infra, GTM funnel, MEGA-PHASE 1–5 fully delivered and green.
+
+Your job: IMPLEMENT MEGA-PHASE Ω SAFELY, COMPLETELY, AND VERIFIABLY.
+
+======================================================================
+ABSOLUTE RULES — DO NOT VIOLATE
+======================================================================
+1) BUSINESS INVARIANTS (MUST NOT CHANGE)
+- Pricing: £9 / £29 / £59 / £149 monthly
+- Pricing: £90 / £290 / £590 / £1,490 yearly
+- DFY: £149 / £299 / £499
+- Trial: 7-day free trial on ALL tiers, “Card required • Cancel before Day 7”
+- SLAs: 48h / 24h / 12h / 4h
+- Legal copy: NO changes to policy/terms/guarantee/refunds text
+- Architecture: Frontend = Vercel, Backend = Replit Autoscale, DNS unchanged
+- DB schema: DO NOT change migrations or schema, no new tables, no destructive queries
+- Security core: DO NOT weaken, remove, or bypass security_core or auth checks
+
+2) TECHNICAL SAFETY
+- NO external network calls except localhost curl / internal health checks
+- NO schema changes, NO dropping/touching DB tables
+- NO random edits to Stripe, auth, or middleware logic
+- Only additive, backward-compatible code
+- If you are not 100% sure a change is safe, DO NOT MAKE IT – propose via logs instead
+
+3) VERIFICATION MANDATORY
+For ANY code you add or modify, you MUST:
+- Compile/check Python modules you touch
+- Run TypeScript compile (tsc --noEmit)
+- Run drift monitor (node scripts/drift-monitor.js)
+- Use curl/grep to verify endpoints and routes
+- Report all results in your final summary
+
+======================================================================
+MEGA-PHASE Ω — TARGET OUTCOME
+======================================================================
+The system must gain a SAFE, NON-DESTRUCTIVE, SELF-MONITORING + AUTO-OPERATOR layer that:
+
+1) Continuously watches health, metrics, and anomalies
+2) Logs concrete, actionable “OPERATOR TASKS” into a single place (no auto-mutations)
+3) Suggests safe optimizations (funnels, AI usage, consultations, onboarding) without changing pricing/legal/etc.
+4) Provides a simple, human-readable dashboard/log so the founder can see:
+   - What’s wrong
+   - What the system suggests
+   - What to do next
+
+IMPORTANT: You are NOT allowed to auto-modify business logic, pricing, or content live. You ARE allowed to:
+- Read metrics, logs, JSON/state
+- Compute suggestions
+- Record them in logs/markdown
+- Wire scheduled jobs that recompute suggestions
+- Add UI surfaces that SHOW recommendations as read-only
+
+Think: “Autonomous advisor + watchdog”, NOT “rogue auto-reconfigurer”.
+
+======================================================================
+HIGH-LEVEL IMPLEMENTATION PLAN
+======================================================================
+Implement MEGA-PHASE Ω as FOUR SAFE LAYERS:
+
+LAYER 1 — SELF-MONITOR & AUTO-HEALTH REPORTER (BACKEND)
+LAYER 2 — AUTO-OPERATOR ADVISOR (BACKEND)
+LAYER 3 — OPTIMIZATION & EXPERIMENT SUGGESTION ENGINE (BACKEND)
+LAYER 4 — HUMAN DASHBOARD + LOG SURFACE (FRONTEND + DOCS)
+
+Follow the tasks below IN ORDER. After each block of changes, run verification.
+
+======================================================================
+LAYER 1 — SELF-MONITOR & AUTO-HEALTH REPORTER
+======================================================================
+Goal: Add a scheduled monitor that inspects system health and writes a human-friendly status log. NO auto-fixing. Only detection + recommendations.
+
+1. Create backend module:
+   - Path: monitors/omega_self_monitor.py
+   - Responsibilities:
+     - Import and reuse existing health/metrics endpoints where possible.
+     - Use requests to INTERNAL endpoints via Flask test client or direct function calls (NO external network).
+     - Collect:
+       - /health status
+       - /api/metrics/app snapshot (AI usage, GTM metrics, etc.)
+       - Marketing leads/events counts from existing JSON/metrics (if available in workspace-data/).
+       - Consultation bookings summary (if stored in JSON).
+     - Compute simple health flags:
+       - HEALTH_OK / WARN / CRITICAL for:
+         - Backend health
+         - AI endpoints (ai/chat, ai/workflow, ai/debug, ai/onboarding)
+         - Marketing funnel (consultations_booked, pricing_cta_clicks, trial_feedback_submissions)
+         - Security_core (tamper checks present)
+     - Write a single consolidated log file:
+       - Path: workspace-data/omega_self_monitor.log
+       - Append entries with ISO timestamp and sections:
+         - [SYSTEM_HEALTH]
+         - [AI_HEALTH]
+         - [GTM_HEALTH]
+         - [SECURITY_HEALTH]
+         - [SUMMARY]
+       - Example entry:
+         - TIMESTAMP=2025-11-24T12:34:56Z
+         - SYSTEM_HEALTH=OK
+         - AI_HEALTH=WARN (debug endpoint_errors_last_15m=3)
+         - GTM_HEALTH=WARN (consultations_24h=0, pricing_cta_clicks_low)
+         - SECURITY_HEALTH=OK
+         - SUMMARY="No critical issues. Recommend reviewing AI debug errors."
+
+2. Wire scheduler job:
+   - File: monitors/scheduler.py
+   - Register a new job:
+     - ID: omega_self_monitor
+     - Name: "Omega Self Monitor"
+     - Interval: every 10 minutes
+   - Ensure it:
+     - Imports monitors.omega_self_monitor and calls a main() or run() function.
+     - Is wrapped in try/except, logs failures but never crashes scheduler.
+
+3. Verification for LAYER 1:
+   - Import check:
+     - python3 -c "from monitors import scheduler; from monitors import omega_self_monitor; print('OMEGA_IMPORT_OK')"
+   - Manual run:
+     - python3 - << 'EOF'
+       from monitors import omega_self_monitor
+       omega_self_monitor.run()
+       print("OMEGA_SELF_MONITOR_RAN")
+       EOF
+   - Confirm log file:
+     - ls -lh workspace-data | grep omega_self_monitor || echo "NO_OMEGA_LOG"
+     - tail -40 workspace-data/omega_self_monitor.log || echo "NO_LOG_CONTENT"
+   - Backend health:
+     - curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "REMOTE_HEALTH_CHECK_FAILED"
+
+Record all results for final summary.
+
+======================================================================
+LAYER 2 — AUTO-OPERATOR ADVISOR (BACKEND)
+======================================================================
+Goal: Add an “operator brain” that reads metrics + health logs and produces human-readable OMEGA TASKS, but DOES NOT apply changes. Output only.
+
+4. Create backend module:
+   - Path: monitors/omega_operator.py
+   - Responsibilities:
+     - Read:
+       - workspace-data/omega_self_monitor.log
+       - /api/metrics/app via internal call or direct function
+       - Any existing JSON state for:
+         - consultations (consultations.json)
+         - marketing leads (if present)
+         - lifecycle (lifecycle.json)
+     - Build a list of “OMEGA_TASKS” with fields:
+       - id: string (timestamp + short key)
+       - severity: "info" | "warn" | "critical"
+       - category: "ai", "g tm", "support", "consultation", "onboarding", "security"
+       - description: short human-readable summary
+       - recommended_action: concrete suggestion
+       - evidence: references (metric values, counts, etc.)
+     - Write tasks to:
+       - workspace-data/omega_tasks.json (overwrite on each run)
+       - Optionally also append a readable view in:
+         - workspace-data/omega_tasks.log
+
+     - Example tasks:
+       - severity: "warn"
+         category: "gtm"
+         description: "No consultations booked in last 48h."
+         recommended_action: "Review consultation CTA on /pricing and /consultation, and check lifecycle nudges for trial users."
+         evidence: { "consultations_last_48h": 0 }
+
+       - severity: "critical"
+         category: "ai"
+         description: "AI debug endpoint error rate > 5% in last 15 min."
+         recommended_action: "Inspect /api/ai/debug logs and validate integration with external APIs."
+         evidence: { "debug_requests_15m": 20, "debug_errors_15m": 3 }
+
+5. Expose read-only API endpoint:
+   - File: api/omega/operator.py (new module)
+   - Define blueprint: omega_operator_bp
+   - Route: GET /api/omega/tasks
+     - Returns:
+       - { "status": "ok", "tasks": [...], "generated_at": ts }
+       - If no file or error: return safe empty:
+         - { "status": "ok", "tasks": [], "generated_at": null }
+   - Register this blueprint in run.py (like other blueprints).
+
+6. Wire scheduler job:
+   - In monitors/scheduler.py:
+     - Add job: "Omega Operator Advisor"
+     - ID: omega_operator
+     - Interval: every 15 minutes
+     - Call monitors.omega_operator.run() or similar.
+
+7. Verification for LAYER 2:
+   - Python import:
+     - python3 -c "from monitors import omega_operator; print('OMEGA_OPERATOR_IMPORT_OK')"
+   - Manual run:
+     - python3 - << 'EOF'
+       from monitors import omega_operator
+       omega_operator.run()
+       print("OMEGA_OPERATOR_TASKS_BUILT")
+       EOF
+   - Check JSON:
+     - ls -lh workspace-data | grep omega_tasks || echo "NO_TASKS_FILE"
+     - python3 - << 'EOF'
+       import json, os
+       path = 'workspace-data/omega_tasks.json'
+       print('EXISTS:', os.path.exists(path))
+       if os.path.exists(path):
+           data = json.load(open(path))
+           print('TASK_COUNT:', len(data.get('tasks', [])))
+           print('SAMPLE:', (data.get('tasks') or [None])[0])
+       EOF
+   - HTTP check (local dev if possible, otherwise trust internal):
+     - curl -s http://localhost:8000/api/omega/tasks | python3 -m json.tool || echo "LOCAL_OMEGA_API_CHECK_FAILED"
+
+======================================================================
+LAYER 3 — OPTIMIZATION & EXPERIMENT SUGGESTION ENGINE
+======================================================================
+Goal: Provide a NON-DESTRUCTIVE suggestion engine for experiments and optimizations.
+
+8. Create backend module:
+   - Path: scripts/automation/omega_optimizer.py
+   - Responsibilities:
+     - Read:
+       - workspace-data/omega_tasks.json
+       - /api/metrics/app data (internal)
+     - Derive suggested EXPERIMENTS (read-only), not changes:
+       - Example:
+         - "Test alternative headline on /pricing focusing on 'Replace 10 tools → 1 Levqor'."
+         - "Experiment with highlighting DFY bundle on trial confirmation page."
+         - "Add AI onboarding tip for power users who finish 3+ workflows in 24h."
+     - Output to docs:
+       - levqor-site/docs/OMEGA_OPTIMIZER_LOG.md
+         - Append with new section per run:
+           - ## [TIMESTAMP] Omega Optimization Suggestions
+           - ### Funnel
+           - ### AI UX
+           - ### Onboarding
+           - ### International
+           - Each with bullet points.
+
+     - NEVER edit pricing, text in pages, or configs. Only docs.
+
+9. (Optional) Add scheduler hook:
+   - If safe: in monitors/scheduler.py, add an infrequent job:
+     - ID: omega_optimizer
+     - Interval: every 6 hours
+     - That calls omega_optimizer.run()
+   - If not safe or long-running, keep it manual-only. You decide based on runtime cost.
+
+10. Verification for LAYER 3:
+   - Manual run:
+     - python3 scripts/automation/omega_optimizer.py
+   - Review:
+     - tail -60 levqor-site/docs/OMEGA_OPTIMIZER_LOG.md || echo "NO_OMEGA_OPTIMIZER_LOG"
+
+======================================================================
+LAYER 4 — HUMAN DASHBOARD + LOG SURFACE (FRONTEND + DOCS)
+======================================================================
+Goal: Give the founder a simple place to SEE what the Omega engine is thinking, WITHOUT any risky changes.
+
+11. Create frontend page:
+   - Path: levqor-site/src/app/omega/page.tsx
+   - Requirements:
+     - Server component; uses fetch() to:
+       - GET /api/omega/tasks (via NEXT_PUBLIC_API_URL)
+       - Gracefully handle failures (show “No tasks yet”).
+     - UI:
+       - Title: “Levqor Omega Operator”
+       - Sections:
+         - Current system summary (based on tasks severity)
+         - Task list grouped by severity and category
+         - Link to /status and /consultation for context
+       - Read-only view — NO buttons that change config, prices, or features.
+     - Use existing design tokens and components (Header/Footer already branded).
+
+12. Documentation:
+   - Create or update docs:
+     - levqor-site/docs/OMEGA_README.md
+       - Explain:
+         - What Omega Self Monitor does
+         - What Omega Operator Advisor does
+         - Where logs live:
+           - workspace-data/omega_self_monitor.log
+           - workspace-data/omega_tasks.json
+           - levqor-site/docs/OMEGA_OPTIMIZER_LOG.md
+         - How to view:
+           - /omega page
+           - /api/omega/tasks
+         - Explicitly state: Omega only ADVISES, does NOT auto-change business logic.
+
+13. Verification for LAYER 4:
+   - TypeScript:
+     - cd levqor-site && npx tsc --noEmit
+   - Build sanity (if not too heavy; otherwise tsc + drift is enough):
+     - npm run build (or at least ensure no Next.js compilation errors for new page)
+   - Route check (if deployed):
+     - curl -I https://levqor.ai/omega || echo "OMEGA_ROUTE_NOT_DEPLOYED"
+
+======================================================================
+GLOBAL VERIFICATION (MANDATORY)
+======================================================================
+14. Drift Monitor:
+   - cd /home/runner/workspace/levqor-site
+   - node scripts/drift-monitor.js
+   - Confirm: “DRIFT STATUS: PASS — No violations detected”
+   - If any violation appears, DO NOT attempt risky fixes. Instead:
+     - Revert the offending change(s) and re-run drift monitor.
+
+15. TypeScript:
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit
+   - Any error → FIX or revert the change causing it.
+
+16. Backend Import:
+   - cd /home/runner/workspace
+   - python3 - << 'EOF'
+     from run import app
+     print("BACKEND_IMPORT_OK")
+     EOF
+
+17. Minimal smoke tests:
+   - curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "REMOTE_HEALTH_FAILED"
+   - curl -s https://api.levqor.ai/api/metrics/app | python3 -m json.tool || echo "METRICS_FAILED"
+   - (If local dev available: curl -s http://localhost:8000/api/omega/tasks | python3 -m json.tool || echo "LOCAL_OMEGA_FAILED")
+
+======================================================================
+FINAL REPORT TO USER (MANDATORY)
+======================================================================
+At the end, produce a CLEAR, STRUCTURED SUMMARY for the user including:
+
+1) OVERVIEW
+   - “MEGA-PHASE Ω implemented and verified” (or explain if partially complete).
+
+2) FILES CREATED
+   - List all new files with paths.
+
+3) FILES MODIFIED
+   - List all modified files with brief reason.
+
+4) NEW SCHEDULED JOBS
+   - Job IDs, intervals, what they do.
+
+5) NEW ENDPOINTS
+   - e.g. GET /api/omega/tasks
+
+6) LOG & DOC LOCATIONS
+   - workspace-data/omega_self_monitor.log
+   - workspace-data/omega_tasks.json
+   - levqor-site/docs/OMEGA_OPTIMIZER_LOG.md
+   - levqor-site/docs/OMEGA_README.md
+   - Frontend: /omega
+
+7) VERIFICATION RESULTS
+   - tsc result
+   - drift-monitor result
+   - backend import result
+   - any curl tests
+
+8) SAFETY CONFIRMATION
+   - Explicitly confirm:
+     - No pricing, trial, SLA, legal, DB schema, or security_core changes.
+     - Omega layer is ADVISORY ONLY (no auto-mutations of business logic).
+
+If something could not be completed safely (time, complexity, or risk), explain exactly what and why, and leave TODO notes in docs/OMEGA_README.md instead of shipping risky code.
+
+DO NOT ASK THE USER QUESTIONS.  
+JUST EXECUTE THIS PLAN AS FULLY AND SAFELY AS POSSIBLE AND REPORT BACK.
+```0

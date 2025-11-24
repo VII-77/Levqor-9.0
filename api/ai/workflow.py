@@ -6,6 +6,7 @@ from flask import Blueprint, request, jsonify
 import logging
 import re
 from api.ai.utils import normalize_language, get_language_display_name
+from api.config.regions import get_current_region
 
 bp = Blueprint("ai_workflow", __name__, url_prefix="/api/ai/workflow")
 log = logging.getLogger("levqor.ai.workflow")
@@ -48,7 +49,7 @@ def ai_workflow():
                 "error": "Description too long (max 1000 characters)"
             }), 422
         
-        log.info(f"AI workflow request: query_length={len(query)}, language={language}")
+        log.info(f"AI workflow request: query_length={len(query)}, language={language}, region={get_current_region()}")
         
         # MEGA-PHASE 6: Use unified AI service (OpenAI or fallback to patterns)
         from api.ai.service import generate_ai_response
