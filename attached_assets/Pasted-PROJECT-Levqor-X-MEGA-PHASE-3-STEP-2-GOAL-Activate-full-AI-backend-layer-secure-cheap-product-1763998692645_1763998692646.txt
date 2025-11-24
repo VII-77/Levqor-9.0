@@ -1,0 +1,405 @@
+PROJECT: Levqor X — MEGA-PHASE 3 STEP 2
+GOAL: Activate full AI backend layer (secure, cheap, production-safe) and wire it to existing AI UX components (AI Help Panel, Natural Language Workflow Builder, AI Debug Assistant, AI Onboarding Tutor) WITHOUT changing any pricing, trial, legal, or architecture invariants.
+
+ABSOLUTE RULES (DO NOT BREAK)
+1. DO NOT change:
+   - Pricing: £9 / £29 / £59 / £149 (monthly) and £90 / £290 / £590 / £1,490 (yearly).
+   - DFY prices: £149 / £299 / £499.
+   - Trial policy: 7-day free trial on ALL tiers, card required, “Cancel before Day 7 to avoid charges”.
+   - SLA values: 48h / 24h / 12h / 4h.
+   - Any policy/legal text.
+   - Any database schema or migrations.
+   - DNS configuration or deployment targets (Frontend → Vercel; Backend → Replit Autoscale / api.levqor.ai).
+
+2. MUST reuse and respect existing security core:
+   - security_core/config.py
+   - security_core/rate_limit.py
+   - security_core/jwt_utils.py or HMAC utils
+   - security_core/audit_logger.py
+   - security_core/ip_reputation.py
+   - Existing APScheduler setup and jobs.
+   Every new AI endpoint MUST:
+   - Be rate-limited.
+   - Log via audit logger with PII masking.
+   - Validate and sanitize input.
+   - Never expose stack traces or internal errors to the client.
+
+3. COST & SAFETY:
+   - If OPENAI_API_KEY or equivalent env var is NOT set → use a deterministic stub implementation (no network calls).
+   - If it IS set → use a CHEAP model (e.g. gpt-4o-mini equivalent), low max_tokens (e.g. 256), and short prompts.
+   - Add clear logging when real AI is used vs stub to monitor cost.
+   - Never log raw prompts or full user content – truncate and/or mask.
+
+4. VERIFICATION:
+   - Never trust “build succeeded” or “should work”. Always verify:
+     - Python imports.
+     - Local HTTP responses.
+     - JSON structure.
+     - TypeScript compilation.
+     - Drift monitor.
+   - Use curl and grep to check REAL output.
+
+======================================================================
+STEP 0 — CONTEXT & DISCOVERY
+======================================================================
+1) Confirm repo root and important directories:
+
+   - EXPECTED ROOT: /home/runner/workspace
+   - Backend: api/, monitors/, security_core/, run.py
+   - Frontend: levqor-site/ (Next.js app with src/app, src/components, etc.)
+
+   Commands:
+   - cd /home/runner/workspace && pwd
+   - ls
+   - ls api
+   - ls security_core
+   - ls monitors
+   - ls levqor-site/src/components
+   - ls levqor-site/src/components/ai || echo "NO_AI_COMPONENTS_DIR"
+
+2) Inspect existing AI UX components (READ ONLY, DO NOT CHANGE YET):
+
+   - levqor-site/src/components/ai/AIHelpPanel.tsx
+   - levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx
+   - levqor-site/src/components/ai/AIDebugAssistant.tsx
+   - (and any AI Onboarding / Knowledge Graph components if present)
+
+   Commands:
+   - sed -n '1,220p' levqor-site/src/components/ai/AIHelpPanel.tsx
+   - sed -n '1,260p' levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx
+   - sed -n '1,260p' levqor-site/src/components/ai/AIDebugAssistant.tsx
+
+   GOAL: Understand current props, state, and any placeholder/pattern-matching logic.
+
+======================================================================
+STEP 1 — CREATE AI BACKEND MODULES (BACKEND ONLY)
+======================================================================
+Create a new folder: api/ai
+
+Files to create:
+
+1) api/ai/__init__.py
+   - Empty or minimal, just to mark this as a package.
+
+2) api/ai/config.py
+   - Central AI config that:
+     - Reads OPENAI_API_KEY (or similar) via os.getenv.
+     - Exposes flags:
+       - AI_ENABLED: bool (True if API key present).
+       - MODEL_NAME: e.g. "gpt-4o-mini" or similar cheap model string.
+       - MAX_TOKENS: e.g. 256.
+     - Logs a WARNING if AI is disabled and stub mode will be used.
+
+3) api/ai/client.py
+   - Wrapper around AI calls with two modes:
+     - Stub mode (if AI_ENABLED = False).
+     - Real mode (if AI_ENABLED = True).
+   - Functions:
+     - generate_chat_response(prompt: str, context: dict) -> dict
+     - generate_workflow_suggestion(prompt: str, context: dict) -> dict
+     - analyze_error(error_payload: dict) -> dict
+     - onboarding_guidance(prompt: str, context: dict) -> dict
+   - IMPLEMENTATION RULES:
+     - If AI_DISABLED (no key): return deterministic, hard-coded but helpful responses based on simple Python logic/patterns.
+     - If AI_ENABLED:
+       - Use the existing HTTP client stack if there is one, OR use requests.
+       - Always:
+         - Truncate prompts.
+         - Use low max_tokens.
+         - Catch and handle all exceptions, returning a safe fallback.
+
+4) api/ai/orchestrator.py
+   - High-level orchestration logic:
+     - For workflow generation:
+       - Accepts natural language description.
+       - Produces a structured workflow schema:
+         {
+           "steps": [
+             {"type": "trigger", "service": "gmail", "description": "..."},
+             {"type": "condition", "description": "..."},
+             {"type": "action", "service": "slack", "description": "..."}
+           ]
+         }
+     - For debug:
+       - Accepts error type, message, and context.
+       - Returns structured:
+         {
+           "summary": "...",
+           "probable_causes": [...],
+           "steps_to_fix": [...],
+           "prevention": [...]
+         }
+     - For help / onboarding:
+       - Maps context ("pricing", "dashboard", "workflows") to specialized system hints.
+
+   - Orchestrator should call api/ai/client.py, not raw AI.
+
+======================================================================
+STEP 2 — NEW AI BLUEPRINTS & ENDPOINTS
+======================================================================
+Create a new Flask blueprint file:
+
+5) api/ai/routes.py (or api/ai/endpoints.py; pick one name and use consistently)
+
+   - Define blueprint: ai_bp = Blueprint("ai", __name__, url_prefix="/api/ai")
+
+   Endpoints (all POST, JSON only):
+
+   1) POST /api/ai/chat
+      Input JSON:
+        {
+          "message": string,
+          "context": {
+            "page": string (e.g. "dashboard", "pricing", "trial"),
+            "user_role": string (optional),
+            "tenant_id": string (optional)
+          }
+        }
+      Behavior:
+        - Validate that "message" is a non-empty string.
+        - Use security_core.request_validation utilities where available.
+        - Apply rate limiting via security_core/rate_limit.
+        - Log via security_core.audit_logger with masked/truncated message.
+        - Call orchestrator to get a "help" style response.
+      Output JSON:
+        {
+          "success": true/false,
+          "reply": string (human readable),
+          "metadata": { ... }
+        }
+
+   2) POST /api/ai/workflow
+      Input:
+        {
+          "description": string,
+          "context": {
+            "experience_level": "beginner" | "advanced" (optional),
+            "tools": [string] (optional, e.g. ["gmail", "slack"])
+          }
+        }
+      Behavior:
+        - Validate description non-empty.
+        - Rate-limit, audit-log.
+        - Call orchestrator.generate_workflow, return structured steps.
+      Output:
+        {
+          "success": true/false,
+          "workflow": {
+            "steps": [...]
+          },
+          "explanation": string
+        }
+
+   3) POST /api/ai/debug
+      Input:
+        {
+          "error_type": string,
+          "message": string,
+          "context": {
+            "service": string (optional),
+            "endpoint": string (optional),
+            "http_status": int (optional)
+          }
+        }
+      Behavior:
+        - Validate error_type and message.
+        - Rate-limit, audit-log.
+        - Call orchestrator.analyze_error.
+      Output:
+        {
+          "success": true/false,
+          "summary": string,
+          "probable_causes": [string],
+          "steps_to_fix": [string],
+          "prevention": [string]
+        }
+
+   4) POST /api/ai/onboarding
+      Input:
+        {
+          "stage": string,  // e.g. "first_login", "create_first_workflow"
+          "context": {
+            "has_connected_tool": bool,
+            "has_run_workflow": bool
+          }
+        }
+      Behavior:
+        - Validate stage (whitelist known stages).
+        - Rate-limit, audit-log.
+        - Call orchestrator.onboarding_guidance.
+      Output:
+        {
+          "success": true/false,
+          "checklist": [string],
+          "tips": [string]
+        }
+
+   SECURITY:
+   - For each endpoint:
+     - Decorate/guard with rate limiting.
+     - Catch all exceptions and return safe error:
+       { "success": false, "error": "Temporary issue. Please try again." }
+     - NEVER include stack traces or internal details in responses.
+
+======================================================================
+STEP 3 — REGISTER BLUEPRINTS IN run.py
+======================================================================
+1) Open run.py and locate existing blueprint registrations (e.g. support, usage, marketing, etc.).
+
+2) Add imports at the top (near other blueprint imports):
+
+   from api.ai.routes import ai_bp
+
+3) Register blueprint in the app factory / setup section:
+
+   app.register_blueprint(ai_bp)
+
+4) Run an import check:
+
+   cd /home/runner/workspace
+   python3 - << 'EOF'
+   try:
+       from run import app
+       print("✅ BACKEND_IMPORT_OK (AI endpoints loaded)")
+   except Exception as e:
+       print("❌ IMPORT_FAILED:", e)
+       import traceback; traceback.print_exc()
+       raise
+   EOF
+
+   - If IMPORT_FAILED: fix immediately BEFORE continuing.
+
+======================================================================
+STEP 4 — WIRE FRONTEND AI COMPONENTS TO BACKEND
+======================================================================
+Update the existing AI components to call the new endpoints.
+
+1) AIHelpPanel.tsx
+   - Locate where the answer/response is currently generated (pattern matching or placeholder).
+   - Replace internal fake logic with:
+     - async function sendMessage(message: string) {
+         - POST to /api/ai/chat with message + context (page).
+         - Use fetch with AbortController and timeout.
+         - On success, display reply.
+         - On error, show a friendly “AI is unavailable, please try again” message.
+       }
+   - DO NOT change appearance, only backend integration.
+
+2) NaturalLanguageWorkflowBuilder.tsx
+   - Replace any local pattern logic with:
+     - POST to /api/ai/workflow with description and optional tools.
+     - Render returned workflow.steps into existing UI.
+   - Handle loading state, error state gracefully.
+
+3) AIDebugAssistant.tsx
+   - Replace local debug logic with:
+     - POST to /api/ai/debug with error_type, message, context.
+     - Render summary, probable_causes, steps_to_fix, prevention as returned.
+   - If endpoint fails: show safe fallback text.
+
+4) Any AI Onboarding / Tutor component (if present in src/components/ai):
+   - POST to /api/ai/onboarding with stage and context.
+   - Render checklist and tips.
+
+GENERAL RULES FOR FRONTEND CHANGES:
+   - All AI components must be `"use client"`.
+   - Do not touch any pricing/trial/legal UI.
+   - Do not alter nav, routes, or layout structure beyond AI wiring.
+   - Keep new TypeScript types local to components and strongly typed with interfaces.
+
+======================================================================
+STEP 5 — FULL VERIFICATION (MANDATORY)
+======================================================================
+Run ALL of these and fix any issue before declaring success.
+
+1) BACKEND HEALTH & AI ENDPOINT TESTS (LOCAL)
+   - cd /home/runner/workspace
+   - curl -s http://localhost:8000/health | python3 -m json.tool
+   - For each AI endpoint, test minimal happy paths:
+
+   curl -s -X POST http://localhost:8000/api/ai/chat \
+     -H "Content-Type: application/json" \
+     -d '{"message":"Help me understand workflows","context":{"page":"dashboard"}}' | python3 -m json.tool
+
+   curl -s -X POST http://localhost:8000/api/ai/workflow \
+     -H "Content-Type: application/json" \
+     -d '{"description":"When a new lead fills a form, add a row to a Google Sheet","context":{"tools":["forms","sheets"]}}' | python3 -m json.tool
+
+   curl -s -X POST http://localhost:8000/api/ai/debug \
+     -H "Content-Type: application/json" \
+     -d '{"error_type":"auth_error","message":"401 from Slack API","context":{"service":"slack","endpoint":"/chat.postMessage","http_status":401}}' | python3 -m json.tool
+
+   curl -s -X POST http://localhost:8000/api/ai/onboarding \
+     -H "Content-Type: application/json" \
+     -d '{"stage":"first_login","context":{"has_connected_tool":false,"has_run_workflow":false}}' | python3 -m json.tool
+
+   - Check:
+     - HTTP 200
+     - success: true
+     - Outputs have the expected shape.
+
+2) TYPESCRIPT & FRONTEND SANITY
+   - cd /home/runner/workspace/levqor-site
+   - npx tsc --noEmit
+   - If any TS errors: FIX THEM.
+   - npm run build (or the existing build script) with timeout:
+     - timeout 180 npm run build
+   - Confirm build completes with 0 errors.
+
+3) DRIFT MONITOR
+   - cd /home/runner/workspace/levqor-site
+   - node scripts/drift-monitor.js
+   - MUST show: DRIFT STATUS: PASS — No violations detected.
+
+   If any drift arises from your changes:
+   - You have broken a locked constraint. Roll back and correct.
+
+4) PRICING & TRIAL DOUBLE-CHECK (GREPS)
+   - cd /home/runner/workspace/levqor-site
+   - grep -R "£9" src/app/pricing/page.tsx
+   - grep -R "£29" src/app/pricing/page.tsx
+   - grep -R "£59" src/app/pricing/page.tsx
+   - grep -R "£149" src/app/pricing/page.tsx
+   - grep -R "7-day free trial" -n src/app/pricing/page.tsx src/app/trial/page.tsx
+
+   CONFIRM: No numbers or wordings changed.
+
+======================================================================
+STEP 6 — FINAL PRODUCTION CHECK (WITHOUT CHANGING INFRA)
+======================================================================
+Do NOT modify DNS or deployment targets. Only prepare & validate.
+
+1) Summarize all changed files (NO GIT COMMANDS if restricted; use ls/wc/sed):
+
+   - List modified files in:
+     - api/ai/*
+     - run.py (diff snippet around ai_bp registration)
+     - levqor-site/src/components/ai/*.tsx
+
+2) Prepare a brief human-readable deployment note (printed to stdout, not a file) including:
+   - Files added/changed.
+   - New endpoints.
+   - How to test them after deploy on api.levqor.ai.
+   - Assurance that pricing/trial/legal/DB were untouched.
+   - Any environment variables recommended (e.g. SECURITY_HMAC_SECRET, OPENAI_API_KEY).
+
+3) ONLY when everything is green (local curl tests, tsc, build, drift monitor), print a FINAL REPORT with clear headings:
+
+   - "AI BACKEND ACTIVATION — SUMMARY"
+   - "NEW ENDPOINTS"
+   - "FRONTEND WIRING"
+   - "SECURITY & COST GUARDRAILS"
+   - "WHAT DID NOT CHANGE"
+   - "POST-DEPLOY TEST COMMANDS"
+
+Do NOT leave TODOs. Everything within this scope must be implemented and verified.
+
+======================================================================
+REMINDERS
+======================================================================
+- Use existing security_core utilities everywhere for validation, rate limiting, and logging.
+- Prefer simple, robust Python over clever patterns.
+- Never break locked business rules.
+- Always validate with REAL requests (curl) before assuming success.
+
+Execute all steps end-to-end and then output the final report.

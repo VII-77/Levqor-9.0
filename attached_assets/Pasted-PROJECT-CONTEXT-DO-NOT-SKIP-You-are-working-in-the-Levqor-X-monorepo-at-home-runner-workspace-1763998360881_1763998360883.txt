@@ -1,0 +1,430 @@
+PROJECT CONTEXT (DO NOT SKIP)
+You are working in the Levqor X monorepo at:
+
+  /home/runner/workspace
+
+This repo already includes:
+
+- Backend: Flask app in run.py, blueprints under api/
+- Frontend: Next.js 14 app in levqor-site/
+- Autoscale backend domain: https://api.levqor.ai
+- Frontend domain: https://levqor.ai
+- Scheduler: APScheduler with ~19 jobs
+- Observability: resilience/logging utilities already present
+- Lots of existing governance docs and drift monitor
+
+Blueprint rules (ABSOLUTE, DO NOT VIOLATE):
+
+1) PRICING
+   - Monthly:  £9 / £29 / £59 / £149
+   - Yearly:   £90 / £290 / £590 / £1490
+   - DFY:      £149 / £299 / £499
+   - DO NOT change these numbers ANYWHERE (backend, frontend, docs).
+
+2) TRIAL / SLAs
+   - Trial: 7-day free trial on ALL plans, card required
+   - Canonical text must stay: “7-day free trial • Card required • Cancel before Day 7 to avoid charges”
+   - Support SLAs: 48h / 24h / 12h / 4h — DO NOT change these.
+
+3) ARCHITECTURE
+   - Frontend stays on Vercel
+   - Backend stays on Replit Autoscale (api.levqor.ai)
+   - NO database schema changes (no new tables/columns) unless explicitly instructed.
+   - NO DNS or infra changes.
+
+4) GIT / DEPLOYMENT
+   - DO NOT run `git commit`, `git push`, or change Git remotes.
+   - DO NOT change CI/CD configs.
+   - Your job is to MODIFY CODE + CONFIG ONLY and then run tests.
+
+5) SAFETY
+   - Keep all existing legal/policy content intact (terms, privacy, policies).
+   - Keep all locked business text intact (pricing, SLAs, guarantees).
+   - If in doubt, log info and fall back safely.
+
+OVERALL GOAL — MEGA-PHASE 3
+Implement **Enterprise Hardening & Revenue Optimization**:
+
+- Real AI backend endpoints for existing AI UX components
+- Backend observability & metrics (no external SaaS)
+- Revenue optimization UX (no pricing changes)
+- Privacy-safe telemetry pipeline (internal only)
+- Light fraud/abuse detection signals (no schema changes)
+- Dashboard V3 polish (using existing design tokens + components)
+- Final verification: build, drift, health
+
+WORKSTYLE
+- Work incrementally.
+- After every large change, run relevant checks.
+- If a step fails, FIX IT before moving on.
+- At the end, produce a clear, structured FINAL REPORT of exactly what you changed (file-by-file).
+
+══════════════════════════════════════
+STEP 0 — SANITY & INVENTORY
+══════════════════════════════════════
+
+1) Confirm repo root and structure:
+
+   - Run:
+     - `cd /home/runner/workspace && pwd`
+     - `ls`
+     - `ls levqor-site/src/components`
+     - `ls api`
+
+   - Confirm the presence of:
+     - `levqor-site/src/components/ai/AIHelpPanel.tsx`
+     - `levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx`
+     - `levqor-site/src/components/ai/AIDebugAssistant.tsx`
+     - Any “AI Onboarding Tutor” / “Knowledge Graph” components if present
+     - `api/utils/logging_config.py` or similar
+     - `api/utils/resilience.py` or similar
+     - `levqor-site/src/config/design-tokens.ts`
+
+2) Validate current health:
+
+   - `cd /home/runner/workspace/levqor-site && npx tsc --noEmit`
+   - `node scripts/drift-monitor.js`
+   - Backend:
+     - `curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "HEALTH_FAILED"`
+
+   If these fail due to transient network, just note it; do NOT change blueprint rules.
+
+══════════════════════════════════════
+STEP 1 — REAL AI BACKEND ENDPOINTS
+══════════════════════════════════════
+
+Goal: Implement real AI endpoints (still demo-safe) that can later be wired to OpenAI with minimal changes.
+
+1) Create AI backend module:
+
+   - Under `api/ai/` create:
+
+     - `api/ai/__init__.py` (if not already)
+     - `api/ai/chat.py`
+     - `api/ai/workflow.py`
+     - `api/ai/debug.py`
+     - `api/ai/onboarding.py`
+
+   Design:
+
+   - Use Flask Blueprints:
+     - `ai_chat_bp = Blueprint("ai_chat", __name__, url_prefix="/api/ai/chat")`
+     - `ai_workflow_bp = Blueprint("ai_workflow", __name__, url_prefix="/api/ai/workflow")`
+     - `ai_debug_bp = Blueprint("ai_debug", __name__, url_prefix="/api/ai/debug")`
+     - `ai_onboarding_bp = Blueprint("ai_onboarding", __name__, url_prefix="/api/ai/onboarding")`
+
+   - For now, implement **structured pattern-based responses**, but architect them to be ready for OpenAI:
+
+     - Each endpoint:
+       - Accepts JSON `{ "query": string, "context": { ... } }` (or `{ "error": ..., "context": ... }` for debug).
+       - Validates `query` or relevant field.
+       - Logs via existing logging_config / resilience utilities.
+       - Returns `{"success": true, "answer": "...", "steps": [...], "meta": {...}}`
+       - On validation error: `{"success": false, "error": "..."}` with proper HTTP status (400/422).
+
+   - DO NOT call OpenAI directly yet; just structure it so later we can plug in an OpenAI call.
+
+2) AI config helper:
+
+   - Create `levqor-site/src/config/ai.ts`:
+
+     - Export constants:
+       - `AI_MODELS = { chat: "gpt-4.1-mini", heavy: "gpt-4.1" }` (names as comments, not used yet).
+       - `AI_MAX_TOKENS`, `AI_TIMEOUT_MS`.
+     - Add a clear comment:
+       - “CRITICAL: This is configuration only. Actual AI calls are handled server-side and must respect cost & safety constraints.”
+
+3) Register blueprints:
+
+   - In `run.py`, register the AI blueprints:
+
+     ```python
+     from api.ai.chat import ai_chat_bp
+     from api.ai.workflow import ai_workflow_bp
+     from api.ai.debug import ai_debug_bp
+     from api.ai.onboarding import ai_onboarding_bp
+
+     app.register_blueprint(ai_chat_bp)
+     app.register_blueprint(ai_workflow_bp)
+     app.register_blueprint(ai_debug_bp)
+     app.register_blueprint(ai_onboarding_bp)
+     ```
+
+   - Import-safety: run a local import check:
+
+     - `cd /home/runner/workspace && python3 - << 'EOF'
+from run import app
+print("✅ BACKEND_IMPORT_OK (AI endpoints)")
+EOF`
+
+   Fix any syntax/import issues.
+
+══════════════════════════════════════
+STEP 2 — WIRE EXISTING AI UX COMPONENTS
+══════════════════════════════════════
+
+Goal: Connect existing AI UX components to the new endpoints.
+
+1) AI Help Panel → /api/ai/chat
+
+   - File: `levqor-site/src/components/ai/AIHelpPanel.tsx`
+
+   - Replace current demo logic / pattern match with:
+
+     - A `fetch` POST to `/api/ai/chat` with `body: { query, context }`.
+     - Context can include: `page`, `location`, `userTier` if available; otherwise minimal.
+
+   - Implement:
+
+     - Loading state while waiting for response.
+     - If `success === true` → display `answer` + optionally `steps`.
+     - If `success === false` or network error → show friendly fallback message.
+     - DO NOT break existing UI; all calls must be **non-blocking** and safely handled.
+
+2) NaturalLanguageWorkflowBuilder → /api/ai/workflow
+
+   - File: `levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx`
+
+   - On “Generate workflow”:
+
+     - Call POST `/api/ai/workflow`.
+     - Expect payload like:
+       - `{ success: true, steps: [{ type, label, description }], meta: {...} }`
+     - If response fails, keep existing pattern-matching fallback.
+
+   - Ensure hydration safety: only run in `useEffect` / event handlers, not during SSR.
+
+3) AI Debug Assistant → /api/ai/debug
+
+   - File: `levqor-site/src/components/ai/AIDebugAssistant.tsx`
+
+   - On “Analyse error”:
+
+     - POST `/api/ai/debug` with `{ error, context }`.
+     - Expect:
+       - `{ success: true, explanation, steps, prevention }`
+     - Handle failure gracefully.
+
+4) (If present) AI Onboarding / Knowledge Graph
+
+   - Wire them similarly to `/api/ai/onboarding`.
+
+5) Verify:
+
+   - `cd /home/runner/workspace/levqor-site && npx tsc --noEmit`
+   - Fix any TS issues.
+
+══════════════════════════════════════
+STEP 3 — OBSERVABILITY & METRICS
+══════════════════════════════════════
+
+Goal: Strengthen logging and metrics, without external vendors.
+
+1) Locate existing logging/resilience:
+
+   - `grep -R "logging_config" -n api || true`
+   - `grep -R "structlog" -n api || true`
+
+2) Enhance logging for AI endpoints:
+
+   - In each AI endpoint module, ensure:
+
+     - A correlation ID (reuse existing correlation ID function if present).
+     - Log anonymized query length, page, tier.
+     - DO NOT log full query or PII, just summaries.
+
+3) Add lightweight metrics endpoint:
+
+   - If not already present, add `/api/metrics/app` blueprint (e.g. `api/metrics/app.py`):
+
+     - Return simple JSON:
+       - `{"status":"ok","uptime_seconds":..., "ai_requests_last_5m": ..., "errors_last_5m": ...}`
+
+   - Use existing in-memory counters or stub with safe zeros and TODO comments.
+
+4) Integration tests:
+
+   - `curl -s https://api.levqor.ai/api/metrics/app | python3 -m json.tool || echo "METRICS_MISSING_OR_STUB"`
+
+══════════════════════════════════════
+STEP 4 — REVENUE OPTIMIZATION UX (NO PRICING CHANGES)
+══════════════════════════════════════
+
+Goal: Improve conversion without touching core prices.
+
+1) Exit-intent modal on /pricing
+
+   - Create `levqor-site/src/components/ExitIntentModal.tsx`:
+
+     - `use client`
+     - Triggers when mouse leaves viewport (desktop) or after X seconds of inactivity (mobile).
+     - Shows a subtle offer:
+       - Example: “Not ready yet? Start your 7-day free trial now and let Levqor’s AI set up your first workflow.”
+     - Buttons:
+       - “Start free trial” → scroll to plans or `/trial`.
+       - “Maybe later” → close modal.
+     - DO NOT mention discounts or change pricing.
+
+   - Wire into `levqor-site/src/app/pricing/page.tsx`.
+
+2) ROI mini-calculator on /pricing or /how-it-works
+
+   - Create `ROIInlineCalculator` component:
+
+     - Input:
+       - “Hours spent per week on manual workflows”
+       - “Average hourly rate”
+     - Output:
+       - “Estimated hours saved per month”
+       - “Estimated monetary value per month”
+     - Client-side only, not persisted.
+     - DO NOT tie it to specific plans or edit pricing copy.
+
+3) Save-attempt UX (optional, safe only)
+
+   - If there is a downgrade/cancel UI in dashboard, add a **client-only** `“Wait, before you go”` block that highlights:
+     - trial terms,
+     - option to downgrade instead of cancel,
+     - link to support.
+   - Do NOT touch backend subscription logic.
+
+4) Verify:
+
+   - `cd /home/runner/workspace/levqor-site && npx tsc --noEmit`
+
+══════════════════════════════════════
+STEP 5 — TELEMETRY & FRAUD / ABUSE SIGNALS
+══════════════════════════════════════
+
+Goal: Internal-only, privacy-safe, no schema changes.
+
+1) Telemetry pipeline (backend-only)
+
+   - Add a small module: `api/telemetry/events.py` (or reuse existing marketing/events if appropriate).
+
+   - Design:
+     - Accept internal events (e.g. `ai_request`, `workflow_run_preview`, `debug_analyse`).
+     - Enforce strict validation.
+     - Log anonymized event aggregates.
+     - NO user identifiers, no IP addresses stored; only coarse-grained counts.
+
+2) Fraud / abuse signals (logging-level only)
+
+   - Enhance existing login/signup/checkout endpoints (if present) with:
+
+     - Basic IP-based counters in memory (per-process rolling window).
+     - Log:
+       - rapid signups from same IP,
+       - repeated failed checkout attempts,
+       - suspected card-testing patterns (small repeated charges).
+     - DO NOT block; for now, **log only** with `level=WARNING`.
+
+3) No schema changes:
+
+   - Re-confirm you did NOT add or modify DB migrations.
+   - If any schema change sneaked in, revert it.
+
+══════════════════════════════════════
+STEP 6 — DASHBOARD V3 POLISH
+══════════════════════════════════════
+
+Goal: Visual + UX refinement using existing design tokens & AI components.
+
+1) File: `levqor-site/src/app/dashboard/v2/page.tsx`
+
+   - Use `design-tokens.ts` to:
+
+     - Improve spacing, headings, and card layout.
+     - Ensure OnboardingChecklist, HelpPanel, and any AI panels are visually consistent with the new branding.
+
+   - Small, safe tweaks:
+     - Better section headings.
+     - Clear grouping of:
+       - Workflows panel
+       - AI helpers
+       - Onboarding progress
+
+2) Error handling:
+
+   - If `ErrorState` component exists, add a **non-invasive** placeholder section in dashboard V2 that only shows when there is an explicit error passed as props/state (do NOT break anything).
+
+3) Ensure dashboard remains:
+
+   - Fully functional
+   - No new mandatory props
+   - No auth logic changes
+
+══════════════════════════════════════
+STEP 7 — FULL VERIFICATION
+══════════════════════════════════════
+
+1) TypeScript and build:
+
+   - `cd /home/runner/workspace/levqor-site`
+   - `npx tsc --noEmit`
+   - `timeout 240 npm run build || echo "BUILD_FAILED"`
+
+2) Drift monitor:
+
+   - `node scripts/drift-monitor.js`
+
+   - Must remain:
+     - `DRIFT STATUS: PASS — No violations detected`
+   - If drift occurs due to your changes, FIX IT OR ROLL BACK the offending change.
+
+3) Backend health:
+
+   - `cd /home/runner/workspace`
+   - Local import: `python3 - << 'EOF' ... EOF` as above.
+   - Production sanity (if external network allowed):
+     - `curl -s https://api.levqor.ai/health | python3 -m json.tool || echo "HEALTH_CHECK_FAILED"`
+     - `curl -s https://api.levqor.ai/api/usage/summary | python3 -m json.tool || echo "USAGE_SUMMARY_FAILED"`
+
+4) New AI endpoints:
+
+   - If allowed, test from Replit shell (or at least local):
+
+     - `/api/ai/chat`
+     - `/api/ai/workflow`
+     - `/api/ai/debug`
+     - `/api/ai/onboarding`
+
+   - At minimum, ensure they return valid JSON shape and do not crash.
+
+══════════════════════════════════════
+STEP 8 — FINAL REPORT (MANDATORY)
+══════════════════════════════════════
+
+At the end, output a **clear, human-readable FINAL REPORT** with:
+
+1) Summary
+   - Which MEGA-PHASE 3 objectives were implemented.
+   - Any parts intentionally left as stubs (e.g. real OpenAI integration).
+
+2) File-by-file change list:
+   - For each file, list:
+     - New or Modified
+     - Purpose of changes (1–2 bullets)
+   - Highlight all new AI endpoints and where they are registered.
+
+3) Verification results:
+   - tsc result
+   - npm run build (success/fail and any key warnings)
+   - Drift monitor status
+   - Backend import status
+   - Any curl tests you ran
+
+4) Safety confirmation:
+   - Explicitly confirm:
+     - Pricing values unchanged
+     - Trial/SLA text unchanged
+     - No DB schema changes
+     - No DNS changes
+     - No legal/policy modifications
+
+5) Deployment notes:
+   - Whether new endpoints require backend restart only (likely true).
+   - That NO git operations or deployments were done by you.
+
+END OF INSTRUCTIONS
+```0

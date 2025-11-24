@@ -94,33 +94,51 @@ export default function AIHelpPanel({ context = 'general', className = '' }: AIH
     setSuggestions(contextualSuggestions[context] || contextualSuggestions.general);
   }, [context]);
 
-  // Simulate AI response (in production, this would call an AI API)
+  // Call real AI backend endpoint
   const handleAskQuestion = async () => {
     if (!query.trim()) return;
     
     setIsLoading(true);
     
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // In production, this would call your AI backend
-    // For now, provide contextual responses
-    const responses: Record<string, string> = {
-      'how': 'To get started, click the "Create Workflow" button in your dashboard. You\'ll use our visual builder or natural language input to connect your apps.',
-      'pricing': 'We offer plans starting at £9/month with a 7-day free trial. All plans include self-healing workflows and unlimited integrations.',
-      'trial': 'Your 7-day free trial includes full access to all features. No credit card required to start. Cancel anytime before Day 7.',
-      'workflow': 'Workflows are automated sequences that connect your apps. They run automatically when triggered and can self-heal if errors occur.',
-    };
-    
-    // Simple keyword matching (production would use actual AI)
-    const keyword = Object.keys(responses).find(k => query.toLowerCase().includes(k));
-    const response = keyword ? responses[keyword] : 'I can help with workflows, pricing, trials, and getting started. What would you like to know?';
-    
-    setIsLoading(false);
-    
-    // In production, display the AI response in a chat interface
-    alert(`AI Assistant: ${response}`);
-    setQuery('');
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: query.trim(),
+          context: {
+            page: context,
+            timestamp: new Date().toISOString(),
+          },
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('AI request failed');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Display the AI response
+        alert(`AI Assistant: ${data.answer}`);
+        
+        // If there are steps, could display them in a better UI
+        if (data.steps && data.steps.length > 0) {
+          console.log('AI suggested steps:', data.steps);
+        }
+      } else {
+        alert(`AI Assistant: ${data.error || 'Sorry, I couldn\'t process that question.'}`);
+      }
+    } catch (error) {
+      console.error('AI chat error:', error);
+      alert('AI Assistant: Sorry, I\'m having trouble right now. Please try again later.');
+    } finally {
+      setIsLoading(false);
+      setQuery('');
+    }
   };
 
   if (!isOpen) {

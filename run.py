@@ -913,6 +913,18 @@ app.register_blueprint(usage_export_bp)
 app.register_blueprint(lead_bp)
 app.register_blueprint(events_bp)
 
+from api.ai.chat import bp as ai_chat_bp
+from api.ai.workflow import bp as ai_workflow_bp
+from api.ai.debug import bp as ai_debug_bp
+from api.ai.onboarding import bp as ai_onboarding_bp
+from api.metrics.app import bp as app_metrics_bp
+
+app.register_blueprint(ai_chat_bp)
+app.register_blueprint(ai_workflow_bp)
+app.register_blueprint(ai_debug_bp)
+app.register_blueprint(ai_onboarding_bp)
+app.register_blueprint(app_metrics_bp)
+
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():
     current_p95 = request.args.get("current_p95", type=float, default=100.0)
