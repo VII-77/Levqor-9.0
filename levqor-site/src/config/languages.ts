@@ -1,11 +1,31 @@
 /**
- * Global Language Registry for Levqor X 9.0
+ * Global Language Registry for Levqor X 9.0 — MEGA-PHASE 7 ULTIMATE
  * 
- * This registry defines all languages available in the UI switcher for marketing purposes.
- * Note: Only 4 core locales (en, de, fr, es) have full routing and translations.
- * Other languages use English content as placeholders until translations are added.
+ * This registry defines all 40 languages available in the UI switcher.
+ * Languages are organized into 3 tiers for staged localization:
  * 
- * SAFETY: This is display-only and does NOT affect routing, pricing, or backend behavior.
+ * **TIER 1** (FULL translation targets - 9 languages):
+ *   - Core: en, de, fr, es (existing full support + routing)
+ *   - New: pt, it, hi, ar, zh-Hans (MEGA-PHASE 7 additions)
+ *   - Strategy: Full translation files for hero, pricing, nav, footer, key CTAs
+ * 
+ * **TIER 2** (PARTIAL / future full - 17 languages):
+ *   - European: nl, sv, no, da, fi, pl, cs, ru
+ *   - Asian: ja, ko, vi, id, ms, th, tr
+ *   - South Asian: ur, bn
+ *   - Strategy: Fallback to English routing, partial translations in future phases
+ * 
+ * **TIER 3** (EDGE / long-tail - 14 languages):
+ *   - European: sk, hu, ro, bg, el, uk
+ *   - Middle Eastern: he, fa
+ *   - South Asian: ta, te, ml, pa, gu
+ *   - East Asian: zh-Hant
+ *   - Strategy: English fallback, community-driven translations
+ * 
+ * Note: Only routed locales (en, de, fr, es) have full URL routing.
+ * Other languages map to English routes but use display-language for UI and AI.
+ * 
+ * SAFETY: This is display-only and does NOT affect pricing, trials, SLAs, or backend behavior.
  */
 
 export type LanguageCode =
@@ -38,15 +58,25 @@ export interface LanguageMeta {
 }
 
 export const LANGUAGES: LanguageMeta[] = [
-  // Core routed locales (full support)
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIER 1: FULL TRANSLATION TARGETS (9 languages) - MEGA-PHASE 7
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  // Core routed locales (existing full support)
   { code: "en", label: "English", nativeLabel: "English", region: "Europe", routedLocale: "en", hasTranslations: true },
   { code: "de", label: "German", nativeLabel: "Deutsch", region: "Europe", routedLocale: "de", hasTranslations: true },
   { code: "fr", label: "French", nativeLabel: "Français", region: "Europe", routedLocale: "fr", hasTranslations: true },
   { code: "es", label: "Spanish", nativeLabel: "Español", region: "Europe", routedLocale: "es", hasTranslations: true },
   
-  // European languages (English content placeholders)
-  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "en", hasTranslations: false },
+  // TIER 1 new additions (translation files added in MEGA-PHASE 7)
+  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIER 2: PARTIAL / FUTURE FULL (17 languages)
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  // European Tier 2
   { code: "nl", label: "Dutch", nativeLabel: "Nederlands", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "sv", label: "Swedish", nativeLabel: "Svenska", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "no", label: "Norwegian", nativeLabel: "Norsk", region: "Europe", routedLocale: "en", hasTranslations: false },
@@ -54,41 +84,59 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "fi", label: "Finnish", nativeLabel: "Suomi", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "pl", label: "Polish", nativeLabel: "Polski", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "cs", label: "Czech", nativeLabel: "Čeština", region: "Europe", routedLocale: "en", hasTranslations: false },
+  { code: "ru", label: "Russian", nativeLabel: "Русский", region: "Europe", routedLocale: "en", hasTranslations: false },
+  
+  // Middle Eastern / Turkish Tier 2
+  { code: "tr", label: "Turkish", nativeLabel: "Türkçe", region: "Middle East", routedLocale: "en", hasTranslations: false },
+  
+  // South Asian Tier 2
+  { code: "ur", label: "Urdu", nativeLabel: "اردو", region: "South Asia", routedLocale: "en", hasTranslations: false },
+  { code: "bn", label: "Bengali", nativeLabel: "বাংলা", region: "South Asia", routedLocale: "en", hasTranslations: false },
+  
+  // East Asian Tier 2
+  { code: "ja", label: "Japanese", nativeLabel: "日本語", region: "East Asia", routedLocale: "en", hasTranslations: false },
+  { code: "ko", label: "Korean", nativeLabel: "한국어", region: "East Asia", routedLocale: "en", hasTranslations: false },
+  
+  // Southeast Asian Tier 2
+  { code: "vi", label: "Vietnamese", nativeLabel: "Tiếng Việt", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
+  { code: "id", label: "Indonesian", nativeLabel: "Bahasa Indonesia", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
+  { code: "ms", label: "Malay", nativeLabel: "Bahasa Melayu", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
+  { code: "th", label: "Thai", nativeLabel: "ไทย", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
+  
+  // ═══════════════════════════════════════════════════════════════════════════
+  // TIER 3: EDGE / LONG-TAIL (14 languages)
+  // ═══════════════════════════════════════════════════════════════════════════
+  
+  // European Tier 3
   { code: "sk", label: "Slovak", nativeLabel: "Slovenčina", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "hu", label: "Hungarian", nativeLabel: "Magyar", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "ro", label: "Romanian", nativeLabel: "Română", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "bg", label: "Bulgarian", nativeLabel: "Български", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "el", label: "Greek", nativeLabel: "Ελληνικά", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "ru", label: "Russian", nativeLabel: "Русский", region: "Europe", routedLocale: "en", hasTranslations: false },
   { code: "uk", label: "Ukrainian", nativeLabel: "Українська", region: "Europe", routedLocale: "en", hasTranslations: false },
   
-  // Middle Eastern languages (English content placeholders)
-  { code: "tr", label: "Turkish", nativeLabel: "Türkçe", region: "Middle East", routedLocale: "en", hasTranslations: false },
-  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "en", hasTranslations: false },
+  // Middle Eastern Tier 3
   { code: "he", label: "Hebrew", nativeLabel: "עברית", region: "Middle East", routedLocale: "en", hasTranslations: false },
   { code: "fa", label: "Persian (Farsi)", nativeLabel: "فارسی", region: "Middle East", routedLocale: "en", hasTranslations: false },
-  { code: "ur", label: "Urdu", nativeLabel: "اردو", region: "South Asia", routedLocale: "en", hasTranslations: false },
   
-  // South Asian languages (English content placeholders)
-  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  { code: "bn", label: "Bengali", nativeLabel: "বাংলা", region: "South Asia", routedLocale: "en", hasTranslations: false },
+  // TIER 1 South Asian (translations added in MEGA-PHASE 7)
+  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  
+  // South Asian Tier 3
   { code: "ta", label: "Tamil", nativeLabel: "தமிழ்", region: "South Asia", routedLocale: "en", hasTranslations: false },
   { code: "te", label: "Telugu", nativeLabel: "తెలుగు", region: "South Asia", routedLocale: "en", hasTranslations: false },
   { code: "ml", label: "Malayalam", nativeLabel: "മലയാളം", region: "South Asia", routedLocale: "en", hasTranslations: false },
   { code: "pa", label: "Punjabi", nativeLabel: "ਪੰਜਾਬੀ", region: "South Asia", routedLocale: "en", hasTranslations: false },
   { code: "gu", label: "Gujarati", nativeLabel: "ગુજરાતી", region: "South Asia", routedLocale: "en", hasTranslations: false },
   
-  // East Asian languages (English content placeholders)
-  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "en", hasTranslations: false },
-  { code: "zh-Hant", label: "Chinese (Traditional)", nativeLabel: "繁體中文", region: "East Asia", routedLocale: "en", hasTranslations: false },
-  { code: "ja", label: "Japanese", nativeLabel: "日本語", region: "East Asia", routedLocale: "en", hasTranslations: false },
-  { code: "ko", label: "Korean", nativeLabel: "한국어", region: "East Asia", routedLocale: "en", hasTranslations: false },
+  // TIER 1 Middle Eastern (translation added in MEGA-PHASE 7)
+  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
   
-  // Southeast Asian languages (English content placeholders)
-  { code: "vi", label: "Vietnamese", nativeLabel: "Tiếng Việt", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  { code: "id", label: "Indonesian", nativeLabel: "Bahasa Indonesia", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  { code: "ms", label: "Malay", nativeLabel: "Bahasa Melayu", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  { code: "th", label: "Thai", nativeLabel: "ไทย", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
+  // TIER 1 East Asian (translation added in MEGA-PHASE 7)
+  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "en", hasTranslations: false }, // → Will be true after STEP 1.2
+  
+  // East Asian Tier 3
+  { code: "zh-Hant", label: "Chinese (Traditional)", nativeLabel: "繁體中文", region: "East Asia", routedLocale: "en", hasTranslations: false },
 ];
 
 /**
