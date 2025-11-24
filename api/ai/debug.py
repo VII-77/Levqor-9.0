@@ -50,6 +50,16 @@ def ai_debug():
         
         log.info(f"AI debug request: error_length={len(error)}, component={context.get('component', 'unknown')}, language={language}")
         
+        # MEGA-PHASE 6: Use unified AI service (OpenAI or fallback to patterns)
+        from api.ai.service import generate_ai_response
+        
+        payload = {"error": error, "context": context}
+        result = generate_ai_response("debug", language, payload)
+        
+        if result.get("success"):
+            return jsonify(result), 200
+        
+        # Additional fallback: use old pattern function
         explanation, steps, prevention = _analyze_error(error, context)
         
         return jsonify({

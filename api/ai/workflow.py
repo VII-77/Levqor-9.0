@@ -50,6 +50,16 @@ def ai_workflow():
         
         log.info(f"AI workflow request: query_length={len(query)}, language={language}")
         
+        # MEGA-PHASE 6: Use unified AI service (OpenAI or fallback to patterns)
+        from api.ai.service import generate_ai_response
+        
+        payload = {"description": query, "context": context}
+        result = generate_ai_response("workflow", language, payload)
+        
+        if result.get("success"):
+            return jsonify(result), 200
+        
+        # Additional fallback: use old pattern function
         steps = _generate_workflow_steps(query, context)
         
         return jsonify({

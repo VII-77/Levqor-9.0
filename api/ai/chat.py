@@ -50,6 +50,16 @@ def ai_chat():
         
         log.info(f"AI chat request: query_length={len(query)}, page={context.get('page', 'unknown')}, language={language}")
         
+        # MEGA-PHASE 6: Use unified AI service (OpenAI or fallback to patterns)
+        from api.ai.service import generate_ai_response
+        
+        payload = {"query": query, "context": context}
+        result = generate_ai_response("chat", language, payload)
+        
+        if result.get("success"):
+            return jsonify(result), 200
+        
+        # Additional fallback: use old pattern function
         answer, steps = _generate_answer(query, context)
         
         return jsonify({

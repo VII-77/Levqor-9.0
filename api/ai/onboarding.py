@@ -37,6 +37,21 @@ def get_next_step():
         
         log.info(f"AI onboarding request: current_step={current_step}, language={language}")
         
+        # MEGA-PHASE 6: Use unified AI service (OpenAI or fallback to patterns)
+        from api.ai.service import generate_ai_response
+        
+        payload = {"current_step": current_step, "context": context}
+        result = generate_ai_response("onboarding", language, payload)
+        
+        if result.get("success"):
+            # Reformat to match expected response structure
+            return jsonify({
+                "success": True,
+                "step": {"guidance": result.get("guidance", ""), "next_step": result.get("next_step", "")},
+                "meta": result.get("meta", {})
+            }), 200
+        
+        # Additional fallback: use old pattern function
         next_step = _get_next_onboarding_step(current_step, context)
         
         return jsonify({

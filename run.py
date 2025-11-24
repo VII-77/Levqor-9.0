@@ -922,6 +922,8 @@ from api.consultations.book import bp as consultation_book_bp
 from api.consultations.run import bp as consultation_run_bp
 from api.support.auto import bp as support_auto_bp
 from api.marketing.lifecycle import bp as lifecycle_bp
+from api.referrals.routes import bp as referrals_bp
+from api.knowledge.search import bp as knowledge_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -932,6 +934,8 @@ app.register_blueprint(consultation_book_bp)
 app.register_blueprint(consultation_run_bp)
 app.register_blueprint(support_auto_bp)
 app.register_blueprint(lifecycle_bp)
+app.register_blueprint(referrals_bp)
+app.register_blueprint(knowledge_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():

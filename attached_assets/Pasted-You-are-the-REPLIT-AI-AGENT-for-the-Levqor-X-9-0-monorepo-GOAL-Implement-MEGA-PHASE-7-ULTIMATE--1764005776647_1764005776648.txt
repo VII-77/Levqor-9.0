@@ -1,0 +1,428 @@
+You are the REPLIT AI AGENT for the Levqor X 9.0 monorepo.
+
+GOAL
+Implement **MEGA-PHASE 7 ULTIMATE** for Levqor X:
+1) Global i18n upgrade (safe, staged – real translations where feasible, infra for 40 languages already exists).
+2) Multilingual-aware AI UX (backend + frontend already wired with `language`).
+3) Global SEO + performance/edge polish.
+4) FULL verification and documentation.
+
+You MUST:
+- OBEY all Blueprint invariants.
+- VERIFY everything you change with real commands (no “should work”).
+- PRODUCE a final MEGA-PHASE-7 report file summarizing changes, tests, and rollback.
+
+━━━━━━━━━━━━━━━━━━
+ABSOLUTE HARD RULES
+━━━━━━━━━━━━━━━━━━
+NEVER CHANGE ANY OF THESE:
+
+1) PRICING
+- Monthly:  £9 / £29 / £59 / £149
+- Yearly:   £90 / £290 / £590 / £1,490
+- DFY:      £149 / £299 / £499
+
+2) TRIAL / SLA
+- 7-day free trial on ALL tiers.
+- Card required.
+- “Cancel before Day 7 to avoid charges” text stays.
+- SLAs: 48h / 24h / 12h / 4h.
+
+3) ARCHITECTURE
+- Frontend: Next.js app in `levqor-site` (deployed on Vercel).
+- Backend: Flask/Gunicorn app in repo root (deployed on Replit Autoscale as `api.levqor.ai`).
+- Do NOT change DNS, domains, or environment layout.
+
+4) LEGAL & BILLING
+- Do NOT change Terms, Privacy, AUP, refund policy, DFY contract wording.
+- Do NOT change Stripe plan amounts or IDs.
+- Do NOT add new paid external services.
+
+5) COST & AI USAGE
+- DO NOT add or call any external LLM/API.  
+- The current AI endpoints are stub/pattern-based – keep that model.  
+- You may refactor prompts/logic, but MUST NOT introduce paid dependencies.
+
+6) GIT
+- DO NOT run `git add`, `git commit`, or `git push`.
+- You may run `git status` and `git diff` for inspection only.
+
+7) EXISTING INFRA
+- Reuse existing files and patterns:
+  - `levqor-site/src/config/languages.ts` (40 languages registry).
+  - Locale/i18n: `levqor-site/src/i18n/*`, `levqor-site/src/middleware.ts`, any existing i18n helpers.
+  - AI components: `levqor-site/src/components/ai/*.tsx`.
+  - AI backend: `api/ai/chat.py`, `api/ai/workflow.py`, `api/ai/debug.py`, `api/ai/onboarding.py`.
+  - Security core: `security_core/*` or equivalent.
+  - Metrics: `/api/metrics/app` and existing metric helpers.
+  - GTM: `/api/marketing/*`, `/consultation`, lifecycle jobs.
+
+━━━━━━━━━━━━━━━━━━
+GLOBAL VERIFICATION RULES
+━━━━━━━━━━━━━━━━━━
+After changes, you MUST:
+
+1) TypeScript check:
+- `cd /home/runner/workspace/levqor-site`
+- `npx tsc --noEmit`
+
+2) Frontend build sanity (if not too slow):
+- `cd /home/runner/workspace/levqor-site`
+- `timeout 180 npm run build || echo "BUILD_FAILED"`
+
+3) Drift monitor:
+- `cd /home/runner/workspace/levqor-site`
+- `node scripts/drift-monitor.js`
+
+4) Backend health:
+- `cd /home/runner/workspace`
+- `curl -s https://api.levqor.ai/health | python3 -m json.tool`
+
+5) AI endpoints (with languages):
+- `curl -s -X POST https://api.levqor.ai/api/ai/chat -H "Content-Type: application/json" -d '{"query":"Test", "language":"en"}' | python3 -m json.tool`
+- `curl -s -X POST https://api.levqor.ai/api/ai/chat -H "Content-Type: application/json" -d '{"query":"Test", "language":"de"}' | python3 -m json.tool`
+- `curl -s -X POST https://api.levqor.ai/api/ai/chat -H "Content-Type: application/json" -d '{"query":"Test", "language":"ar"}' | python3 -m json.tool`
+- `curl -s -X POST https://api.levqor.ai/api/ai/chat -H "Content-Type: application/json" -d '{"query":"Test", "language":"hi"}' | python3 -m json.tool`
+- `curl -s -X POST https://api.levqor.ai/api/ai/chat -H "Content-Type: application/json" -d '{"query":"Test", "language":"zh-Hans"}' | python3 -m json.tool`
+
+6) Frontend public routes:
+- `cd /home/runner/workspace`
+- `for r in / /pricing /trial /security /status ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-12s %s\n" "$r" "$code"; done`
+
+7) Robots & SEO spot-checks:
+- `curl -s https://levqor.ai/dashboard/v2 | head -40`  (should not show indexable content; enforcement via Metadata API already exists, just confirm no regression)
+- Confirm no `x-robots-tag: noindex` on core marketing routes `/`, `/pricing`, `/trial`.
+
+Document ALL of these results in the final report file (see STEP 5).
+
+━━━━━━━━━━━━━━━━━━
+REPO CONTEXT
+━━━━━━━━━━━━━━━━━━
+ASSUME:
+- Root backend: `/home/runner/workspace`
+- Frontend: `/home/runner/workspace/levqor-site`
+- 40-language registry exists in: `levqor-site/src/config/languages.ts`
+- Locale switcher already wired to 40 languages but only 4 have full translations (en, de, fr, es).
+- AI UX components and backend AI endpoints are already wired and working in English, language-aware, but responses are English-only patterns.
+
+ALWAYS start by:
+- `cd /home/runner/workspace`
+- `ls`
+- `ls levqor-site/src`
+- Inspecting key files with `sed -n '1,160p' <file>` or `grep`.
+
+━━━━━━━━━━━━━━━━━━
+MEGA-PHASE 7 ULTIMATE – TASKS
+━━━━━━━━━━━━━━━━━━
+You will implement MEGA-PHASE 7 as **three coordinated tracks**:
+
+A) i18n & Content Localization (SAFE, STAGED)  
+B) Multilingual-Aware AI UX (NO external AI calls; infra only)  
+C) Global SEO & Performance Polish  
+
+Do this in ordered STEPS:
+
+──────────────────
+STEP 0 — SANITY & INVENTORY
+──────────────────
+1) Confirm repo structure:
+- `cd /home/runner/workspace`
+- `ls`
+- `ls levqor-site`
+- `ls api`
+
+2) Inspect existing i18n & language config:
+- `sed -n '1,200p' levqor-site/src/config/languages.ts`
+- `ls levqor-site/src/i18n`
+- `sed -n '1,200p' levqor-site/src/i18n/en.ts` (and de/fr/es if they exist)
+- `sed -n '1,200p' levqor-site/src/middleware.ts` (or any Next middleware file handling locales)
+- `sed -n '1,200p' levqor-site/src/components/LocaleSwitcher.tsx`
+
+3) Confirm AI components:
+- `ls levqor-site/src/components/ai`
+- Quick read:
+  - `sed -n '1,200p' levqor-site/src/components/ai/AIHelpPanel.tsx`
+  - `sed -n '1,220p' levqor-site/src/components/ai/NaturalLanguageWorkflowBuilder.tsx`
+  - `sed -n '1,220p' levqor-site/src/components/ai/AIDebugAssistant.tsx`
+  - `sed -n '1,220p' levqor-site/src/components/ai/AIOnboardingTutor.tsx`
+
+4) Confirm AI backend endpoints:
+- `ls api/ai`
+- `sed -n '1,200p' api/ai/chat.py`
+- `sed -n '1,200p' api/ai/workflow.py`
+- `sed -n '1,200p' api/ai/debug.py`
+- `sed -n '1,200p' api/ai/onboarding.py`
+- `ls api/metrics*` or `ls api/metrics` if exists.
+
+DO NOT change anything in STEP 0. Only understand current state.
+
+──────────────────
+STEP 1 — I18N UPGRADE (TIERED LOCALIZATION)
+──────────────────
+GOAL:  
+Use the existing 40-language registry, but provide **real, safe translations for a LIMITED Tier-1 set**, while keeping Tier-2+ mapped to English placeholders.  
+This avoids bloating the code and keeps things maintainable.
+
+1.1 DEFINE LANGUAGE TIERS
+In `levqor-site/src/config/languages.ts` (or associated config if different):
+
+- Confirm 40 languages are defined.
+- If not already present, annotate or document Tiers in comments (NO runtime behavior change):
+  - Tier 1 (FULL translation targets now):
+    - `en`, `de`, `fr`, `es`, `pt`, `it`, `hi`, `ar`, `zh-Hans`
+  - Tier 2 (PARTIAL / future full):
+    - `ru`, `nl`, `sv`, `no`, `da`, `fi`, `pl`, `cs`, `tr`, `ja`, `ko`, `vi`, `id`, `ms`, `th`, `ur`, `bn`, `ta`, `te`, `ml`, `pa`, `gu`, `zh-Hant`, etc.
+  - Tier 3 (EDGE / long-tail): remaining languages in file.
+
+DO NOT change how routes are resolved yet. Just document tiers in code comments for clarity.
+
+1.2 ENSURE TRANSLATION FILES FOR TIER 1
+Check `levqor-site/src/i18n` or `levqor-site/messages` (whatever exists).  
+For each Tier-1 language:
+
+- Ensure a base translation file exists:
+  - e.g. `en.ts`, `de.ts`, `fr.ts`, `es.ts`, `pt.ts`, `it.ts`, `hi.ts`, `ar.ts`, `zh-Hans.ts`
+- If directory uses JSON instead (e.g. `messages/en.json`), follow that pattern.
+
+For **NEW Tier-1 languages that do NOT yet have a file**:
+- Create a file by copying from English:
+  - Example:
+    - `cp levqor-site/src/i18n/en.ts levqor-site/src/i18n/pt.ts`
+- THEN:
+  - Update:
+    - Top-level language name string.
+    - Hero headings / key CTAs / nav labels / footer labels into reasonably correct translation.
+    - It is acceptable to translate only the most visible keys: 
+      - Home hero title/subtitle
+      - Pricing page title/subtitle CTA text
+      - Trial hero title/subtitle
+      - Main nav items (Home, Pricing, How it works, Support)
+      - Footer headings (Product, Company, Legal, Support).
+    - Leave non-critical long copy in English if necessary to avoid translation bloat.
+
+Important:
+- Do NOT modify prices, trial wordings, SLAs inside translation files.
+- Where trial text appears (7-day free trial, card required), keep semantics intact and do not change numbers or conditions.
+
+1.3 WIRE ROUTED LOCALES SAFELY
+Inspect i18n core file (e.g. `levqor-site/src/i18n/index.ts` or similar) and middleware.
+
+Goal:
+- Routed locales should remain **limited but expanded cautiously**.
+
+Action:
+- If currently `locales = ['en','de','fr','es']`, only expand if the system clearly supports more.  
+- SAFE TARGET: You may add 1–2 more **Tier-1** locales IF the middleware and routing logic can handle them without auth breakage, e.g.:
+  - Add `pt` and `hi` as routed locales if the pattern is clean and tests pass.
+- If adding, ensure:
+  - Middleware regex updated (e.g. `^/(en|de|fr|es|pt|hi)(/|$)`).
+  - No dashboard/auth leaks (still protected and noindex).
+  - All tests in STEP 4 pass.
+
+If routing logic seems fragile or complex:
+- DO NOT expand routed locale list.
+- Instead, rely purely on UI-level `LocaleSwitcher` + normalized language codes mapping to existing routed locales (e.g. fallback to `en`).
+- In that case, restrict changes to translations + display only (no route expansion).
+
+1.4 HOMEPAGE / PRICING / TRIAL CONTENT HOOKUP
+Check how translations are currently pulled into pages:
+
+- `levqor-site/src/app/page.tsx`
+- `levqor-site/src/app/pricing/page.tsx`
+- `levqor-site/src/app/trial/page.tsx`
+- Any `getDictionary`/`getMessages` helper.
+
+If not already done:
+- Ensure these pages use language-aware dictionary calls.
+- Confirm that for Tier-1 languages the translated text appears appropriately.
+- Do NOT change structure of pricing cards or trial policy content.
+
+──────────────────
+STEP 2 — MULTILINGUAL-AWARE AI UX (NO EXTERNAL AI)
+──────────────────
+GOAL:  
+Use the existing `language` plumbing to improve responses in Tier-1 languages WITHOUT adding external AI calls.  
+We keep the pattern-based stub approach; we just make it smarter and language-aware.
+
+2.1 BACKEND – LANGUAGE HANDLING
+In `api/ai/utils.py` (or existing language helper):
+
+- Confirm there is a list / set of allowed language codes (40).
+- Ensure `normalize_language(lang)` returns:
+  - A known code (e.g. `hi`, `ar`, `zh-Hans`).
+  - Defaults to `"en"` on invalid.
+- Add helper:
+  - `get_language_display_name(lang: str) -> str` mapping codes to human names (English “Hindi”, “Arabic”, etc.) for logging and optional UI messages.
+
+2.2 BACKEND – LANGUAGE-AWARE RESPONSES (PATTERN-BASED)
+For each AI endpoint (`api/ai/chat.py`, `api/ai/workflow.py`, `api/ai/debug.py`, `api/ai/onboarding.py`):
+
+- Without calling any external API:
+  - Use the normalized `language` to:
+    - Optionally prepend a short greeting / context line in the user’s language for **Tier-1 languages** only (de, fr, es, pt, it, hi, ar, zh-Hans).
+    - Keep the main explanation/logic in English (to remain simple & safe).
+- Example pattern in chat endpoint:
+  - If `language == "de"` → prefix answer with `"Hinweis: Die Antworten sind vorerst teilweise auf Englisch."`
+  - If `language == "hi"` → prefix similar message in Hindi.
+  - If unsupported language (Tier-2/3) → keep behavior as existing.
+
+Rules:
+- DO NOT add expensive logic.
+- DO NOT rely on any translation service or API.
+- Responses must still be deterministic and stub-like.
+- Keep code simple and readable.
+
+2.3 FRONTEND – AI COMPONENT UX TEXT
+For each AI component:
+
+- `AIHelpPanel.tsx`
+- `NaturalLanguageWorkflowBuilder.tsx`
+- `AIDebugAssistant.tsx`
+- `AIOnboardingTutor.tsx`
+
+Ensure:
+- They already pass `language` to backend (from MEGA-PHASE 4B).
+- If not, add it based on helper (e.g. from `languages.ts` or `LocaleSwitcher` current value).
+- Add a small, non-intrusive note when user is using non-English language:
+  - Example: show a small info banner:  
+    - “AI answers are currently mostly in English while we add full [Language] support.”
+  - Use dictionary or static copy; no need to fully translate this across 40 languages.
+
+Constraints:
+- Respect existing design tokens & branding.
+- DO NOT change layout of main cards or pricing references.
+
+──────────────────
+STEP 3 — GLOBAL SEO & PERFORMANCE POLISH
+──────────────────
+GOAL:  
+Improve global SEO & performance WITHOUT breaking existing behavior.
+
+3.1 SEO – MULTI-LOCALE METADATA
+Inspect:
+- `levqor-site/src/app/layout.tsx`
+- Metadata for key pages: `/`, `/pricing`, `/trial`, `/security`, `/status`.
+
+Tasks:
+- Ensure `metadataBase` and default OpenGraph/Twitter tags are correct (`https://levqor.ai`).
+- For locales (if Next Metadata API supports it in current setup), ensure:
+  - `alternates.languages` or `alternates.canonical` includes locale variants for at least en/de/fr/es (and any added routed locales).
+- Do NOT add conflicting canonical URLs.
+- Keep titles & descriptions consistent with Blueprint positioning.
+
+3.2 SITEMAP & ROBOTS
+Check:
+- `levqor-site/src/app/sitemap.ts` or `sitemap.xml` generator.
+- `levqor-site/src/app/robots.ts` or robots generation.
+
+Ensure:
+- All public marketing routes are included for default locale (and localized routes if already implemented).
+- Dashboard/auth routes are NOT included in sitemap.
+- Robots generation:
+  - Marketing pages indexable.
+  - Dashboard & signin routes protected via Metadata API (noindex) as already done.
+- Do not add `noindex` to marketing routes.
+
+3.3 PERFORMANCE POLISH (LIGHT, SAFE)
+Within `levqor-site`:
+
+- Search for heavy, unused imports (e.g. large icon sets, unused libs) and safely remove if clearly unused.
+- Where image/logo components are used, ensure:
+  - Use Next `<Image>` where appropriate, or at minimum proper `loading="lazy"` for non-critical images.
+- Ensure any Lottie/animation usage is:
+  - Lazily loaded (dynamic import) if not already.
+- Do NOT introduce new libraries.
+
+If you find anything obviously egregious (e.g. synchronous heavy operation on every render), refactor it lightly and document in the final report.
+
+──────────────────
+STEP 4 — FULL VERIFICATION
+──────────────────
+Run ALL of the following and collect outputs for the report:
+
+4.1 TypeScript
+- `cd /home/runner/workspace/levqor-site`
+- `npx tsc --noEmit`
+
+4.2 Build (if time/CPU allows)
+- `cd /home/runner/workspace/levqor-site`
+- `timeout 180 npm run build || echo "BUILD_FAILED"`
+
+4.3 Drift Monitor
+- `cd /home/runner/workspace/levqor-site`
+- `node scripts/drift-monitor.js`
+
+4.4 Backend Health & AI
+- `cd /home/runner/workspace`
+- `curl -s https://api.levqor.ai/health | python3 -m json.tool`
+- AI endpoints with languages (as listed under GLOBAL VERIFICATION RULES).
+
+4.5 Frontend Routes
+- `cd /home/runner/workspace`
+- `for r in / /pricing /trial /security /status ; do code=$(curl -s -o /dev/null -w "%{http_code}" "https://levqor.ai$r"); printf "%-12s %s\n" "$r" "$code"; done`
+
+4.6 Optional: Check `/api/metrics/app` still works
+- `curl -s https://api.levqor.ai/api/metrics/app | python3 -m json.tool || echo "METRICS_FAILED"`
+
+If ANY command fails:
+- Do NOT hide it.
+- Note it clearly in the final report, with a short analysis and suggested fix.
+- If you can fix safely within constraints, do so and rerun commands.
+
+──────────────────
+STEP 5 — FINAL REPORT FILE
+──────────────────
+Create a report file:
+
+- `levqor-site/docs/MEGA-PHASE-7-ULTIMATE-REPORT.md`
+
+The report MUST include:
+
+1) Overview
+- Short explanation of what MEGA-PHASE 7 Ultimate delivered.
+- Clarify that:
+  - Blueprint invariants (pricing, trial, SLAs, legal, architecture) remain intact.
+  - No external AI/LLM has been added.
+
+2) Files Touched
+- List all created/modified files (with relative paths).
+- One line of purpose for each.
+
+3) I18N & TRANSLATION SUMMARY
+- Tier-1 languages with real/partial translations implemented (which keys/pages).
+- Explicit statement that the remaining languages still show English content but are selectable.
+- Any changes to routed locales (or explicit “no change”).
+
+4) AI MULTILINGUAL BEHAVIOR
+- How `language` flows UI → backend.
+- How Tier-1 languages get language-aware responses (greeting lines, notes).
+- Confirm still pattern-based / stub-style responses.
+
+5) SEO & PERFORMANCE
+- List any metadata, sitemap, robots, or perf tweaks.
+- Confirm dashboard/auth remain noindex.
+
+6) VERIFICATION RESULTS
+- Copy/paste or summarize output of:
+  - `npx tsc --noEmit`
+  - `npm run build` (or failure + explanation)
+  - `node scripts/drift-monitor.js`
+  - Curl health/AI endpoints, HTTP status checks.
+- Explicit line:  
+  - “Drift Monitor: PASS/FAIL (explain)”  
+  - “TypeScript: PASS/FAIL (explain)”
+
+7) ROLLBACK GUIDE
+- For each major change area:
+  - Which files to revert with `git checkout`.
+  - Any new files that can be deleted to roll back MEGA-PHASE 7.
+
+──────────────────
+STEP 6 — DO NOT COMMIT
+──────────────────
+At the end:
+
+- Run `cd /home/runner/workspace && git status` and include a short summary of changed files in the report.
+- DO NOT run `git add`, `git commit`, or `git push`.
+
+Then STOP and present the completed `MEGA-PHASE-7-ULTIMATE-REPORT.md` contents to the user in your final response.
