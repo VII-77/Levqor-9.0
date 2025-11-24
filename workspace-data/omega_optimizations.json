@@ -1,0 +1,41 @@
+{
+  "generated_at": "2025-11-24T19:45:51.866757Z",
+  "optimization_count": 2,
+  "by_priority": {
+    "critical": 0,
+    "high": 0,
+    "medium": 1,
+    "low": 1
+  },
+  "optimizations": [
+    {
+      "id": "gtm_trial_feedback_20251124",
+      "category": "retention",
+      "priority": "medium",
+      "type": "enhancement",
+      "title": "Activate trial feedback loop",
+      "description": "Zero trial feedback submissions. Missing critical retention signal.",
+      "benefit": "Early churn detection, personalized intervention, higher trial\u2192paid conversion",
+      "implementation": "Add exit-intent survey on trial cancellation. Email on day 5 of trial: 'How's it going? Quick feedback?' Offer support escalation for negative feedback.",
+      "estimated_impact": {
+        "retention_lift": "+10-15%",
+        "trial_to_paid_conversion": "20% \u2192 25%",
+        "mrr_increase": "+\u00a3400-600/month"
+      }
+    },
+    {
+      "id": "perf_monitoring_baseline_20251124",
+      "category": "performance",
+      "priority": "low",
+      "type": "info",
+      "title": "Establish performance baseline",
+      "description": "System is operational. Consider adding performance SLOs.",
+      "benefit": "Proactive performance monitoring, early degradation detection",
+      "implementation": "Define SLOs: p95 latency <500ms, error rate <1%, uptime >99.9%. Add alerting via /api/metrics/app.",
+      "estimated_impact": {
+        "incident_prevention": "50-70% of performance issues",
+        "user_satisfaction": "+5-10%"
+      }
+    }
+  ]
+}
