@@ -1,0 +1,116 @@
+PHASE 0-RESYNC — “Scan & Verify Current Levqor State (READ-ONLY, NO WRITES)”
+
+Goal:
+Re-scan the entire repo AFTER the v19–v22 work, and produce a clear list of what is PRESENT, PARTIAL, or MISSING versus the blueprint (workflows, Brain builder, approvals, templates, health, marketing, reports, docs, scaling, compliance). This command MUST NOT change any files.
+
+HARD RULES:
+- STRICTLY READ-ONLY. Do NOT edit, create, or delete any files.
+- Do NOT run migrations or modify DB.
+- You MAY run safe listing/grep commands and read files.
+- At the end, output a structured summary to the terminal.
+
+STEP A — DISCOVERY
+1. Recursively list key directories (read-only):
+   - `api/`
+   - `modules/`
+   - `scripts/`
+   - `levqor-site/src/app/`
+   - `levqor-site/src/components/`
+   - `docs/`
+
+2. For each of these expected back-end modules, check if they exist and briefly inspect content:
+   - `modules/workflows/` (models.py, runner.py, events.py)
+   - `modules/approvals/` (queue.py or similar)
+   - `modules/growth_engine/` (templates.py, referrals.py)
+   - `modules/analytics/` (usage.py or similar)
+   - `security_core/scaling_policy.py`
+
+3. For each of these expected API blueprints, confirm presence and basic routes:
+   - `api/workflows/`
+   - `api/approvals/`
+   - `api/templates/`
+   - `api/health/`
+   - `api/analytics/` (if present)
+   - Any `api/ai/` builder endpoint for Brain (e.g. brain_build_workflow)
+
+4. For scripts under `scripts/automation/`, confirm presence of:
+   - `auto_marketing_cycle.py`
+   - `auto_weekly_report.py`
+   - `workflow_scheduler.py`
+   - `auto_seo_content.py`
+   - Any others created in v19–v22
+
+STEP B — FRONTEND COMPONENTS
+5. In `levqor-site/src/components/`, confirm presence of these components and briefly read their top-level structure:
+   - `dashboard/HealthOverview.tsx`
+   - `dashboard/GrowthPanel.tsx`
+   - `dashboard/AnalyticsPanel.tsx` (if exists)
+   - `dashboard/WorkflowHistoryPanel.tsx` (if exists)
+   - `dashboard/ApprovalPanel.tsx` (if exists)
+   - `brain/BrainWorkflowBuilder.tsx`
+   - `workflows/WorkflowEditor.tsx` (and related Workflow components)
+   - `brain/LevqorBrainCanvas.tsx` (for context only, no edits)
+
+6. In `levqor-site/src/app/`, confirm:
+   - Templates page route (e.g. `templates/page.tsx`)
+   - Help/Docs route if created (e.g. `/help`, `/docs`)
+   - Any `/launch` or `/support` pages added.
+
+STEP C — DOCS & BLUEPRINT
+7. In `docs/`, confirm presence of:
+   - `real_world_alignment.md`
+   - `workflows.md`
+   - `operations.md`
+   - `scaling.md`
+   - `compliance.md` (if exists)
+
+8. In root-level docs:
+   - `BLUEPRINT_PROGRESS.md` — check latest sections for v19–v22.
+   - `DEV_SAFETY.md` — confirm entries for automation scripts & approvals.
+
+STEP D — SUMMARY (MANDATORY, STILL READ-ONLY)
+9. DO NOT modify any file. Instead, output to the terminal a structured summary in this format:
+
+   - BACKEND MODULES:
+     - workflows: PRESENT / PARTIAL / MISSING (short explanation)
+     - approvals: PRESENT / PARTIAL / MISSING
+     - growth_engine: PRESENT / PARTIAL / MISSING
+     - analytics: PRESENT / PARTIAL / MISSING
+     - scaling_policy: PRESENT / PARTIAL / MISSING
+
+   - API BLUEPRINTS:
+     - workflows API: PRESENT / PARTIAL / MISSING
+     - approvals API: PRESENT / PARTIAL / MISSING
+     - templates API: PRESENT / PARTIAL / MISSING
+     - health API: PRESENT / PARTIAL / MISSING
+     - analytics API: PRESENT / PARTIAL / MISSING
+     - brain builder API: PRESENT / PARTIAL / MISSING
+
+   - SCRIPTS:
+     - auto_marketing_cycle: PRESENT / PARTIAL / MISSING
+     - auto_weekly_report: PRESENT / PARTIAL / MISSING
+     - workflow_scheduler: PRESENT / PARTIAL / MISSING
+     - auto_seo_content: PRESENT / PARTIAL / MISSING
+
+   - FRONTEND:
+     - HealthOverview: PRESENT / PARTIAL / MISSING
+     - GrowthPanel: PRESENT / PARTIAL / MISSING
+     - AnalyticsPanel: PRESENT / PARTIAL / MISSING
+     - WorkflowHistoryPanel: PRESENT / PARTIAL / MISSING
+     - ApprovalPanel: PRESENT / PARTIAL / MISSING
+     - BrainWorkflowBuilder: PRESENT / PARTIAL / MISSING
+     - WorkflowEditor: PRESENT / PARTIAL / MISSING
+     - Templates page: PRESENT / PARTIAL / MISSING
+     - Help/Docs page: PRESENT / PARTIAL / MISSING
+     - Launch page: PRESENT / PARTIAL / MISSING
+
+   - DOCS:
+     - real_world_alignment.md: PRESENT / PARTIAL / MISSING
+     - workflows.md: PRESENT / PARTIAL / MISSING
+     - operations.md: PRESENT / PARTIAL / MISSING
+     - scaling.md: PRESENT / PARTIAL / MISSING
+     - compliance.md: PRESENT / PARTIAL / MISSING
+
+10. Do NOT run `run_all_checks.py` in this command. This is a **pure discovery / resync** phase.
+
+End of command.
