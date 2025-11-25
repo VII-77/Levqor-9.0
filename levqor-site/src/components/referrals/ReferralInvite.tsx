@@ -23,10 +23,10 @@ export default function ReferralInvite({ context }: ReferralInviteProps) {
     setMessage("");
 
     const referrerEmail = localStorage.getItem("user_email") || "demo@levqor.ai";
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.levqor.ai";
 
     try {
-      const response = await fetch(`${apiUrl}/api/referrals/create`, {
+      // Use proxy route to avoid CORS issues
+      const response = await fetch("/api/referrals/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

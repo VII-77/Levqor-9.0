@@ -68,8 +68,8 @@ export function GrowthConsole() {
   useEffect(() => {
     const fetchGrowthData = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://api.levqor.ai";
-        const response = await fetch(`${apiUrl}/api/metrics/growth-summary`, {
+        // Use proxy route to avoid CORS issues in development
+        const response = await fetch("/api/metrics/growth-summary", {
           cache: "no-store",
         });
         

@@ -1,8 +1,6 @@
 {
   "/page": "app/page.js",
-  "/status/page": "app/status/page.js",
-  "/docs/page": "app/docs/page.js",
-  "/workflows/daily/page": "app/workflows/daily/page.js",
-  "/workflows/library/page": "app/workflows/library/page.js",
+  "/api/[...path]/route": "app/api/[...path]/route.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/pricing/page": "app/pricing/page.js"
 }

@@ -9,8 +9,6 @@ export default function ReferralBanner() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.levqor.ai";
-
   async function handleGenerate() {
     if (!email || !email.includes("@")) {
       setError("Please enter a valid email address");
@@ -22,7 +20,8 @@ export default function ReferralBanner() {
     setCopied(false);
 
     try {
-      const res = await fetch(`${apiBase}/api/referrals/create`, {
+      // Use proxy route to avoid CORS issues
+      const res = await fetch("/api/referrals/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

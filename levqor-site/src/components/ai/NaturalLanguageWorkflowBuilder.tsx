@@ -35,7 +35,8 @@ export default function NaturalLanguageWorkflowBuilder({ onWorkflowCreated, clas
   const processNaturalLanguage = async (text: string): Promise<WorkflowStep[]> => {
     try {
       const currentLanguage = getCurrentLanguageCode();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/workflow`, {
+      // Use proxy route to avoid CORS issues
+      const response = await fetch("/api/ai/workflow", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -40,7 +40,8 @@ export default function AIDebugAssistant({ error, onFixSuggested, className = ''
   const analyzeError = async (err: WorkflowError): Promise<DebugSuggestion> => {
     try {
       const currentLanguage = getCurrentLanguageCode();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/debug`, {
+      // Use proxy route to avoid CORS issues
+      const response = await fetch("/api/ai/debug", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

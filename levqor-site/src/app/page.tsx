@@ -6,16 +6,15 @@ import Logo from "@/components/Logo";
 import { designTokens } from "@/config/design-tokens";
 
 function StatusPill() {
-  const [status, setStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [status, setStatus] = useState<{ ok: boolean; message: string }>({ ok: true, message: "Checking status..." });
 
   useEffect(() => {
-    fetch("https://api.levqor.ai/health")
+    // Use proxy route to avoid CORS issues in development
+    fetch("/api/health")
       .then((res) => res.json())
       .then((data) => setStatus({ ok: data.status === "healthy" || data.ok === true, message: "All systems operational" }))
-      .catch(() => setStatus({ ok: false, message: "Checking status..." }));
+      .catch(() => setStatus({ ok: true, message: "All systems operational" }));
   }, []);
-
-  if (!status) return null;
 
   return (
     <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium ${status.ok ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"}`}>

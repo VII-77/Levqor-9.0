@@ -103,7 +103,8 @@ export default function AIHelpPanel({ context = 'general', className = '' }: AIH
     
     try {
       const currentLanguage = getCurrentLanguageCode();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/chat`, {
+      // Use proxy route to avoid CORS issues
+      const response = await fetch("/api/ai/chat", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

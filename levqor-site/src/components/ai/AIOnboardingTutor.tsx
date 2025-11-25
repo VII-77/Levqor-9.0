@@ -92,7 +92,8 @@ export default function AIOnboardingTutor({
     // Call backend API to log onboarding progress (optional analytics)
     try {
       const currentLanguage = getCurrentLanguageCode();
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai'}/api/ai/onboarding/next-step`, {
+      // Use proxy route to avoid CORS issues
+      await fetch("/api/ai/onboarding/next-step", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
