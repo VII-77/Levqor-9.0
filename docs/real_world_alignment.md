@@ -84,10 +84,11 @@ Levqor X targets:
 - Frontend marketplace at `/templates`
 
 ### v21: Visual Workflow Editor
-- `WorkflowEditor.tsx` component with drag-and-drop interface
-- Step configuration panels for all step types
-- Live preview of workflow changes
-- Brain state integration for processing/success/error feedback
+- `WorkflowEditor.tsx` component with native HTML5 drag-and-drop interface
+- Step reordering via drag handles with visual drop indicators
+- Step configuration panels for all step types (http_request, email, delay, condition, log)
+- Brain state integration: Quantum during drag, Success on reorder, Neural during edit
+- Unsaved changes detection with save/discard workflow
 
 ### v22: Scaling Documentation
 - `docs/scaling.md` with comprehensive scaling patterns

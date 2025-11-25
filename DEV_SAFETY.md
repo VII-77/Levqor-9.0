@@ -420,10 +420,12 @@ import { WorkflowEditor } from "@/components/workflows";
 
 | Feature | Description |
 |---------|-------------|
+| **Drag & Drop** | Native HTML5 drag-and-drop for step reordering |
 | **Step Types** | Visual icons for http_request, email, delay, condition, log |
 | **Config Panels** | Inline editing for step configuration |
-| **Brain Integration** | Neural state during edit, Success on save |
+| **Brain Integration** | Quantum state during drag, Success on drop, Neural during edit |
 | **Save Detection** | Tracks unsaved changes, warns before close |
+| **Drop Indicators** | Visual feedback showing where steps will be placed |
 
 ### Step Type Colors
 

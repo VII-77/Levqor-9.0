@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLevqorBrain } from "@/components/brain";
 
 interface WorkflowStep {
@@ -52,55 +52,105 @@ const stepTypeColors: Record<string, string> = {
   log: "border-slate-400 bg-slate-50"
 };
 
-function WorkflowNode({ 
-  step, 
-  isSelected, 
-  onClick,
-  onUpdate
-}: { 
-  step: WorkflowStep; 
+interface DraggableStepProps {
+  step: WorkflowStep;
+  index: number;
   isSelected: boolean;
-  onClick: () => void;
+  isDragging: boolean;
+  dragOverIndex: number | null;
+  onSelect: () => void;
   onUpdate: (updates: Partial<WorkflowStep>) => void;
-}) {
+  onDragStart: (index: number) => void;
+  onDragOver: (index: number) => void;
+  onDragEnd: () => void;
+}
+
+function DraggableStep({
+  step,
+  index,
+  isSelected,
+  isDragging,
+  dragOverIndex,
+  onSelect,
+  onUpdate,
+  onDragStart,
+  onDragOver,
+  onDragEnd
+}: DraggableStepProps) {
   const colorClass = stepTypeColors[step.type] || "border-gray-400 bg-gray-50";
+  const isDragTarget = dragOverIndex === index;
   
   return (
-    <div 
-      className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${colorClass} ${
-        isSelected ? "ring-2 ring-primary-500 shadow-lg" : "hover:shadow-md"
-      }`}
-      onClick={onClick}
+    <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", String(index));
+        onDragStart(index);
+      }}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        onDragOver(index);
+      }}
+      onDragEnd={onDragEnd}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDragEnd();
+      }}
+      className={`relative transition-all ${
+        isDragTarget ? "pt-12" : ""
+      } ${isDragging ? "opacity-50" : ""}`}
     >
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-xl">{stepTypeIcons[step.type] || "📋"}</span>
-        <span className="font-medium text-sm text-slate-700">
-          {stepTypeLabels[step.type] || step.type}
-        </span>
-      </div>
+      {isDragTarget && (
+        <div className="absolute top-0 left-0 right-0 h-10 border-2 border-dashed border-primary-400 rounded-lg bg-primary-50 flex items-center justify-center">
+          <span className="text-xs text-primary-600 font-medium">Drop here</span>
+        </div>
+      )}
       
-      <input
-        type="text"
-        value={step.name || `Step ${step.id.slice(0, 8)}`}
-        onChange={(e) => onUpdate({ name: e.target.value })}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full text-sm font-semibold bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary-300 rounded px-1"
-        placeholder="Step name"
-      />
-      
-      <div className="text-xs text-slate-500 mt-1 truncate">
-        {step.type === "http_request" && step.config.url ? (
-          <span>{String(step.config.method || "GET")} {String(step.config.url).slice(0, 30)}...</span>
-        ) : null}
-        {step.type === "delay" && step.config.seconds ? (
-          <span>Wait {String(step.config.seconds)}s</span>
-        ) : null}
-        {step.type === "email" && step.config.to ? (
-          <span>To: {String(step.config.to).slice(0, 25)}...</span>
-        ) : null}
-        {step.type === "log" && step.config.message ? (
-          <span>{String(step.config.message).slice(0, 30)}...</span>
-        ) : null}
+      <div
+        className={`p-4 rounded-lg border-2 cursor-grab active:cursor-grabbing transition-all ${colorClass} ${
+          isSelected ? "ring-2 ring-primary-500 shadow-lg" : "hover:shadow-md"
+        }`}
+        onClick={onSelect}
+      >
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1 text-slate-400 cursor-grab">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8h16M4 16h16" />
+            </svg>
+          </div>
+          <span className="text-xl">{stepTypeIcons[step.type] || "📋"}</span>
+          <span className="font-medium text-sm text-slate-700">
+            {stepTypeLabels[step.type] || step.type}
+          </span>
+        </div>
+        
+        <input
+          type="text"
+          value={step.name || `Step ${step.id.slice(0, 8)}`}
+          onChange={(e) => onUpdate({ name: e.target.value })}
+          onClick={(e) => e.stopPropagation()}
+          onDragStart={(e) => e.stopPropagation()}
+          draggable={false}
+          className="w-full text-sm font-semibold bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-primary-300 rounded px-1"
+          placeholder="Step name"
+        />
+        
+        <div className="text-xs text-slate-500 mt-1 truncate">
+          {step.type === "http_request" && step.config.url ? (
+            <span>{String(step.config.method || "GET")} {String(step.config.url).slice(0, 30)}...</span>
+          ) : null}
+          {step.type === "delay" && step.config.seconds ? (
+            <span>Wait {String(step.config.seconds)}s</span>
+          ) : null}
+          {step.type === "email" && step.config.to ? (
+            <span>To: {String(step.config.to).slice(0, 25)}...</span>
+          ) : null}
+          {step.type === "log" && step.config.message ? (
+            <span>{String(step.config.message).slice(0, 30)}...</span>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -284,6 +334,9 @@ export default function WorkflowEditor({ workflowId, onClose, onSave }: Workflow
   const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  
   const brain = useLevqorBrain();
   
   useEffect(() => {
@@ -338,6 +391,34 @@ export default function WorkflowEditor({ workflowId, onClose, onSave }: Workflow
     
     setWorkflow({ ...workflow, steps: updatedSteps });
     setHasChanges(true);
+  };
+  
+  const handleDragStart = (index: number) => {
+    setDragIndex(index);
+    brain?.setQuantum?.();
+  };
+  
+  const handleDragOver = (index: number) => {
+    if (dragIndex !== null && dragIndex !== index) {
+      setDragOverIndex(index);
+    }
+  };
+  
+  const handleDragEnd = () => {
+    if (workflow && dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
+      const newSteps = [...workflow.steps];
+      const [removed] = newSteps.splice(dragIndex, 1);
+      newSteps.splice(dragOverIndex, 0, removed);
+      
+      setWorkflow({ ...workflow, steps: newSteps });
+      setHasChanges(true);
+      brain?.setSuccess?.();
+    } else {
+      brain?.setNeural?.();
+    }
+    
+    setDragIndex(null);
+    setDragOverIndex(null);
   };
   
   const handleSave = async () => {
@@ -467,7 +548,10 @@ export default function WorkflowEditor({ workflowId, onClose, onSave }: Workflow
       <div className="p-4">
         <div className="flex gap-6">
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-slate-700 mb-3">Workflow Steps</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-medium text-slate-700">Workflow Steps</h3>
+              <span className="text-xs text-slate-400">Drag to reorder</span>
+            </div>
             
             {workflow.steps.length === 0 ? (
               <div className="text-center py-12 bg-slate-50 rounded-xl border-2 border-dashed">
@@ -478,17 +562,23 @@ export default function WorkflowEditor({ workflowId, onClose, onSave }: Workflow
               <div className="space-y-3">
                 {workflow.steps.map((step, index) => (
                   <div key={step.id} className="relative">
-                    {index > 0 && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    {index > 0 && dragOverIndex !== index && (
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10">
                         <div className="w-px h-3 bg-slate-300"></div>
                         <div className="text-slate-400 text-xs">&#8595;</div>
                       </div>
                     )}
-                    <WorkflowNode
+                    <DraggableStep
                       step={step}
+                      index={index}
                       isSelected={selectedStepId === step.id}
-                      onClick={() => setSelectedStepId(step.id === selectedStepId ? null : step.id)}
+                      isDragging={dragIndex === index}
+                      dragOverIndex={dragOverIndex}
+                      onSelect={() => setSelectedStepId(step.id === selectedStepId ? null : step.id)}
                       onUpdate={(updates) => handleUpdateStep(step.id, updates)}
+                      onDragStart={handleDragStart}
+                      onDragOver={handleDragOver}
+                      onDragEnd={handleDragEnd}
                     />
                   </div>
                 ))}
