@@ -1,164 +1,8 @@
-# Levqor X 9.0 — V13.3 Legal Omega Edition
+# Levqor X 9.0 — Compressed
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, and comprehensive legal/compliance infrastructure. The project now includes Legal Omega Phase additions: complete privacy & data rights API, 4 new legal pages (DPA, AI Transparency, Data Rights, Cookie Policy), cookie consent banner, and automated legal file integrity monitoring.
-
-## Recent Changes (November 24, 2025)
-
-### V13.4 HYPERGROWTH CYCLE 5 - Backend API Infrastructure - COMPLETE ✅
-
-**Summary:** Delivered production backend APIs for workflow library, daily workflows, and community features. All endpoints language-aware, Blueprint-compliant, with atomic data persistence.
-
-#### Backend Workflow APIs (api/workflows/):
-1. **GET `/api/workflows/library`** — Returns 50 workflow templates with filtering (category, difficulty, industry, search, language)
-2. **GET `/api/workflows/daily`** — Returns daily featured workflow (rotates based on day of month)
-3. **Blueprint registered** — workflows_bp at `/api/workflows` (run.py line 965)
-
-#### Backend Community APIs (api/community/):
-4. **GET `/api/community/list`** — Community-submitted workflows with filtering
-5. **GET `/api/community/badges`** — Badge definitions (8 achievement badges)
-6. **GET `/api/community/stats`** — Community statistics and leaderboard data
-7. **POST `/api/community/submit`** — Submit new workflow with atomic append persistence
-8. **Blueprint registered** — community_bp at `/api/community` (run.py line 966)
-
-#### Critical Fix Applied:
-9. **Atomic Append Pattern** — Community submissions now correctly accumulate in submissions.jsonl (read existing → append new → atomic write with fsync)
-10. **Data Persistence** — Fixed critical bug where submissions were overwriting instead of appending
-
-#### Frontend API Client:
-11. **`levqor-site/src/lib/api-client.ts`** — Centralized API utilities (apiGet, apiPost, getCurrentLanguage)
-12. **Resilient Design** — Frontend pages work with hardcoded fallback data during API deployment propagation
-
-#### Validations:
-- ✅ Python syntax: OK (backend compiles cleanly)
-- ✅ TypeScript: 0 errors
-- ✅ Drift Monitor: PASS (no Blueprint violations)
-- ✅ Both workflows RUNNING (levqor-backend + levqor-frontend)
-- ✅ Architect Review: PASS (atomic append pattern verified)
-
-#### Blueprint Compliance Maintained:
-- ✅ Pricing preserved (£9/29/59/149 GBP monthly)
-- ✅ 7-day free trial logic intact
-- ✅ SLAs maintained (48h/24h/12h/4h)
-- ✅ No schema changes
-- ✅ No package.json modifications
-
-#### Production Note:
-- Backend APIs created and registered correctly
-- Local validation confirms blueprint registration
-- Production endpoints may experience deployment propagation delay (Replit Autoscale worker caching)
-- Frontend resilient with fallback data during API availability gaps
-
-#### Future Production Work:
-- Wire frontend pages to call backend APIs (with existing fallback data as safety net)
-- Add loading/error states to frontend components
-- Move workflow library and daily workflow data to database
-- Connect community submissions to PostgreSQL for production persistence
-- Add moderation workflow for community submissions
-
-### V13.3 Legal Omega Phase - COMPLETE ✅
-
-**Summary:** Delivered comprehensive legal and compliance layer with backend privacy API, 4 new legal pages, cookie consent UX, and automated file integrity monitoring. Zero Blueprint violations. All validations passing.
-
-#### Backend Privacy & Data Rights API:
-1. **`/api/privacy/export`** — POST endpoint for GDPR data export requests (stub mode, logs to JSON)
-2. **`/api/privacy/delete`** — POST endpoint for data deletion requests (stub mode, logs to JSON)
-3. **`/api/privacy/consent/withdraw`** — POST endpoint for consent withdrawal (stub mode, logs to JSON)
-4. **Atomic Write Pattern** — All JSON logging uses temp file + rename (Omega standard from omega_operator.py)
-5. **Blueprint Registration** — privacy_bp registered in run.py following existing pattern
-
-#### New Legal Pages (Frontend):
-6. **`/dpa`** — Data Processing Addendum with sub-processors, security measures, GDPR compliance
-7. **`/ai-transparency`** — AI usage disclosure (stub mode explanation, OpenAI integration details, responsible AI principles)
-8. **`/data-rights`** — User-friendly guide to 8 GDPR rights (access, rectification, erasure, portability, etc.) with request submission UI
-9. **`/cookies`** — Comprehensive cookie policy with 4 cookie types, browser management guides, third-party disclosure
-
-#### Cookie Consent UX:
-10. **`CookieBanner.tsx`** — Client-side consent banner with "Accept All" / "Essential Only" options, localStorage persistence, cross-links to legal pages
-11. **Layout Integration** — Banner wired into root layout.tsx for site-wide coverage
-12. **Footer Updates** — Added 7 new legal links (Cookies, Data Rights, GDPR, DPA, AI Transparency) + reorganized existing
-
-#### Legal Omega Auditor (Monitoring):
-13. **`monitors/legal_auditor.py`** — SHA-256 file integrity monitoring for 9 legal files (8 pages + CookieBanner)
-14. **Atomic State Management** — Checksum state saved with temp file + rename pattern
-15. **Scheduler Integration** — Daily cron job (3am) added to scheduler (24 total jobs, 4 Omega jobs)
-16. **Compliance Dashboard** — get_legal_compliance_status() API for monitoring required pages
-
-#### Blueprint Compliance Maintained:
-- ✅ Pricing preserved (£9/29/59/149 GBP monthly)
-- ✅ 7-day free trial logic intact
-- ✅ SLAs maintained (48h/24h/12h/4h)
-- ✅ No schema changes
-- ✅ No package.json modifications
-- ✅ All privacy features in stub-only mode (no actual data deletion/export)
-
-#### Validations:
-- ✅ TypeScript: 0 errors
-- ✅ Backend: Clean imports (privacy_bp + legal_auditor verified)
-- ✅ Scheduler: 24 jobs (23 + Legal Auditor), 4 Omega jobs
-- ✅ Both workflows RUNNING (levqor-backend + levqor-frontend)
-- ✅ Architect Review: PASS (no blocking issues)
-
-#### Future Production Work Needed:
-- Replace stub DSAR endpoints with real data export/deletion flows (connect to PostgreSQL)
-- Add automated tests for privacy endpoints and legal auditor change detection
-- Provide UI affordance for users to revisit cookie preferences after initial banner dismissal
-- Complete Tier-1 translations for legal pages (9 languages)
-- Consider adding legal page version tracking with change history
-
-### V13.2 Global Launch Implementation - ALL 10 PHASES COMPLETE ✅
-
-**Summary:** Delivered comprehensive global launch plan with 11 new pages/features across viral growth, authority building, conversion optimization, community layer, multilingual expansion, and security UX. Zero Blueprint violations. Zero TypeScript errors.
-
-#### New Pages Created:
-1. **`/workflows/library`** — 50 pre-built workflow templates across 10 categories with filtering, search, and one-click import (stub)
-2. **`/workflows/daily`** — Workflow of the Day with social sharing, challenge system, badges, and 7-day rotation
-3. **`/workflows/ai-create`** — AI-powered workflow creator with natural language builder and multi-step flow
-4. **`/community`** — AI Operators Network with badges, discussion forum, workflow submission, and leaderboard
-5. **`/founder-playbook`** — 5-chapter comprehensive guide with case studies and downloadable PDF
-6. **`/automation-for-everyone`** — Multilingual landing showcasing 40-language support and global use cases
-7. **`/global-support`** — Global support landing with SLA tiers, regional coverage, and AI support features
-8. **`/privacy/gdpr`** — GDPR educational page with compliance overview and data rights explanation
-
-#### Enhanced Pages:
-9. **Status Page** — Added Security Status UI with compliance badges and encryption indicators
-10. **Dashboard** — Integrated LifecycleBanner for trial conversion optimization
-
-#### New Components:
-11. **`LifecycleBanner.tsx`** — Day-based conversion component (Day 1/3/7/10/30) with localStorage tracking
-
-#### Key Features:
-- **Workflow Library:** 50 templates (Business Ops, Marketing, Customer Success, Finance, HR, Data, IT/DevOps, Compliance, Healthcare, Education)
-- **Viral Engine:** Daily workflow rotation, social sharing (Twitter, LinkedIn, Email), OpenGraph meta tags, challenge/badge system
-- **Authority Content:** Founder's Playbook with 5 chapters, industry-specific workflows, global expansion messaging
-- **Conversion Cycle:** Trial day progression (Day 1→3→7→10→30), context-aware CTAs, dismissible banners
-- **Community Layer:** Network badges, discussion topics, workflow submissions, leaderboards
-- **Multilingual:** 40-language support showcase (9 Tier-1, 6 Tier-2, 25 Tier-3)
-- **Global Support:** SLA tiers (48h/24h/12h/4h), 7 regional coverage areas, AI-powered assistance
-- **Security UX:** Security status dashboard, compliance badges (SOC 2, GDPR, ISO 27001), GDPR education
-
-#### Blueprint Compliance Maintained:
-- ✅ Pricing preserved (£9/29/59/149 GBP monthly)
-- ✅ 7-day free trial logic intact
-- ✅ SLAs maintained (48h/24h/12h/4h)
-- ✅ No schema changes
-- ✅ No package.json modifications
-- ✅ All AI features in stub-only mode (no server-side LLM calls)
-
-#### Validations:
-- ✅ TypeScript: 0 errors
-- ✅ Drift Monitor: PASS (no violations)
-- ✅ Both workflows RUNNING
-- ✅ Omega system operational (23 + 3 jobs healthy)
-
-#### Future Production Work Needed:
-- Connect workflow library to backend API for real imports
-- Move daily workflow rotation from localStorage to server-side scheduling
-- Implement server-side trial tracking for cross-device persistence
-- Replace AI stub responses with real GPT-4o-mini calls
-- Add backend for community discussions and workflow submissions
-- Complete Tier-1 translations for all 9 languages
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, enhanced authentication experience with email magic links, guided onboarding, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions.
 
 ## User Preferences
 
@@ -204,22 +48,28 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
 - **Observability & Monitoring**: Structured JSON logging, error monitoring, and a frontend client logger.
 - **Enterprise Support**: Tier-aware support routing and SLA mapping.
 - **Governance**: Hardening checklist and automated health checks ensure pre/post-deployment governance.
+- **Legal & Compliance**: Backend privacy API, 4 new legal pages, cookie consent UX, and automated file integrity monitoring for legal documents.
 
 ## External Dependencies
 
 ### Payment Processing
-- **Stripe**: Used for all billing and subscription management in live mode, integrated via the Replit Stripe connector. Includes a webhook for event handling.
+- **Stripe**: Used for all billing and subscription management in live mode, integrated via the Replit Stripe connector.
 
 ### Hosting & Deployment
 - **Vercel**: Hosts the Next.js frontend application (`www.levqor.ai`).
 - **Replit**: Provides the deployment environment for the Python Flask backend API (`api.levqor.ai`) using Autoscale, and hosts the PostgreSQL database.
 - **Cloudflare**: Manages DNS for both frontend and backend domains.
 
+### Email Services
+- **Resend**: Primary email provider for authentication (magic links).
+
+### AI Services
+- **OpenAI**: Provides GPT-4o-mini for AI integration.
+
 ### Framework Dependencies
-- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM, OpenAI SDK (GPT-4o-mini).
+- **Backend**: Python 3.x, Flask, Gunicorn, Stripe SDK, APScheduler, Drizzle ORM, OpenAI SDK.
 - **Frontend**: Next.js, React, TypeScript, Tailwind CSS, NextAuth, next-intl.
 
 ### Authentication & Security
-- **NextAuth**: Used for authentication, with planned OAuth integration.
-- **Middleware Security**: Auth protection across all locales.
+- **NextAuth**: Used for authentication, with OAuth integration (Google, Microsoft) and Resend provider.
 - **Replit Secrets**: Manages sensitive credentials.
