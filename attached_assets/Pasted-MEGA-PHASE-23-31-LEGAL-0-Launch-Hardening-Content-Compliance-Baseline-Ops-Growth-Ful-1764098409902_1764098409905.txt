@@ -1,0 +1,276 @@
+MEGA PHASE — 23–31 + LEGAL-0
+“Launch Hardening + Content + Compliance Baseline + Ops + Growth + Full Public Release”
+
+Context:
+Assume v0–22 and v19–22 have been implemented as much as possible in this repo (workflow engine, Brain builder, approvals, templates, health, growth, marketing seeds, reports, SEO script, etc.). This phase finishes launch-readiness and adds a real-world legal/compliance baseline.
+
+STRICT RULES:
+- Scan before editing; no blind rewrites.
+- Do NOT break auth, billing, or existing dashboards.
+- Do NOT auto-deploy or auto-email in this command.
+- Respect Class A/B/C impact:
+  - A: internal/safe → auto.
+  - B: low-risk external → auto + log.
+  - C: money/data/infra/legal → MUST go to approval queue.
+- Respect feature flags, reduced-motion, and i18n.
+- Only use existing patterns/libraries in this repo unless trivial to add.
+- At the end: run `python scripts/ci/run_all_checks.py` and fix until PASS (4/4).
+
+=====================================================
+LEGAL-0 — COMPLIANCE & LEGAL BASELINE (SCAFFOLD)
+=====================================================
+1) Create/extend `docs/compliance.md` with:
+   - Sections:
+     - “Data Protection Overview”
+     - “GDPR/CCPA Intent (Non-Certified)”
+     - “Data Subject Rights (Export/Delete)”
+     - “Logging & Pseudonymization”
+     - “Approval Model (Class A/B/C)”
+     - “Non-Covered Areas (SOC2, HIPAA, etc.)”
+   - Make it clear: this is a baseline, NOT a formal certification.
+
+2) Add/extend legal pages in frontend (if not already present):
+   - `/terms`
+   - `/privacy`
+   - `/refund` or `/billing`
+   - Each page should:
+     - Be simple, clearly structured.
+     - Use generic but sensible boilerplate (no fake certifications).
+     - Mention that data export/delete is available on request and via product features.
+
+3) Add backend endpoints (Class C) for user rights:
+   - `GET /api/me/export-data`
+     - Authenticated.
+     - Gathers user-related data using existing DB wrappers.
+     - Returns JSON bundle.
+     - Enqueues approval entry (type: `export_data`) so it is not executed automatically in bulk; actual export logic can be manual review-based if needed.
+   - `POST /api/me/delete-data`
+     - Authenticated.
+     - Enqueues approval entry (type: `delete_data`) with a payload indicating requested scope (account + workflows).
+     - Implements anonymization logic via a helper (e.g., `modules/compliance/delete_utils.py`) that:
+       - Clears PII fields.
+       - Keeps structural logs but with pseudonymized identifiers.
+
+4) Log hygiene:
+   - Scan error logging and workflow events usage.
+   - Ensure logs do NOT store:
+     - Raw email addresses
+     - Full names
+     - Full message bodies
+   - Store hashed or truncated identifiers where needed.
+   - Add comments where redaction is applied.
+
+5) Cookie & consent:
+   - Verify existing cookie banner:
+     - Make sure it links to Privacy and/or Cookies section.
+   - Add note in `docs/compliance.md` explaining current cookie behavior (analytical cookies only / no 3rd-party trackers, if true).
+
+=====================================================
+PHASE 23 — PRODUCT HARDENING (UX, FTUE, ERROR HANDLING)
+=====================================================
+6) UX & layout sweep:
+   - Check `levqor-site/src/app/page.tsx`, dashboard, templates page, Brain builder, Workflow editor, HealthOverview, GrowthPanel.
+   - Fix obviously broken spacing, misaligned grids, overflow issues on:
+     - Desktop
+     - Tablet
+     - Mobile
+   - Keep design consistent; no redesign.
+
+7) First-Time User Experience (FTUE):
+   - On empty dashboards (no workflows, no templates used):
+     - Show a friendly “Get started” panel with:
+       - “Browse templates”
+       - “Create with Levqor Brain”
+       - “Run a test workflow”
+   - Ensure FTUE appears only when needed (first-time / empty state), not for seasoned users if that data is easy to check.
+
+8) Error handling:
+   - In Brain builder UI and Workflow editor:
+     - Catch backend/API errors.
+     - Show non-technical error messages.
+     - Avoid exposing stack traces.
+   - Add loading/skeleton states where there are obvious “jumps”.
+
+=====================================================
+PHASE 24 — CONTENT FOUNDATION (SEO + HELP CENTER)
+=====================================================
+9) Help Center:
+   - Add a simple Help/Docs section:
+     - Either:
+       - `/help` or `/docs` in `levqor-site/src/app/`
+     - Pages/sections:
+       - Getting Started
+       - Workflows & Templates
+       - Levqor Brain Builder
+       - Billing & Subscription
+       - Languages & Localization
+   - Use simple headings + text, following existing layout primitives.
+
+10) SEO:
+   - Ensure homepage, pricing, templates, help pages have:
+     - `<title>` and meta description via Next.js metadata or head usage.
+   - If `auto_seo_content.py` exists:
+     - Make sure it is documented in `DEV_SAFETY.md` and `docs/operations.md`.
+     - Optional: add a note in Help Center explaining that text may be optimized over time.
+
+=====================================================
+PHASE 25 — SECURITY & COMPLIANCE HARDENING (NON-CERTIFIED)
+=====================================================
+11) Security tightening:
+   - Confirm sensitive endpoints (auth, billing, admin-like actions) are:
+     - Rate-limited using existing security_core.
+     - Protected by auth checks.
+   - If an obvious missing auth guard is found, add it.
+
+12) Approval enforcement:
+   - Ensure any existing:
+     - Email-sending logic (auto_marketing)
+     - High-impact workflow changes
+     - Data export/delete
+     now use the approval queue (Class C).
+   - If any direct critical action exists that bypasses approvals, wrap it with `enqueue_action` instead.
+
+13) Update `docs/compliance.md` & `DEV_SAFETY.md`:
+   - Note explicitly which actions are Class C and go through approvals.
+
+=====================================================
+PHASE 26 — PRE-FLIGHT TESTING & CHECKLIST
+=====================================================
+14) Add script: `scripts/preflight/test_personas.py`
+   - Simulate 2–3 persona journeys (pseudo-code or simple prints is acceptable):
+     - Persona A: new user → signup → select template → run workflow once.
+     - Persona B: new user → Brain builder → approve workflow → run.
+     - Persona C: returning user → view analytics → view history.
+   - For now, this can be a structured TODO/placeholder script that outlines steps, not a full E2E test harness.
+
+15) Dashboard “Launch Readiness” widget:
+   - Small component, e.g. `LaunchReadinessPanel.tsx`:
+     - Checks via backend APIs (or simple GETs):
+       - Health summary OK
+       - Workflows API reachable
+       - Brain builder endpoint reachable
+       - Templates API reachable
+       - Stripe config present
+     - Shows PASS/FAIL indicators.
+
+=====================================================
+PHASE 27 — MARKETING ENGINE ACTIVATION (SAFE MODE)
+=====================================================
+16) Marketing View:
+   - Add a simple dashboard section/page, e.g. `MarketingPanel.tsx`:
+     - Shows:
+       - Segments: new users, active trials, inactive users.
+       - Last `auto_marketing_cycle` log timestamp (if easy to read).
+     - If marketing scripts generate suggested emails:
+       - Display them as “pending campaigns” (Class C).
+       - Provide a button that triggers POST to approval API for each suggested campaign.
+
+17) Ensure no actual emails are auto-sent in this phase:
+   - All marketing emails must still either:
+     - Be logged as suggestions, OR
+     - Require explicit approval.
+
+=====================================================
+PHASE 28 — GROWTH LOOPS (SHARING & REFERRALS)
+=====================================================
+18) Templates sharing:
+   - Confirm templates API can support:
+     - “Share” concept for a template (either public read-only or internal share link).
+   - If not present, add route (read-only):
+     - `GET /api/templates/<id>/public` that returns a minimal shareable view (no sensitive data).
+
+19) Workflow duplication:
+   - Ensure there is a `duplicate` endpoint for workflows:
+     - `POST /api/workflows/<id>/duplicate`
+     - Keeps the same steps, but new id; owner set to current user/tenant.
+     - This is Class B (low risk; still internal to tenant).
+
+20) Referrals UI:
+   - If referral code logic exists:
+     - Add or verify a small “Referrals” section in the dashboard that shows:
+       - Referral link
+       - Referral count
+       - Basic instructions (“share this link…”).
+
+=====================================================
+PHASE 29 — OPS & SCALING POSTURE
+=====================================================
+21) Finalize `docs/scaling.md`:
+   - Explain:
+     - Current internal scaling_policy behavior.
+     - How /api/health/summary and any metrics endpoints can be used with external monitoring/autoscaling.
+     - Example: “If error_rate > X or latency > Y, scale up application pods externally.”
+
+22) Add script: `scripts/ops/check_scaling_readiness.py`
+   - Performs cheap checks:
+     - Calls /api/health/summary
+     - Optionally queries internal metrics tables (if any)
+     - Prints “SCALING READY” or warnings.
+
+=====================================================
+PHASE 30 — LAUNCH CERTIFICATION
+=====================================================
+23) `Launch Checklist`:
+   - Backend endpoint: `GET /api/system/launch-readiness`:
+     - Aggregates:
+       - Health OK?
+       - At least one template present?
+       - At least one workflow engine entrypoint live?
+       - Brain builder endpoint up?
+       - Approvals API functioning?
+       - Docs present? (check docs files exist)
+       - Stripe keys configured?
+     - Returns a JSON checklist.
+
+24) Frontend Launch Checklist UI:
+   - Use the endpoint above in `LaunchReadinessPanel` (from earlier) or a dedicated page.
+   - Show a simple list of items with PASS/FAIL.
+
+=====================================================
+PHASE 31 — PUBLIC LAUNCH SCAFFOLD
+=====================================================
+25) `/launch` page:
+   - Simple marketing page explaining:
+     - What Levqor does.
+     - Key features (Brain, workflows, templates, automation).
+     - Supported languages.
+     - Link to sign up.
+   - Lightweight, consistent with current branding.
+
+26) Post-launch script:
+   - Add `scripts/postlaunch/verify_live.py`:
+     - Runs:
+       - safety_gate_full
+       - A health summary check
+       - A minimal workflow run (manual or simulated)
+       - Prints a compact status report.
+
+=====================================================
+FINAL — CI + COMPARISON SUMMARY
+=====================================================
+27) Update docs:
+   - `BLUEPRINT_PROGRESS.md`:
+     - Mark 23–31 & LEGAL-0 entries as DONE / PARTIAL where appropriate.
+   - `DEV_SAFETY.md` and/or `docs/operations.md`:
+     - Add:
+       - Data export/delete notes.
+       - Preflight tests.
+       - Launch checklist & verify_live script.
+       - Marketing & referrals panels.
+
+28) Run from repo root:
+   - `python scripts/ci/run_all_checks.py`
+   Fix all failures (TS, lint, backend syntax, safety gate) and re-run until PASS (4/4).
+
+29) FINAL OUTPUT SUMMARY (MANDATORY):
+   - For each major area, output PRESENT/PARTIAL/MISSING at the end:
+     - Legal baseline (terms, privacy, compliance docs, export/delete endpoints).
+     - Product hardening (FTUE, error handling, skeleton loaders).
+     - Content foundation (help center, SEO meta).
+     - Security/compliance (approval usage, log hygiene).
+     - Preflight & launch readiness (scripts, UI checklist).
+     - Marketing (panel, approval-based campaigns).
+     - Growth loops (template sharing, workflow duplication, referrals UI).
+     - Ops & scaling posture (scaling.md, ops script).
+     - Launch scaffolding (/launch page, verify_live).
+   - This summary is for human review; do NOT guess, base it strictly on code and files.
