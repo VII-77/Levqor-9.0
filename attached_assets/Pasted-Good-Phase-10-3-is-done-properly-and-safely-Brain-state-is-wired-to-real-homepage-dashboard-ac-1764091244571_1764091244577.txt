@@ -1,0 +1,336 @@
+Good. Phase 10.3 is done properly and safely:
+
+
+Brain state is wired to real homepage + dashboard actions
+
+
+Sound intensity hook exists, feature-flagged, privacy-safe
+
+
+Canvas reacts subtly to sound
+
+
+All 4/4 checks pass
+
+
+No rollback. We build on this.
+Next: finish all remaining v10 work in one go: dimensional visuals + central state engine + small performance/UX hardening.
+Below is a combined mega-prompt for the agent: 10.4 + 10.5 + 10.6 in one shot.
+
+MEGA-PROMPT — v10 FINAL
+Dimensional visuals + Brain state engine + hardening
+You’ve already done:
+
+- CI/CD harness (run_all_checks.py, auto_upgrade_policy, auto_deploy).
+- Auth fix (Resend removed).
+- LevqorBrainCanvas (WebGL + Canvas fallback).
+- LevqorBrainContext with 5 states: organic | neural | quantum | success | error.
+- Homepage:
+  - Brain integrated.
+  - InteractiveHeroCTA using Brain state.
+- Dashboard:
+  - DashboardBrainCanvas integrated.
+  - TestBrainButton cycles through states.
+- useSoundIntensity.ts:
+  - Intensity-only.
+  - Feature-flagged (NEXT_PUBLIC_LEVQOR_BRAIN_SOUND_ENABLED).
+  - Respects reduced-motion.
+- Docs + BLUEPRINT_PROGRESS updated.
+- All 4/4 safety checks passing.
+
+Do NOT undo any of this.
+
+Goal of THIS command:
+Finish v10 by:
+1) Making the three “dimensions” (organic/neural/quantum) visually distinct but safe.
+2) Centralizing Brain state logic in a small state engine.
+3) Hardening performance / fallbacks.
+
+Global rules:
+- Scan before edit.
+- Don’t break layout or auth.
+- Respect feature flags + reduced-motion.
+- No heavy libraries unless absolutely necessary.
+- After all work: `python scripts/ci/run_all_checks.py` and fix until clean.
+
+====================================================
+A — DIMENSIONAL VISUALS (ORGANIC / NEURAL / QUANTUM)
+====================================================
+1. Open `levqor-site/src/components/brain/LevqorBrainCanvas.tsx` and its shader code.
+2. Implement **distinct but subtle** visual behavior per Brain state:
+
+   Organic:
+   - Soft gradient, slow breathing motion.
+   - Calm base colors (already close; refine if needed).
+
+   Neural:
+   - Slightly sharper contrasts.
+   - Add subtle “pulse lines” or node-like flickers (e.g., simple sin-based stripes or grid).
+
+   Quantum:
+   - Add subtle shimmer/noise distortion.
+   - Slight hue shift or interference-like effect.
+   - Do NOT go crazy with performance.
+
+   Success:
+   - Brief green-tinted overlay or soft pulse.
+   - Then return visuals to the underlying state.
+
+   Error:
+   - Brief red-tinted overlay or “warning” flash.
+   - Then return visuals to the underlying state.
+
+3. Implementation constraints:
+   - Use existing uniforms: time, brainState, soundIntensity (or similar).
+   - Any new uniforms: keep minimal.
+   - Respect `prefers-reduced-motion`:
+     - If reduced-motion is ON, show static frame per state (different colors/gradients) but no animation.
+
+4. Keep WebGL + Canvas fallback behavior intact.
+   - Canvas fallback should at least reflect different states via colors.
+
+===========================================
+B — BRAIN STATE ENGINE (CENTRAL LOGIC)
+===========================================
+5. In `levqor-site/src/components/brain/`, create:
+
+   - `brainStateMachine.ts`
+
+6. Implement:
+
+   ```ts
+   export type BrainUIEvent =
+     | "idle"
+     | "hover_primary_cta"
+     | "click_primary_cta"
+     | "hover_secondary_cta"
+     | "dashboard_action_start"
+     | "dashboard_action_success"
+     | "dashboard_action_error"
+     | "test_cycle";
+
+   export function computeNextBrainState(params: {
+     currentState: LevqorBrainState;
+     uiEvent: BrainUIEvent;
+     intensity?: number; // 0–1, from sound
+   }): LevqorBrainState
+
+
+
+Rules (simple but explicit):
+
+
+idle → default = organic
+
+
+hover_primary_cta → neural
+
+
+hover_secondary_cta → quantum
+
+
+click_primary_cta → success
+
+
+dashboard_action_start → neural
+
+
+dashboard_action_success → success
+
+
+dashboard_action_error → error
+
+
+test_cycle → cycle through all states (organic → neural → quantum → success → error → organic)
+
+
+Intensity modulation:
+
+
+If intensity > ~0.7 and not in error/success:
+
+
+Prefer quantum (more “creative/energetic”) as next state.
+
+
+
+
+
+
+Use the state machine in:
+
+
+InteractiveHeroCTA.tsx
+
+
+TestBrainButton.tsx
+
+
+Any dashboard action you wired (if one exists beyond TestBrainButton).
+
+
+Replace ad-hoc setNeural()/setSuccess() with:
+
+
+Get currentState from context.
+
+
+Call computeNextBrainState({ currentState, uiEvent, intensity }).
+
+
+Then call setState(next).
+
+
+(Intensity can be optional; for most UI events just omit or pass 0.)
+
+
+===========================================
+C — PERFORMANCE + FALLBACK HARDENING
+
+
+In LevqorBrainCanvas.tsx:
+
+
+Ensure render loop is:
+
+
+Using requestAnimationFrame safely.
+
+
+Cleaned up on unmount.
+
+
+
+
+Guard against:
+
+
+Running animation when:
+
+
+feature flag disables canvas
+
+
+component is offscreen (if easy to detect via existing hooks)
+
+
+reduced-motion is ON
+
+
+
+
+
+
+If feature flag is OFF:
+
+
+Don’t initialize WebGL or audio.
+
+
+Render a static placeholder.
+
+
+
+
+
+
+Confirm that useSoundIntensity:
+
+
+Cancels audio context and tracks properly on unmount.
+
+
+Handles permission denial gracefully (no crashes, intensity stays 0).
+
+
+
+
+===========================================
+D — DOCS, BLUEPRINT, SAFETY
+
+
+Update documentation:
+
+
+
+
+DEV_SAFETY.md: short section describing:
+
+
+Dimensional Brain states and visuals.
+
+
+Brain state machine and events.
+
+
+Sound behavior and flags.
+
+
+
+
+BLUEPRINT_PROGRESS.md:
+
+
+Mark v10 “Levqor Brain + Living Canvas” as COMPLETE.
+
+
+Note that:
+
+
+Brain reacts to homepage + dashboard actions.
+
+
+Dimensional visuals exist (Organic/Neural/Quantum/Success/Error).
+
+
+Sound-reactivity is implemented and feature-flag controlled.
+
+
+
+
+
+
+
+
+Run from repo root:
+
+
+python scripts/ci/run_all_checks.py
+Fix any errors (TS, lint, syntax, safety gate) and re-run until PASS.
+
+
+Final output (in the terminal summary):
+
+
+
+
+Files created/modified.
+
+
+Confirmation of:
+
+
+Distinct visuals per state.
+
+
+State machine file and where it’s used.
+
+
+Sound reactivity behavior.
+
+
+v10 marked complete in BLUEPRINT_PROGRESS.
+
+
+
+
+Confirmation that python scripts/ci/run_all_checks.py passes.
+
+
+
+---
+
+Run this next.
+
+Once the agent finishes and passes checks, v10 is done.  
+Then we jump straight into a **combined v11 + v12 prompt** (business automation + 40-language layer) in the same “compressed multi-phase” style.

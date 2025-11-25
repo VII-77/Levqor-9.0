@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useRef } from "react";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
+import { computeNextBrainState, getTransientDuration } from "./brainStateMachine";
 
 interface InteractiveHeroCTAProps {
   primaryHref: string;
@@ -24,7 +25,11 @@ export default function InteractiveHeroCTA({
 
   const handlePrimaryHover = useCallback(() => {
     if (brain) {
-      brain.setNeural();
+      const nextState = computeNextBrainState({
+        currentState: brain.state,
+        uiEvent: "hover_primary_cta",
+      });
+      brain.setState(nextState);
     }
   }, [brain]);
 
@@ -33,7 +38,11 @@ export default function InteractiveHeroCTA({
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      brain.setOrganic();
+      const nextState = computeNextBrainState({
+        currentState: brain.state,
+        uiEvent: "idle",
+      });
+      brain.setState(nextState);
     }
   }, [brain]);
 
@@ -42,22 +51,37 @@ export default function InteractiveHeroCTA({
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      brain.setSuccess();
-      timeoutRef.current = setTimeout(() => {
-        brain.setOrganic();
-      }, 1500);
+      const nextState = computeNextBrainState({
+        currentState: brain.state,
+        uiEvent: "click_primary_cta",
+      });
+      brain.setState(nextState);
+      const duration = getTransientDuration(nextState);
+      if (duration > 0) {
+        timeoutRef.current = setTimeout(() => {
+          brain.setOrganic();
+        }, duration);
+      }
     }
   }, [brain]);
 
   const handleSecondaryHover = useCallback(() => {
     if (brain) {
-      brain.setQuantum();
+      const nextState = computeNextBrainState({
+        currentState: brain.state,
+        uiEvent: "hover_secondary_cta",
+      });
+      brain.setState(nextState);
     }
   }, [brain]);
 
   const handleSecondaryLeave = useCallback(() => {
     if (brain) {
-      brain.setOrganic();
+      const nextState = computeNextBrainState({
+        currentState: brain.state,
+        uiEvent: "idle",
+      });
+      brain.setState(nextState);
     }
   }, [brain]);
 

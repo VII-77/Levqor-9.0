@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
+import { computeNextBrainState, getDefaultState } from "./brainStateMachine";
 import type { BrainState } from "./types";
 
 const STATE_SEQUENCE: BrainState[] = ["organic", "neural", "quantum", "success", "error", "organic"];
@@ -32,8 +33,11 @@ export default function TestBrainButton() {
         return;
       }
 
-      const state = STATE_SEQUENCE[index];
-      brain.setState(state);
+      const nextState = computeNextBrainState({
+        currentState: brain.state,
+        uiEvent: "test_cycle",
+      });
+      brain.setState(nextState);
       setCurrentIndex(index);
       index++;
 
@@ -51,7 +55,7 @@ export default function TestBrainButton() {
     setIsRunning(false);
     setCurrentIndex(0);
     if (brain) {
-      brain.setOrganic();
+      brain.setState(getDefaultState());
     }
   }, [brain]);
 

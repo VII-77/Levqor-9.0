@@ -73,7 +73,7 @@ These components are fully implemented and tested:
 - Marketing pages
 - Tailwind CSS styling
 
-### Living Canvas Brain (PHASE 10.1-10.3 Complete)
+### Living Canvas Brain (v10 COMPLETE)
 - **PHASE 10.1**: LevqorBrainCanvas component with WebGL/Canvas2D fallback
 - **PHASE 10.2**: LevqorBrainContext with 5 states (organic, neural, quantum, success, error)
 - **PHASE 10.3**: Real UX interactions + Sound reactivity
@@ -82,6 +82,19 @@ These components are fully implemented and tested:
   - useSoundIntensity hook for optional microphone-driven visuals
   - Feature flag controlled (`NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED`, `NEXT_PUBLIC_LEVQOR_BRAIN_SOUND_ENABLED`)
   - Accessibility: Respects `prefers-reduced-motion`, proper ARIA labels
+- **PHASE 10.4**: Dimensional Visuals
+  - Distinct shader effects per state (organic=breathing, neural=pulse lines, quantum=shimmer)
+  - Success/Error states have tinted overlay flashes
+  - Canvas2D fallback also reflects state-specific effects
+- **PHASE 10.5**: Brain State Machine
+  - Centralized `brainStateMachine.ts` with `computeNextBrainState()` function
+  - Defines all UI events and their corresponding state transitions
+  - Intensity modulation for sound-reactive state changes
+  - Used by InteractiveHeroCTA and TestBrainButton
+- **PHASE 10.6**: Performance Hardening
+  - Proper cleanup of animation frames and audio contexts on unmount
+  - Sound intensity uses refs for animation loop updates
+  - Feature flag guards prevent unnecessary WebGL/audio initialization
 
 ---
 
