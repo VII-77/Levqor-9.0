@@ -1,0 +1,95 @@
+# Levqor Auto-Upgrade Policy Configuration
+# =========================================
+# This file defines which parts of the codebase are critical (require full safety checks)
+# vs non-critical (marketing, docs, copy changes).
+#
+# Used by: scripts/ci/check_change_scope.py
+# Updated: 2025-11-25
+
+critical_modules:
+  # Authentication & Security
+  - "levqor-site/src/auth.ts"
+  - "levqor-site/src/middleware.ts"
+  - "security_core/**"
+  - "enterprise/rbac.py"
+  
+  # Billing & Stripe Integration
+  - "api/billing/**"
+  - "modules/stripe_connector.py"
+  - "scripts/activate_stripe_prices.py"
+  - "scripts/seed_stripe_products.py"
+  - "scripts/sync_live_stripe.py"
+  
+  # Database & Migrations
+  - "modules/db_wrapper.py"
+  - "modules/db_utils.py"
+  - "levqor.db"
+  
+  # Core Backend API Logic
+  - "run.py"
+  - "api/ai/**"
+  - "api/admin/**"
+  - "api/omega/**"
+  - "api/usage/**"
+  - "api/support/**"
+  
+  # Multi-tenancy
+  - "tenant/**"
+  
+  # Monitoring & Safety
+  - "scripts/monitoring/**"
+  - "scripts/ci/**"
+  - "monitors/**"
+  
+  # Core Modules
+  - "modules/auto_intel/**"
+  - "modules/decision_engine/**"
+  - "modules/governance/**"
+  - "modules/partner_api/**"
+
+non_critical_modules:
+  # Marketing & Landing Pages
+  - "levqor-site/src/app/(marketing)/**"
+  - "levqor-site/src/app/page.tsx"
+  - "levqor-site/public/**"
+  
+  # Documentation
+  - "*.md"
+  - "docs/**"
+  - "levqor-site/docs/**"
+  - "GLOBAL-LAUNCH-SUMMARY.md"
+  - "MEGA-PHASE-*.md"
+  
+  # Internationalization (copy changes)
+  - "levqor-site/messages/**"
+  - "levqor-site/src/messages/**"
+  
+  # UI Components (non-auth)
+  - "levqor-site/src/components/marketing/**"
+  - "levqor-site/src/components/ui/**"
+  
+  # Email Templates
+  - "levqor-site/src/emails/**"
+  
+  # Config files (package.json, etc.)
+  - "package.json"
+  - "package-lock.json"
+  - "levqor-site/package.json"
+  - "levqor-site/package-lock.json"
+  - "tsconfig.json"
+  - "tailwind.config.ts"
+  
+  # Archive
+  - "archive/**"
+  
+  # Data exports
+  - "exports/**"
+  - "data/**"
+
+# Files that should NEVER be auto-modified
+protected_files:
+  - "auto_upgrade_policy.yml"
+  - "scripts/monitoring/safety_gate_full.py"
+  - ".env"
+  - ".env.local"
+  - "legal_file_checksums.json"
