@@ -1,8 +1,8 @@
-# Levqor X 9.0 — V18.0 Self-Running Workflow Engine Edition
+# Levqor X 9.0 — V22.0 Visual Editor + Scaling Edition
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, improved dashboard UX, and a **self-running workflow execution engine** with AI-powered builder, approval system, scheduling, and analytics. The project's ambition is to provide robust, scalable, and globally accessible data management solutions with complete automation core.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, improved dashboard UX, a **self-running workflow execution engine** with AI-powered builder, approval system, scheduling, and analytics, **25+ workflow templates**, a **visual workflow editor with drag-and-drop**, and **comprehensive scaling documentation**. The project's ambition is to provide robust, scalable, and globally accessible data management solutions with complete automation core.
 
 ## Recent Changes (November 25, 2025)
 
@@ -48,6 +48,30 @@ Levqor X is a comprehensive data backup and retention management platform offeri
 
 **ICP/Real-World Alignment:**
 - Created `/docs/real_world_alignment.md` with ICP, workflows, and guardrails
+
+### MEGA PHASE v19-v22: Visual Editor, Templates, Scaling (November 25, 2025)
+
+**SEO Content Engine (v19):**
+- Created `scripts/automation/auto_seo_content.py` for SEO recommendations
+- Proposal-based approach (generates suggestions, human reviews before implementation)
+
+**Template Marketplace Expansion (v20):**
+- Expanded `modules/growth_engine/templates.py` from 8 to 25+ templates
+- Categories: lead_capture, customer_support, reporting, data_sync, notifications, sales_automation
+- Created `api/templates/` blueprint with GET endpoints
+- Frontend `/templates` marketplace page
+
+**Visual Workflow Editor (v21):**
+- Created `WorkflowEditor.tsx` with native HTML5 drag-and-drop
+- Step reordering via drag handles with visual drop indicators
+- Configuration panels for all step types
+- Brain state integration: Quantum during drag, Success on reorder
+
+**Scaling Documentation (v22):**
+- Created `docs/scaling.md` with infrastructure scaling patterns
+- Load tier definitions and rate limit profiles
+- K8s HPA, AWS ASG, Replit Autoscale integration guides
+- Capacity planning formulas
 
 ## User Preferences
 
