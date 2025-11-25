@@ -1,0 +1,188 @@
+You are a senior Next.js + Product engineer operating INSIDE the Levqor Replit workspace.
+
+GOAL
+Figure out WHY the live site at https://levqor.ai *looks like a plain marketing site* and does NOT clearly expose the AI features (AI builder, AI tutor, AI copilot etc.), even though the full Levqor X 9.0 repo is deployed and routes like /workflows/new are live.
+
+You must:
+1) Confirm exactly what content is rendered for the key AI routes.
+2) Find any feature flags / env-gated conditions hiding AI components.
+3) Fix the visibility so a NEW VISITOR clearly sees Levqor’s AI capabilities from the public site and workflows pages.
+4) Re-verify Stripe checkout + portal endpoints are working from the frontend.
+
+HARD RULES (DO NOT VIOLATE)
+- DO NOT change any pricing, legal, T&Cs, SLAs, copy or Stripe keys.
+- DO NOT touch database migrations or scheduler logic.
+- DO NOT modify .env.production or any secrets.
+- Always VERIFY results with curl/grep instead of assuming.
+- Keep changes minimal and focused on VISIBILITY / UI logic only.
+
+CONTEXT
+- We already confirmed:
+  - Replit HEAD and origin/main are in sync.
+  - Routes like /workflows/new, /workflows/ai-create, /workflows/library, /status all exist in the build.
+  - curl -IL https://levqor.ai/workflows/new returns x-matched-path: /workflows/new and HTTP 200.
+- The user still *does not see* the AI-specific UI and thinks the site looks like an old, non-AI marketing template.
+
+PHASE 0 — SETUP
+1) Work from: /home/runner/workspace/levqor-site
+2) Print current git status and last 3 commits so we see exactly what tree you are on:
+   - cd /home/runner/workspace/levqor-site
+   - git status --short
+   - git log -3 --oneline
+
+PHASE 1 — WHAT IS REALLY RENDERED?
+We want to see what HTML NEXT is shipping for AI-related pages in **production configuration**, then compare to code.
+
+1) Run the dev server in production mode (no code edits yet):
+   - npm run build > /tmp/local-build.log 2>&1 || echo "BUILD_FAILED"
+   - npm run start > /tmp/local-start.log 2>&1 & 
+   - sleep 8
+
+2) From INSIDE Replit, curl these URLs (LOCAL server on 0.0.0.0:3000 or 5000 depending on package.json) and save HTML:
+   - curl -s http://localhost:3000/ > /tmp/html-home.html || curl -s http://localhost:5000/ > /tmp/html-home.html
+   - curl -s http://localhost:3000/workflows/new > /tmp/html-workflows-new.html || curl -s http://localhost:5000/workflows/new > /tmp/html-workflows-new.html
+   - curl -s http://localhost:3000/workflows/ai-create > /tmp/html-ai-create.html || curl -s http://localhost:5000/workflows/ai-create.html
+   - curl -s http://localhost:3000/workflows/library > /tmp/html-workflows-library.html || curl -s http://localhost:5000/workflows/library > /tmp/html-workflows-library.html
+
+3) For each of those HTML files, grep for obvious AI strings and component markers:
+   - rg "AI" /tmp/html-*.html | head -40 || echo "NO_AI_STRINGS_FOUND"
+   - rg "Natural language" /tmp/html-*.html || true
+   - rg "AI tutor|AIOnboardingTutor|copilot|Ask Levqor" /tmp/html-*.html || true
+
+4) Print the first 120 lines of each HTML file so we can see what the server is sending:
+   - sed -n '1,120p' /tmp/html-home.html
+   - sed -n '1,120p' /tmp/html-workflows-new.html
+   - sed -n '1,120p' /tmp/html-ai-create.html || echo "NO_AI_CREATE_HTML"
+   - sed -n '1,120p' /tmp/html-workflows-library.html
+
+GOAL of PHASE 1:
+- Determine whether the AI UI is actually in the HTML (SSR) but maybe hidden by CSS/JS, OR never rendered at all.
+
+PHASE 2 — INSPECT PAGE CODE VS RUNTIME
+Now inspect the React source for those pages and see what should be rendered.
+
+1) Open the following files and print them:
+   - sed -n '1,220p' src/app/workflows/new/page.tsx
+   - sed -n '1,220p' src/app/workflows/ai-create/page.tsx 2>/dev/null || echo "NO_AI_CREATE_PAGE"
+   - sed -n '1,260p' src/components/ai/NaturalLanguageWorkflowBuilder.tsx 2>/dev/null || echo "NO_NL_BUILDER"
+   - sed -n '1,260p' src/components/ai/AIOnboardingTutor.tsx 2>/dev/null || echo "NO_AI_TUTOR"
+   - sed -n '1,220p' src/components/status/GrowthConsole.tsx 2>/dev/null || echo "NO_GROWTH_CONSOLE"
+
+2) In those files, explicitly look for:
+   - Feature flags (e.g. `if (!env.NEXT_PUBLIC_AI_FEATURES) return null`)
+   - Environment checks (`if (process.env.NODE_ENV !== 'production') ...`)
+   - User / tenant gating (`if (!session) return null`, or checks on `plan`, `beta`, etc.)
+   - Lang / locale checks (`if (locale !== 'en')` hide stuff, etc.)
+
+3) Print ALL lines in the codebase that look like AI feature flags:
+   - rg "FEATURE.*AI|AI_FEATURE|aiEnabled|enableAi|NEXT_PUBLIC_AI" src -n || echo "NO_AI_FLAGS"
+   - rg "process\.env\." src -n | head -80
+
+GOAL of PHASE 2:
+- Identify the exact condition(s) that must be true for the AI builder and AI tutor to render.
+
+PHASE 3 — CHECK ENV VARS + RUNTIME CONDITIONS
+Now confirm what values production is actually using.
+
+1) Print the Next.js runtime env usage (without dumping secrets):
+   - rg "NEXT_PUBLIC_" .env* 2>/dev/null || echo "NO_ENV_FILES_LISTED"
+   - node -e "console.log('PUBLIC ENVS:', Object.keys(process.env).filter(k => k.startsWith('NEXT_PUBLIC_')).sort())" 2>/dev/null || echo "NODE_ENV_CHECK_FAILED"
+
+2) Specifically check for any AI-related envs:
+   - node -e "['NEXT_PUBLIC_AI_FEATURES_ENABLED','NEXT_PUBLIC_SHOW_AI_BUILDER','NEXT_PUBLIC_LAB_MODE'].forEach(k => console.log(k, ':', process.env[k] || 'UNSET'))" 2>/dev/null || echo "NO_AI_ENV_CHECK"
+
+3) If you find any conditional rendering like:
+   - `if (!env.NEXT_PUBLIC_AI_FEATURES_ENABLED) return null`
+   …then note:
+   - Which env var controls it.
+   - What the current value is in this environment.
+
+DO NOT EDIT ENV FILES.
+
+PHASE 4 — PROPOSE MINIMAL CODE FIXES
+Based on PHASE 2–3 findings:
+
+1) If the AI components are hidden behind a *production-hostile* check (e.g. only show in development, or only show for `plan === 'enterprise'`), adjust the rendering logic so that on **public marketing routes**:
+   - The AI builder / AI features are at least visibly mentioned and linked.
+   - BUT do not expose any private tenant data or admin-only surfaces.
+
+2) Examples of acceptable minimal fixes:
+   - On `/workflows/new`, ensure `NaturalLanguageWorkflowBuilder` is always rendered for signed-in users, and show a friendly “Sign in to use AI builder” CTA for anonymous visitors.
+   - If the entire AI section is wrapped in `if (!session) return null`, change it to render a “Sign in to start an AI workflow” promo block with the same layout, but with buttons linking to `/signin` instead of interactive components.
+   - If locale gating hides AI for non-en, ensure that all supported locales show the AI UI (or at least the CTA) by removing strict `locale === 'en'` checks.
+
+3) Make the minimum code edits needed in the relevant page/components files. Use `apply_edits` or simple `cat > file <<'EOF'` patterns; avoid broad refactors.
+
+4) After edits:
+   - npm run build > /tmp/local-build-after.log 2>&1
+   - If build fails, undo the last change and report the error.
+   - If build succeeds, restart the dev server and re-curl the same pages as in PHASE 1, saving them to new files:
+     - /tmp/html-workflows-new-after.html
+     - /tmp/html-ai-create-after.html (if exists)
+     - /tmp/html-workflows-library-after.html
+
+5) Show a BEFORE vs AFTER comparison for at least `/workflows/new`:
+   - diff -u /tmp/html-workflows-new.html /tmp/html-workflows-new-after.html | head -80 || echo "NO_HTML_DIFF_OR_DIFF_TOO_LARGE"
+
+GOAL of PHASE 4:
+- Make AI features visibly present in SSR HTML so the user can SEE the AI builder / AI messaging even if client-side JS is flaky.
+
+PHASE 5 — STRIPE CHECKOUT / PORTAL SANITY
+We also need to sanity-check the payment links that looked broken earlier.
+
+1) From localhost (dev server running), check that the pages hit the correct API routes:
+
+   - rg "/api/checkout" src -n
+   - rg "/api/portal/checkout" src -n
+
+2) For each button or link that initiates payment (pricing, nav CTAs):
+   - Identify whether they:
+     - POST to /api/checkout, or
+     - POST to /api/portal/checkout, or
+     - Link directly to a Stripe URL (not ideal).
+
+3) Verify methods supported by each route:
+   - sed -n '1,200p' src/app/api/checkout/route.ts
+   - sed -n '1,220p' src/app/api/portal/checkout/route.ts 2>/dev/null || echo "NO_PORTAL_CHECKOUT_ROUTE"
+
+4) Confirm:
+   - /api/checkout allows POST and returns a JSON body with a Stripe URL (do NOT log the URL).
+   - /api/portal/checkout allows POST and returns a portal URL.
+
+   Simulate locally:
+   - curl -s -X POST http://localhost:3000/api/checkout -H "Content-Type: application/json" -d '{}' | head -40 || curl -s -X POST http://localhost:5000/api/checkout -H "Content-Type: application/json" -d '{}' | head -40
+   - curl -s -X POST http://localhost:3000/api/portal/checkout -H "Content-Type: application/json" -d '{}' | head -40 || echo "NO_PORTAL_RESP"
+
+5) If buttons are incorrectly using GET instead of POST, or pointing to wrong path, fix the handlers to call the POST endpoints correctly (e.g. using fetch in a click handler or a small form).
+
+PHASE 6 — GIT DIFF, COMMIT MESSAGE, SUMMARY
+1) Show diff:
+   - git diff --stat
+   - git diff
+
+2) If the changes are small and correct, prepare them for commit (DO NOT RUN git commit by yourself; just print the commands for the user):
+
+   Suggested commit message:
+   - "feat: surface AI workflow builder + fix checkout button wiring"
+
+3) Print a FINAL SUMMARY in this exact structure:
+
+FINAL SUMMARY
+- AI VISIBILITY ROOT CAUSE: <one line>
+- FIXES:
+  1) <short description of code changes for workflows/new and AI components>
+  2) <short description of any feature flag / env logic adjustments>
+  3) <short description of Stripe checkout wiring fixes>
+- VERIFICATION:
+  - curl http://localhost:3000/workflows/new → 200 and HTML now includes "<key AI text snippet>"
+  - curl http://localhost:3000/workflows/library → 200 and shows AI-related copy/links
+  - POST /api/checkout → returns JSON with "url"
+- FILES TO COMMIT:
+  - <file paths>
+
+Then stop.
+
+REMINDER
+- DO NOT touch Stripe keys, legal copy, or database schema.
+- Keep all changes minimal, scoped to AI VISIBILITY and frontend wiring.
+- Always verify with curl/grep and show BEFORE vs AFTER where possible.

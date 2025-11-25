@@ -38,6 +38,19 @@ export default function Header() {
               Home
             </Link>
             <Link 
+              href="/workflows/ai-create" 
+              className="text-neutral-700 hover:text-primary-600 font-medium transition-colors flex items-center gap-1"
+            >
+              <span>🤖</span>
+              <span>AI Builder</span>
+            </Link>
+            <Link 
+              href="/workflows/library" 
+              className="text-neutral-700 hover:text-primary-600 font-medium transition-colors"
+            >
+              Workflows
+            </Link>
+            <Link 
               href="/pricing" 
               className="text-neutral-700 hover:text-primary-600 font-medium transition-colors"
             >
@@ -103,6 +116,21 @@ export default function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Home
+              </Link>
+              <Link 
+                href="/workflows/ai-create" 
+                className="text-neutral-700 hover:text-primary-600 font-medium transition-colors py-2 flex items-center gap-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <span>🤖</span>
+                <span>AI Builder</span>
+              </Link>
+              <Link 
+                href="/workflows/library" 
+                className="text-neutral-700 hover:text-primary-600 font-medium transition-colors py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Workflows
               </Link>
               <Link 
                 href="/pricing" 

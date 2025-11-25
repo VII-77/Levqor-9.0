@@ -115,6 +115,69 @@ export default function Home() {
         </p>
       </section>
 
+      {/* AI Builder CTA Section */}
+      <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 py-16">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="flex-1 text-white">
+              <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <span className="text-xl">🤖</span>
+                <span>AI-Powered</span>
+              </div>
+              <h2 className="text-4xl font-bold mb-4">
+                Create Workflows in Plain English
+              </h2>
+              <p className="text-xl text-white/90 mb-6">
+                Just describe what you want to automate. Our AI builds the complete workflow — triggers, actions, and error handling — in seconds.
+              </p>
+              <ul className="space-y-3 text-white/90 mb-8">
+                <li className="flex items-center gap-3">
+                  <span className="text-success-400">✓</span>
+                  <span>No coding required</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-success-400">✓</span>
+                  <span>Production-ready in minutes</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <span className="text-success-400">✓</span>
+                  <span>Smart error handling included</span>
+                </li>
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <Link
+                  href="/workflows/ai-create"
+                  className="px-8 py-4 bg-white text-primary-600 rounded-xl font-semibold hover:bg-neutral-50 transition-all shadow-lg text-lg"
+                >
+                  Try AI Builder
+                </Link>
+                <Link
+                  href="/workflows/library"
+                  className="px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-all text-lg"
+                >
+                  Browse 50+ Templates
+                </Link>
+              </div>
+            </div>
+            <div className="flex-1 bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/20">
+              <div className="bg-white rounded-xl p-6 shadow-xl">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">💬</span>
+                  <span className="font-medium text-neutral-700">Ask Levqor AI</span>
+                </div>
+                <div className="bg-neutral-50 rounded-lg p-4 mb-4 text-neutral-600 italic">
+                  "When I receive an email with 'urgent' in the subject, forward it to Slack and text me"
+                </div>
+                <div className="flex items-center gap-2 text-sm text-neutral-500">
+                  <span className="animate-pulse">⚡</span>
+                  <span>AI generates your workflow instantly...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Trust Band */}
       <section className="bg-gray-100 py-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
