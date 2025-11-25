@@ -1,7 +1,7 @@
 # Levqor X — Real-World Alignment Document
 
 **Last Updated:** November 25, 2025  
-**Version:** V15.0 (Hardening Release)
+**Version:** V22.0 (Visual Editor + Scaling Edition)
 
 ---
 
@@ -52,7 +52,11 @@ Levqor X targets:
 | **Health Overview** | Live | Real-time system status tiles |
 | **Growth Panel** | Live | Templates + referral tracking |
 | **Quickstart Panel** | Live | AI-guided workflow creation |
-| **Workflow Library** | Live | 8 starter templates |
+| **Workflow Library** | Live | 25+ starter templates (v20) |
+| **Visual Workflow Editor** | Live | Drag-and-drop step configuration (v21) |
+| **Approval Panel** | Live | Class A/B/C approval queue management |
+| **Analytics Panel** | Live | Workflow execution metrics (v18) |
+| **Workflow History** | Live | Run history and event logs (v18) |
 
 ### Billing & Plans
 
@@ -63,6 +67,33 @@ Levqor X targets:
 | Scale | £59/mo | Live (Stripe) |
 | Agency | £149/mo | Live (Stripe) |
 | Annual Plans | -20% | Live (Stripe) |
+
+---
+
+## New in v19-v22
+
+### v19: SEO Content Engine
+- Proposal-based SEO recommendations script (`scripts/automation/auto_seo_content.py`)
+- Generates meta title, description, keyword suggestions
+- Requires human review before implementation
+
+### v20: Expanded Template Marketplace
+- 25+ templates across 6 categories
+- Categories: lead_capture, customer_support, reporting, data_sync, notifications, sales_automation
+- API: `GET /api/templates` and `GET /api/templates/<id>`
+- Frontend marketplace at `/templates`
+
+### v21: Visual Workflow Editor
+- `WorkflowEditor.tsx` component with drag-and-drop interface
+- Step configuration panels for all step types
+- Live preview of workflow changes
+- Brain state integration for processing/success/error feedback
+
+### v22: Scaling Documentation
+- `docs/scaling.md` with comprehensive scaling patterns
+- Load tier definitions and rate limit profiles
+- Infrastructure scaling integration guide (K8s HPA, AWS ASG, Replit Autoscale)
+- Capacity planning formulas
 
 ---
 

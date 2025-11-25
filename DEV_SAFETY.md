@@ -397,3 +397,120 @@ referrals = get_user_referrals(user_id="usr_123")
 
 - `GrowthPanel` component shows templates and referral link in dashboard
 - `HealthOverview` component shows system health status
+
+---
+
+## Visual Workflow Editor (v21)
+
+### Overview
+
+The WorkflowEditor component provides a visual interface for editing workflows:
+
+```typescript
+import { WorkflowEditor } from "@/components/workflows";
+
+<WorkflowEditor 
+  workflowId="wf_123"
+  onClose={() => setEditing(false)}
+  onSave={(workflow) => console.log("Saved:", workflow)}
+/>
+```
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **Step Types** | Visual icons for http_request, email, delay, condition, log |
+| **Config Panels** | Inline editing for step configuration |
+| **Brain Integration** | Neural state during edit, Success on save |
+| **Save Detection** | Tracks unsaved changes, warns before close |
+
+### Step Type Colors
+
+| Type | Icon | Color |
+|------|------|-------|
+| HTTP Request | 🌐 | Blue |
+| Email | 📧 | Purple |
+| Delay | ⏱️ | Amber |
+| Condition | 🔀 | Cyan |
+| Log | 📝 | Slate |
+
+### API Endpoints
+
+- `GET /api/workflows/<id>` — Fetch workflow for editing
+- `PUT /api/workflows/<id>` — Save workflow changes
+
+---
+
+## Template Marketplace (v20)
+
+### API Endpoints
+
+```bash
+# List all templates
+GET /api/templates
+
+# Filter by category
+GET /api/templates?category=lead_capture
+
+# Get specific template
+GET /api/templates/tpl_lead_capture_form
+```
+
+### Template Categories
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| lead_capture | 5 | Web form capture, Lead magnet delivery |
+| customer_support | 5 | Email autoresponder, Support ticket routing |
+| reporting | 5 | Weekly analytics, Daily metrics summary |
+| data_sync | 4 | CRM sync, Database backup |
+| notifications | 3 | Slack alerts, SMS notifications |
+| sales_automation | 3 | Invoice follow-up, Deal stage alerts |
+
+### Using Templates
+
+```python
+from modules.growth_engine import get_starter_templates, get_template_by_id
+
+# Get all 25+ templates
+templates = get_starter_templates()
+
+# Filter by category
+sales = get_starter_templates(category="sales_automation")
+
+# Get specific template
+template = get_template_by_id("tpl_invoice_followup")
+```
+
+---
+
+## Scaling Documentation (v22)
+
+### Quick Reference
+
+| Load Level | Threshold | Rate Limit Adjustment |
+|------------|-----------|----------------------|
+| Low | 0-30% | 2x default limits |
+| Medium | 30-60% | Standard limits |
+| High | 60-80% | 0.7x default limits |
+| Critical | 80-95% | 0.5x default limits |
+
+### Health Check for Autoscalers
+
+```bash
+curl https://api.levqor.ai/api/health/summary
+```
+
+Response includes: status, uptime, request metrics, error rate.
+
+### Full Documentation
+
+See `docs/scaling.md` for:
+- Infrastructure scaling patterns
+- Kubernetes HPA configuration
+- AWS Auto Scaling setup
+- Replit Autoscale integration
+- Prometheus metrics exposure
+- Grafana dashboard recommendations
+- Capacity planning formulas
