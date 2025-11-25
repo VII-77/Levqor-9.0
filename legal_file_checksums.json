@@ -1,0 +1,11 @@
+{
+  "levqor-site/src/app/privacy/page.tsx": "7c4d688934f525565009460ca98f1c2c7b747419a5edd254ac0e5196208a5370",
+  "levqor-site/src/app/terms/page.tsx": "dc04da290203f1f12e98cc3358adab27f437423ce63f7e6197ea8033ca8d8a5c",
+  "levqor-site/src/app/gdpr/page.tsx": "da97c65717db14d008dfdfee75cdaf4e7a85a240d498735017d99794f0ffb4f9",
+  "levqor-site/src/app/security/page.tsx": "3818c004558f18b1b281b181dee7d49cc12aa482ebcc28090e2b586f673ea1bc",
+  "levqor-site/src/app/dpa/page.tsx": "e91c84fc3a51712c74d755977496448c04474e3591e814ed8b58e592ba2b8292",
+  "levqor-site/src/app/ai-transparency/page.tsx": "c62348c35376462f2a2c23e32e00ad40263100c25602976071d1f59b3021cdf4",
+  "levqor-site/src/app/data-rights/page.tsx": "0e95e7045221269362991eda6dfdbfd3abb2ec6d0e6ffd114e64dfcd1546ebc3",
+  "levqor-site/src/app/cookies/page.tsx": "2ad881aff889bb7fc3b0a6f73ba2307c360276f2eec08f52b9887af2d2069d37",
+  "levqor-site/src/components/CookieBanner.tsx": "2e1894ce7a50644b34af899ef0d6e5a302d970e34de5db763cdbbde24d04ce9e"
+}

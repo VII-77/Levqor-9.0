@@ -1,0 +1,117 @@
+You are a senior DevOps + Next.js engineer operating INSIDE the Replit workspace for the Levqor project.
+
+GOAL
+Run a **full repo diff + structure audit** so we know, with certainty, whether the code in Replit matches what’s in GitHub (origin/main) and whether the Levqor X / AI components are actually present in this repo.
+
+You MUST:
+- Work ONLY inside this Replit project.
+- Use the existing git remote (don’t change it).
+- Run real shell commands and show their outputs.
+- Verify results explicitly instead of guessing.
+
+ABSOLUTE RULES
+1. Do NOT modify any files, branches, or git history. This is a **read-only diagnostic**.
+2. Do NOT run git commit, git reset, git checkout, or git push.
+3. You MAY run `git fetch` and `git diff` and filesystem/listing commands.
+4. Always show the key command outputs in your final summary.
+
+──────────────────────────────── COMMAND PLAN ────────────────────────────────
+
+PHASE 1 — Confirm location and basic git state
+1) Go to the repo root and confirm we are in the right project:
+
+    cd /home/runner/workspace/levqor-site || cd /home/runner/workspace || pwd
+    pwd
+    ls -la
+
+2) Show git remotes and quick status:
+
+    git remote -v
+    git status --short
+
+PHASE 2 — Compare local HEAD vs origin/main
+3) Fetch latest origin without changing branches:
+
+    git fetch origin
+
+4) Print the exact commit hashes so the user can compare with Vercel:
+
+    echo "=== COMMIT HASHES ==="
+    echo "Local HEAD:     $(git rev-parse HEAD 2>/dev/null || echo 'HEAD_MISSING')"
+    echo "Origin main:    $(git rev-parse origin/main 2>/dev/null || echo 'ORIGIN_MAIN_MISSING')"
+
+5) Show a compact log for both:
+
+    echo "=== LOCAL HEAD LOG (last 5) ==="
+    git log --oneline -5
+
+    echo "=== ORIGIN/MAIN LOG (last 5) ==="
+    git log origin/main --oneline -5
+
+PHASE 3 — Full diff summary vs origin/main
+6) Show a **stat-only** diff between local HEAD and origin/main:
+
+    echo "=== DIFF VS origin/main (stat) ==="
+    git diff --stat origin/main...HEAD || echo "NO_DIFF_OR_ERROR"
+
+7) If there IS a diff, also show a concise list of changed paths:
+
+    echo "=== DIFF PATHS VS origin/main ==="
+    git diff --name-status origin/main...HEAD || echo "NO_PATH_DIFF"
+
+This tells us whether Replit code diverges from what’s on GitHub.
+
+PHASE 4 — Check presence of Levqor X / AI features in this repo
+8) List top-level app directories so we can see what actually exists:
+
+    echo "=== src/app DIRECTORY LIST ==="
+    ls -la src/app
+
+9) Show a shallow tree of important sections (marketing + AI):
+
+    echo "=== src/app SUBDIRS (depth 2) ==="
+    find src/app -maxdepth 2 -type d | sort
+
+10) Search for **AI components and Levqor X features**:
+
+    echo "=== SEARCH: AI components ==="
+    rg "AIOnboardingTutor|AIOnboarding|AIAssistant|Copilot|GrowthConsole|AgentConsole|WorkflowBuilder|NLWorkflow" src || echo "NO_AI_SYMBOLS_FOUND"
+
+11) Search for core Levqor X artifacts (workflows, status, Genesis, multi-tenancy indicators, etc.):
+
+    echo "=== SEARCH: Levqor X / workflows / status ==="
+    rg "workflow library|Workflow Library|Levqor X|Genesis|tenant_id|tenants|tenant_users|Omega|Hypergrowth" src || echo "NO_LEVQOR_X_SYMBOLS_FOUND"
+
+PHASE 5 — Check the API + backend pieces referenced by the site
+12) Show API routes and important backend-touching files (but DO NOT edit them):
+
+    echo "=== APP ROUTES (app/api) ==="
+    find src/app/api -maxdepth 3 -type f 2>/dev/null | sort
+
+    echo "=== KEY BACKEND/INTEGRATION FILES (if present) ==="
+    ls -la run.py 2>/dev/null || echo "run.py MISSING"
+    ls -la levqor.db 2>/dev/null || echo "levqor.db MISSING"
+
+PHASE 6 — Final verification snapshot
+13) Take a final snapshot of working tree cleanliness:
+
+    echo "=== FINAL GIT STATUS (should still be clean) ==="
+    git status --short
+
+──────────────────────────── OUTPUT + SUMMARY RULES ──────────────────────────
+
+In your FINAL ANSWER to the user:
+
+1. Paste back the **Local HEAD** and **origin/main** commit hashes.
+2. Clearly state one of:
+   - “Replit and origin/main are in sync (no diff).”
+   - OR “Replit and origin/main are NOT in sync,” and list how many files differ.
+3. Explicitly say whether AI / Levqor X components are present in this repo based on:
+   - Directory listings
+   - ripgrep results
+4. If AI components appear **missing**, specify exactly **which directories/files are missing** that we would expect (e.g. `src/components/ai/*`, `src/app/workflows/*`, etc.).
+5. Do NOT suggest any destructive git commands (reset, hard reset, force push, etc.). This phase is DIAGNOSTIC ONLY.
+6. Keep the summary tight and factual, in bullet points.
+
+Then stop.
+```0
