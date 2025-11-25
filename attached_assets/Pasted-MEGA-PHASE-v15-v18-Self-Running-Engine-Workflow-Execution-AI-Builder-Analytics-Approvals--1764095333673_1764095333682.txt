@@ -1,0 +1,231 @@
+MEGA PHASE v15–v18 — “Self-Running Engine + Workflow Execution + AI Builder + Analytics + Approvals”
+
+Goal:
+Close the core real-world gaps:
+- Add a real workflow execution engine (multi-step, loggable, schedulable).
+- Add AI-powered workflow builder via Levqor Brain.
+- Add scheduling + automation loop.
+- Add analytics + event history + basic docs.
+- Add approval system for high-impact actions (Class C).
+Everything must respect existing safety, CI, layout, and auth.
+
+DO NOT:
+- Break auth or billing flows.
+- Redesign UI layouts.
+- Remove existing working logic without clear justification.
+- Add heavy new deps unless strictly necessary.
+
+GLOBAL GUARDRAILS:
+- Scan before editing; no blind code.
+- Respect feature flags, reduced-motion, i18n.
+- Respect Class A/B/C impact model:
+  - A: safe internal auto, no approval.
+  - B: soft-impact auto, logged.
+  - C: critical (money/data/infra) → requires approval queue.
+- After all work: run `python scripts/ci/run_all_checks.py` from repo root and fix until PASS (4/4).
+
+=====================================================
+v15 — WORKFLOW EXECUTION ENGINE (BACKEND CORE)
+=====================================================
+1. Scan for any existing “workflow-like” structures:
+   - `api/ai/`, `modules/decision_engine/`, `modules/auto_intel/`, `modules/marketplace/`, `scripts/automation/`.
+
+2. Under `modules/`, create `workflows/` package:
+   - `modules/workflows/__init__.py`
+   - `modules/workflows/models.py`
+   - `modules/workflows/runner.py`
+   - `modules/workflows/events.py`
+
+3. In `models.py`, define minimal workflow schema (Python-level, not ORM-specific):
+   - `Workflow` (id, name, description, steps, owner/tenant_id, is_active, schedule_config [optional]).
+   - `WorkflowStep` with:
+     - `id`
+     - `type` (`"http_request" | "email" | "delay" | "condition" | "log"`)
+     - `config` (dict)
+     - `next_step_ids` (list of ids)
+   - Keep types serializable (JSON-encodable).
+
+4. In `events.py`, define event logging primitives:
+   - `record_workflow_run_start`, `record_workflow_run_end`, `record_workflow_step_event`.
+   - Use `db_wrapper` and existing DB conventions.
+   - If no suitable tables exist:
+     - Create minimal schema via existing migration style (e.g. `workflow_runs`, `workflow_events`) OR
+     - Implement a thin abstraction with clear TODO notes for proper migrations.
+
+5. In `runner.py`, implement:
+   - `run_workflow(workflow_id: str, context: dict) -> RunResult`
+   - Support at least:
+     - `http_request`: perform simple HTTP call using requests module (GET/POST, headers, body).
+     - `delay`: sleep for a specified number of seconds (with safety cap).
+     - `log`: write log entries to `workflow_events`.
+   - Email steps:
+     - For now, mark `email` step as Class C:
+       - DO NOT send real emails in this phase.
+       - Instead, log an event “PENDING_EMAIL_SEND” with payload.
+       - This will be bound to approval system later.
+
+6. Add a small, internal Python API to fetch workflows and steps using db_wrapper.
+
+7. Add a backend blueprint under `api/workflows/`:
+   - Endpoints (JSON, authenticated where appropriate):
+     - `GET /api/workflows` → list workflows (basic info).
+     - `GET /api/workflows/<id>` → detail.
+     - `POST /api/workflows` → create (Class C: creation stored but not auto-activated).
+     - `POST /api/workflows/<id>/run` → trigger manual run (Class B: logs run).
+   - Integrate into `run.py` blueprint registration.
+
+=====================================================
+v16 — AI WORKFLOW BUILDER (LEVQOR BRAIN)
+=====================================================
+8. Under `api/ai/`, add a builder endpoint, e.g. `api/ai/brain_builder.py`:
+   - Endpoint `POST /api/ai/brain/build_workflow`:
+     - Input: natural language request (`goal`, `context`, `approx_volume`, etc.).
+     - Use existing AI plumbing (`ai_advisor`, `decision_engine`) to:
+       - Propose a `Workflow` JSON in the schema defined in v15 (steps with types and configs).
+     - Return:
+       - `proposed_workflow`
+       - `explanation`
+       - `impact_level` (Class A/B/C, default C for anything involving external effects).
+
+9. In `modules/approval_policy/` (new module), implement:
+   - `class ImpactLevel(Enum): SAFE = "A", SOFT = "B", CRITICAL = "C"`
+   - Helpers:
+     - `classify_workflow(workflow) -> ImpactLevel`
+     - For now:
+       - If workflow has `email` or `http_request` to external domains → CRITICAL.
+       - If workflow is log-only/internal → SAFE or SOFT.
+
+10. Add a DB-backed approval queue:
+    - New module: `modules/approvals/queue.py`
+    - Functions:
+      - `enqueue_action(action_type, payload, reason, impact_level)`
+      - `list_pending_actions()`
+      - `approve_action(action_id)`
+      - `reject_action(action_id)`
+    - Use db_wrapper and existing DB idioms.
+    - action_type includes things like `"create_workflow"`, `"enable_schedule"`, `"send_emails"`.
+
+11. Connect builder → approvals:
+    - When AI builder proposes a workflow with ImpactLevel.CRITICAL:
+      - Insert into approval queue as `create_workflow`.
+      - Do NOT immediately create active workflow; mark as pending.
+    - For SAFE/SOFT proposals:
+      - Allow direct creation but still log via events.
+
+=====================================================
+v17 — FRONTEND BRAIN BUILDER UI + APPROVAL PANEL
+=====================================================
+12. In `levqor-site/src/components/brain/`, add:
+    - `BrainWorkflowBuilder.tsx`:
+      - Client component, using `useLevqorBrain`.
+      - UI:
+        - Textarea: “Describe what you want to automate.”
+        - Optional fields for frequency/volume.
+        - Button: “Ask Levqor Brain to design a workflow”.
+      - On submit:
+        - Call `/api/ai/brain/build_workflow`.
+        - Temporarily set Brain state to `neural`/`quantum`.
+        - Show returned workflow summary + explanation.
+        - If impact is CRITICAL:
+          - Show message: “This workflow needs approval before activation.”
+          - Call backend to enqueue approval and show confirmation.
+        - If SAFE/SOFT:
+          - Offer “Create workflow” button that calls `/api/workflows` endpoint.
+
+13. Integrate `BrainWorkflowBuilder`:
+    - In dashboard (e.g. a dedicated section or panel), not breaking existing layout:
+      - Add as “Create with Levqor Brain” section.
+      - Ensure mobile layout stacks nicely.
+
+14. Create a simple Approval Panel:
+    - New component: `src/components/dashboard/ApprovalPanel.tsx`
+      - Fetches pending actions from a backend endpoint (new API under `/api/approvals`).
+      - Shows list: type, created_at, reason, summary.
+      - Buttons: Approve / Reject → call backend.
+    - Add backend blueprint `api/approvals/`:
+      - `GET /api/approvals` → list pending (owner/admin only).
+      - `POST /api/approvals/<id>/approve`
+      - `POST /api/approvals/<id>/reject`
+    - Integrate ApprovalPanel into dashboard (owner/admin view).
+
+=====================================================
+v18 — SCHEDULING, ANALYTICS, EVENT HISTORY & DOCS
+=====================================================
+15. Scheduling:
+    - New script: `scripts/automation/workflow_scheduler.py`
+      - Uses db_wrapper and `modules/workflows` to:
+        - Find workflows with `schedule_config` and `is_active=True`.
+        - Check which ones should run “now” (simple interval or cron-like fields).
+        - Call runner to start them, logging runs/events.
+      - For THIS phase:
+        - Implement simple time-based logic (e.g. every X minutes/hours).
+      - Add notes in DEV_SAFETY.md:
+        - How to run via cron or external scheduler (e.g. `python scripts/automation/workflow_scheduler.py`).
+
+16. Analytics & Event History:
+    - Add a minimal analytics module: `modules/analytics/usage.py`
+      - Functions to aggregate:
+        - # workflows per tenant
+        - # workflow runs over last 7/30 days
+        - failure rate (% of failed runs)
+    - Add new dashboard component:
+      - `src/components/dashboard/AnalyticsPanel.tsx`
+      - Backend API (e.g. `/api/analytics/overview`) returning the above aggregates.
+      - Show simple charts or stats (counts, %). No heavy chart lib needed; text + bars are fine.
+
+    - For event history:
+      - Add a simple `WorkflowHistoryPanel.tsx`:
+        - Lists last N workflow runs with status (success/error), timestamps.
+        - Powered by a new backend endpoint (`/api/workflows/runs`).
+
+17. Docs:
+    - Under a new `/docs/` directory (backend root, not necessarily served publicly yet), add:
+      - `docs/real_world_alignment.md` (if not already there):
+        - ICP, real workflows, limits, manual approval rules.
+      - `docs/workflows.md`:
+        - Workflow schema, step types, examples.
+      - `docs/operations.md`:
+        - How to:
+          - Run scheduler
+          - Run weekly report
+          - Run auto_marketing_cycle
+          - Manage approvals
+
+=====================================================
+CLEANUP, I18N TOUCH, CI
+=====================================================
+18. Frontend:
+    - For any new labels/buttons in BrainWorkflowBuilder, ApprovalPanel, AnalyticsPanel, WorkflowHistoryPanel:
+      - Use existing i18n (messages + next-intl) when feasible in those files.
+      - If not fully wired, at least avoid hard-coded text where there is already an i18n pattern.
+
+19. BLUEPRINT & SAFETY:
+    - Update `BLUEPRINT_PROGRESS.md`:
+      - Mark v15–v18 items:
+        - Workflow engine: INITIAL IMPLEMENTED.
+        - Brain builder: INITIAL IMPLEMENTED.
+        - Approvals: INITIAL IMPLEMENTED.
+        - Scheduler: INITIAL IMPLEMENTED.
+        - Analytics panel: INITIAL IMPLEMENTED.
+        - Event history: INITIAL IMPLEMENTED.
+        - Docs stubs: DONE.
+
+    - Update `DEV_SAFETY.md`:
+      - Document:
+        - Approval model (Class A/B/C).
+        - How to run scheduler and what it does.
+        - Where builder + approvals live.
+
+20. Run from repo root:
+    - `python scripts/ci/run_all_checks.py`
+    Fix all failures (TS, lint, backend syntax, safety gate) and re-run until PASS (4/4).
+
+21. Final terminal summary (required):
+    - Files created/modified.
+    - How workflows are defined and executed.
+    - How Levqor Brain builder creates workflows and when it queues approvals.
+    - How approvals are viewed and processed in the dashboard.
+    - How scheduler is run.
+    - Where analytics/event history UI is.
+    - Where docs are located.
+    - Confirmation that `run_all_checks.py` passes.

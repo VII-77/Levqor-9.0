@@ -1,8 +1,29 @@
-# Levqor X 9.0 — V14.0 Revenue + Automation Core Edition
+# Levqor X 9.0 — V15.0 Hardening & Production-Ready Edition
 
 ## Overview
 
 Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions with complete automation core, auto-health monitoring, auto-scaling, auto-marketing, growth engine, and auto-reports.
+
+## Recent Changes (November 25, 2025)
+
+### V15 Hardening & Real-World Alignment
+
+**Summary:** Production hardening phase validating real-world readiness, performance monitoring, and auto-engine stability. All 4/4 safety checks passing.
+
+**Real-World Hardening:**
+- Repo-wide scan completed — no dead code found
+- No circular dependencies detected
+- 4 components reserved for future features (verified intentional)
+
+**Performance Metrics:**
+- LevqorBrainCanvas: Frame time monitoring (warns if avg >50ms/frame)
+- HealthOverview: Fetch timing (warns if >2000ms)
+
+**Auto-Engine Validation:**
+- All 6 engines tested: health_bp, scaling_policy, templates, referrals, auto_marketing_cycle, auto_weekly_report
+
+**ICP/Real-World Alignment:**
+- Created `/docs/real_world_alignment.md` with ICP, workflows, and guardrails
 
 ## User Preferences
 
