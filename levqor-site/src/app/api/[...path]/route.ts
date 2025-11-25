@@ -1,8 +1,14 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
 
-export async function GET(req: Request, { params }: { params: { path: string[] } }) {
+function buildTargetUrl(req: Request, params: { path: string[] }): string {
+  const reqUrl = new URL(req.url);
   const pathname = '/' + params.path.join('/');
-  const targetUrl = `${API_BASE}${pathname}`;
+  const search = reqUrl.search;
+  return `${API_BASE}${pathname}${search}`;
+}
+
+export async function GET(req: Request, { params }: { params: { path: string[] } }) {
+  const targetUrl = buildTargetUrl(req, params);
   
   try {
     const r = await fetch(targetUrl, {
@@ -30,8 +36,7 @@ export async function GET(req: Request, { params }: { params: { path: string[] }
 }
 
 export async function POST(req: Request, { params }: { params: { path: string[] } }) {
-  const pathname = '/' + params.path.join('/');
-  const targetUrl = `${API_BASE}${pathname}`;
+  const targetUrl = buildTargetUrl(req, params);
   
   try {
     const body = await req.text();
@@ -61,7 +66,7 @@ export async function POST(req: Request, { params }: { params: { path: string[] 
   }
 }
 
-export async function OPTIONS(req: Request) {
+export async function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: {

@@ -36,16 +36,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/pricing/layout.js"
     ],
-    "/workflows/daily/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/workflows/daily/page.js"
-    ],
-    "/workflows/library/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/workflows/library/page.js"
-    ],
     "/status/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -56,30 +46,40 @@
       "static/chunks/main-app.js",
       "static/chunks/app/docs/page.js"
     ],
+    "/workflows/daily/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/workflows/daily/page.js"
+    ],
+    "/workflows/library/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/workflows/library/page.js"
+    ],
     "/community/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/community/page.js"
     ],
-    "/privacy/page": [
+    "/signin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/privacy/page.js"
+      "static/chunks/app/signin/page.js"
     ],
-    "/dpa/page": [
+    "/signin/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dpa/page.js"
+      "static/chunks/app/signin/layout.js"
     ],
-    "/_not-found/page": [
+    "/signin/error": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/_not-found/page.js"
+      "static/chunks/app/signin/error.js"
     ],
-    "/gdpr/page": [
+    "/signin/loading": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/gdpr/page.js"
+      "static/chunks/app/signin/loading.js"
     ]
   }
 }

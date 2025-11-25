@@ -1,15 +1,10 @@
 {
   "/page": "app/page.js",
-  "/workflows/daily/page": "app/workflows/daily/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/workflows/library/page": "app/workflows/library/page.js",
-  "/status/page": "app/status/page.js",
   "/docs/page": "app/docs/page.js",
+  "/workflows/daily/page": "app/workflows/daily/page.js",
+  "/workflows/library/page": "app/workflows/library/page.js",
   "/community/page": "app/community/page.js",
-  "/privacy/page": "app/privacy/page.js",
-  "/dpa/page": "app/dpa/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
   "/api/[...path]/route": "app/api/[...path]/route.js",
-  "/gdpr/page": "app/gdpr/page.js",
-  "/pricing/page": "app/pricing/page.js"
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/signin/page": "app/signin/page.js"
 }
