@@ -168,3 +168,168 @@ If a deployment causes issues:
 1. Check `AUTO_CHANGELOG.md` for the last successful commit hash
 2. Use Replit's checkpoint rollback feature
 3. Or revert to the previous commit manually
+
+---
+
+## Auto-Health Monitoring (v11-v14)
+
+### Health Summary Endpoint
+
+The `/api/health/summary` endpoint provides lightweight health status:
+
+```bash
+curl http://localhost:8000/api/health/summary
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "app_up": true,
+  "db_ok": true,
+  "stripe_ok": true,
+  "error_count_24h": 0,
+  "last_incident_time": null,
+  "db_type": "postgresql",
+  "timestamp": 1732555000
+}
+```
+
+**Status Values:**
+- `healthy` — All systems operational
+- `warning` — Minor issues detected
+- `degraded` — Some systems impacted
+- `critical` — Major outage
+
+### Dashboard Integration
+
+The `HealthOverview` component displays health status in the dashboard sidebar.
+
+---
+
+## Auto-Scaling Policy (v11-v14)
+
+### Rate Limit Scaling
+
+The `security_core/scaling_policy.py` module provides logical auto-scaling for rate limits:
+
+```python
+from security_core.scaling_policy import choose_rate_limits, get_limit_for_endpoint
+
+# Get all limits for current load
+limits = choose_rate_limits(current_load=0.5)
+
+# Get limit for specific endpoint
+limit = get_limit_for_endpoint("/api/chat", current_load=0.7)
+```
+
+**Load Tiers:**
+- `low` (< 0.3) — More generous limits (2x default)
+- `medium` (0.3 - 0.6) — Standard limits
+- `high` (0.6 - 0.8) — Tighter limits (0.7x default)
+- `critical` (> 0.8) — Strict limits (0.5x default)
+
+**NOTE:** This is logical auto-scaling for rate limiting, not infrastructure scaling. Infrastructure-level autoscaling must be configured separately (e.g., Replit Autoscale).
+
+---
+
+## Automation Scripts (v11-v14)
+
+### Auto-Marketing Cycle
+
+Generates marketing recommendations based on user segments:
+
+```bash
+python scripts/automation/auto_marketing_cycle.py
+```
+
+**What It Does:**
+- Queries DB for new signups, active trials, inactive users
+- Proposes email campaigns per segment (welcome, nurture, winback)
+- Outputs recommendations to stdout and `logs/auto_marketing.log`
+- Does NOT send emails directly (TODO: wire to email provider)
+
+**Output:**
+```
+AUTO-MARKETING CYCLE STARTED
+Found 5 new signups in last 7 days
+Found 3 active trial users
+Found 2 inactive users (30+ days)
+
+SAMPLE RECOMMENDATIONS:
+  [HIGH] send_welcome_sequence
+    Segment: new_signup
+    Subject: Welcome to Levqor - Your Automation Journey Begins
+```
+
+### Auto-Weekly Report
+
+Generates weekly summary report of platform metrics:
+
+```bash
+python scripts/automation/auto_weekly_report.py
+```
+
+**What It Does:**
+- Aggregates metrics: new users, active users, API usage, revenue
+- Generates Markdown summary
+- Outputs to stdout and `logs/weekly_report.md`
+- TODO: Send via email or sync to Notion/Drive
+
+**Scheduling:**
+Suggest using cron or external scheduler to run weekly:
+```bash
+# Example cron entry (every Monday at 9am)
+0 9 * * 1 cd /path/to/levqor && python scripts/automation/auto_weekly_report.py
+```
+
+---
+
+## Growth Engine (v11-v14)
+
+### Starter Templates
+
+Access pre-built workflow templates:
+
+```python
+from modules.growth_engine import get_starter_templates, get_template_by_id
+
+# Get all templates
+templates = get_starter_templates()
+
+# Filter by category
+lead_templates = get_starter_templates(category="lead_capture")
+
+# Get specific template
+template = get_template_by_id("tpl_lead_capture_form")
+```
+
+**Categories:**
+- `lead_capture` — Lead forms and capture automation
+- `customer_support` — Email responders and support flows
+- `reporting` — Analytics and scheduled reports
+- `data_sync` — CRM and database sync
+- `notifications` — Slack and alert systems
+- `sales_automation` — Invoice and sales flows
+
+### Referral System
+
+Generate and track referral codes:
+
+```python
+from modules.growth_engine import generate_referral_code, record_referral, get_user_referrals
+
+# Generate code for user
+code = generate_referral_code(user_id="usr_123")  # e.g., "A1B2C3D4"
+
+# Record when someone signs up with code
+record_referral(code="A1B2C3D4", new_user_id="usr_456")
+
+# Get user's referral stats
+referrals = get_user_referrals(user_id="usr_123")
+```
+
+### Dashboard Integration
+
+- `GrowthPanel` component shows templates and referral link in dashboard
+- `HealthOverview` component shows system health status

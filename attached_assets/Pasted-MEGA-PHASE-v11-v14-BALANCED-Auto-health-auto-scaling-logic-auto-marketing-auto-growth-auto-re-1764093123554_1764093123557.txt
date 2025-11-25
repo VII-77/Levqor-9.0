@@ -1,0 +1,187 @@
+MEGA PHASE: v11–v14 BALANCED
+“Auto-health, auto-scaling logic, auto-marketing, auto-growth, auto-reports”
+
+You ALREADY have:
+- CI/CD harness: scripts/ci/run_all_checks.py, auto_upgrade_policy.yml, auto_deploy.py
+- Backend: run.py + api/ai, api/billing, api/support, api/usage, api/omega, etc.
+- Modules: auto_intel, ai_advisor, decision_engine, marketplace, governance, db_wrapper
+- Monitoring: scripts/monitoring/safety_gate_full.py, alerting.py
+- Automation: scripts/automation/*
+- Frontend: levqor-site (Next 14, brain UI, dashboard, pricing, i18n, etc.)
+Do NOT remove or rewrite working systems. Extend only.
+
+GUARDRAILS (MANDATORY):
+- Scan before edit, no blind creation.
+- Don’t break existing routes/layouts/auth.
+- Respect i18n, feature flags, reduced-motion.
+- No heavy new deps unless strictly necessary.
+- After all work: `python scripts/ci/run_all_checks.py` from repo root; fix everything until PASS (4/4).
+
+========================================
+A — AUTO-HEALTH + INCIDENT OVERVIEW
+========================================
+1. Scan:
+   - scripts/monitoring/safety_gate_full.py
+   - scripts/monitoring/alerting.py
+   - modules/auto_intel/, modules/governance/, modules/decision_engine/
+2. Create a simple backend health endpoint (if not already present) under api/, e.g.:
+   - GET /api/health/summary
+   It should:
+   - Call existing checks (safety_gate style OR cheap internal equivalents).
+   - Return JSON summary of:
+     - app_up (bool)
+     - db_ok (bool)
+     - stripe_ok (bool if cheap check exists)
+     - error_count (if easily derived from logs/DB)
+     - last_incident_time (optional)
+   No heavy queries; keep it lightweight.
+
+3. In levqor-site, create a dashboard component:
+   - `src/components/dashboard/HealthOverview.tsx`
+   - Fetches /api/health/summary on mount (client side).
+   - Shows simple status tiles (OK / Warning).
+   - Integrate into dashboard page in a non-destructive way (e.g. a small panel).
+
+========================================
+B — AUTO-SCALING LOGIC (SAFE LEVEL)
+========================================
+4. Scan `security_core/` and any rate limit/throttle logic.
+5. Add a small policy module, e.g. `security_core/scaling_policy.py`:
+   - Exposes functions like:
+     - `choose_rate_limits(current_load: float) -> dict`
+   - For now, implement simple tiers:
+     - Low load → more generous limits
+     - High load → tighter limits
+6. Wire this policy into wherever rate limiting config is computed (without breaking existing behavior):
+   - e.g., where API gateway / rate limiter is configured.
+   - Use a safe, simple heuristic:
+     - Read current load from an existing metric source OR stub with TODO.
+     - Apply chosen limits in memory only (no external infra changes).
+
+7. Document with comments that:
+   - This is “logical auto-scaling” for rate limiting, not infra scaling.
+   - Infrastructure-level autoscaling must be configured separately.
+
+========================================
+C — AUTO-MARKETING SEED (EMAIL + CONTENT)
+========================================
+8. Scan:
+   - scripts/automation/
+   - api/usage/, api/omega/, modules/ai_advisor, modules/auto_intel
+9. Under `scripts/automation/`, create:
+   - `auto_marketing_cycle.py`
+   Behavior:
+   - Query DB (via db_wrapper) for:
+     - New signups
+     - Active trials
+     - Recently churned or inactive tenants (last_login / last_activity)
+   - Use existing AI tooling (e.g., ai_advisor/decision_engine) to:
+     - Propose next actions per segment:
+       - “Send welcome sequence”
+       - “Nurture with case study”
+       - “Winback email”
+   - For THIS script:
+       - Output recommendations to stdout and/or a log file (e.g., logs/auto_marketing.log).
+       - Do NOT send emails directly; instead, generate subject + body suggestions and mark them clearly.
+   - Include clear TODO comments for wiring to external email provider.
+
+10. Add a short section in `DEV_SAFETY.md`:
+    - How to run: `python scripts/automation/auto_marketing_cycle.py`
+    - What it does.
+    - Where recommendations are logged.
+
+========================================
+D — AUTO-GROWTH SEED (TEMPLATES + REFERRALS)
+========================================
+11. Scan `modules/marketplace/` for existing patterns.
+
+12. Create a new module under `modules/growth_engine/` (folder with __init__.py), with at least:
+    - `templates.py`:
+      - Exposes a function like `get_starter_templates()` returning a list of simple template definitions (id, name, category, description).
+      - Use categories mapped to real Levqor use cases (e.g., “Lead Capture”, “Customer Support”, “Reporting”).
+    - `referrals.py`:
+      - Exposes:
+        - `generate_referral_code(user_id) -> str`
+        - `record_referral(code, new_user_id)`
+      - Use db_wrapper to store referral codes + counts in a simple table.
+      - If table does not exist, add a minimal migration or note a TODO (use the project’s existing migration pattern, do NOT invent a new system).
+
+13. In the dashboard (frontend):
+    - Add a small “Growth” panel component, e.g. `src/components/dashboard/GrowthPanel.tsx`:
+      - Shows:
+        - A list of starter templates with simple descriptions.
+        - A “View templates” button (for now, can be a TODO placeholder).
+        - A “Refer a friend” section:
+          - Shows a stub referral link (e.g., https://levqor.ai/?ref=YOURCODE) reading code from backend OR showing placeholder with TODO.
+    - Integrate GrowthPanel into the dashboard layout non-destructively.
+
+========================================
+E — AUTO-REPORTS (WEEKLY SUMMARY)
+========================================
+14. Under `scripts/automation/`, add:
+    - `auto_weekly_report.py`
+    Behavior:
+    - Aggregate simple metrics via db_wrapper:
+      - # new tenants
+      - # active users
+      - # workflows (if cheap to query)
+      - revenue or MRR snapshot (if easily available through Stripe usage data)
+    - Generate a plaintext or Markdown summary.
+    - Print it to stdout and/or write to `logs/weekly_report.md`.
+    - Include a clear TODO for sending it via email or to Notion/Drive later.
+
+15. In `DEV_SAFETY.md` or a new ops doc:
+    - Describe:
+      - How to run the weekly report.
+      - Where the output is stored.
+      - Suggest using a cron/Make/External scheduler to run it automatically.
+
+========================================
+F — FRONTEND WIRES + I18N TOUCH
+========================================
+16. On the dashboard:
+    - Ensure the new components:
+      - `HealthOverview`
+      - `GrowthPanel`
+      - (Existing Brain UI)
+      are laid out cleanly and not overlapping.
+    - Respect mobile layout: stack gracefully.
+
+17. On the frontend copy:
+    - For any new text added to homepage or dashboard that is user-facing:
+      - Use existing i18n pattern (messages + next-intl) where feasible.
+      - At minimum, avoid hard-coded English in critical labels if i18n structure already exists in that file.
+
+========================================
+G — DOCS + BLUEPRINT + SAFETY HARNESS
+========================================
+18. Update `BLUEPRINT_PROGRESS.md`:
+    - Mark:
+      - Auto-health endpoint + dashboard summary as DONE.
+      - Auto-scaling policy (rate-limiting logic) as INITIAL IMPLEMENTED.
+      - Auto-marketing cycle script as INITIAL IMPLEMENTED.
+      - Growth engine seeds (templates + referrals) as INITIAL IMPLEMENTED.
+      - Weekly report script as INITIAL IMPLEMENTED.
+    - Note clearly that:
+      - Scripts are ready to be scheduled externally.
+      - Email sending + deeper integrations are TODO.
+
+19. Update `DEV_SAFETY.md` with a short section:
+    - How to run:
+      - `python scripts/automation/auto_marketing_cycle.py`
+      - `python scripts/automation/auto_weekly_report.py`
+    - How to interpret their outputs.
+    - Mention that they are safe: they only read DB + write logs; no external calls.
+
+20. Run from repo root:
+    - `python scripts/ci/run_all_checks.py`
+    Fix any errors (TS, lint, syntax, safety gate) and re-run until PASS.
+
+21. Final terminal summary (required):
+    - List files created/modified.
+    - How a maintainer can:
+      - Check health (/api/health/summary + HealthOverview component).
+      - Use auto_marketing_cycle.
+      - Use growth_engine templates/referrals.
+      - Use auto_weekly_report.
+    - Confirm `python scripts/ci/run_all_checks.py` passes.

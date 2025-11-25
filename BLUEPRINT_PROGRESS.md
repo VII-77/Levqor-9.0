@@ -96,7 +96,7 @@ These components are fully implemented and tested:
   - Sound intensity uses refs for animation loop updates
   - Feature flag guards prevent unnecessary WebGL/audio initialization
 
-### Revenue + Automation Core (v11/v12/v13 PARTIAL)
+### Revenue + Automation Core (v11/v12/v13/v14 COMPLETE)
 - **v11 Revenue Funnel**:
   - Pricing page with 4 tiers (Starter £9, Launch £29, Growth £59, Agency £149)
   - DFY packages and add-ons with live Stripe checkout
@@ -114,6 +114,35 @@ These components are fully implemented and tested:
 - **v13 i18n Funnel**:
   - 9 language files with translated CTAs (en, de, fr, es, it, pt, ar, hi, zh-Hans)
   - Language switcher on pricing page
+
+### Auto-Health + Monitoring (v14 COMPLETE)
+- **Health Summary Endpoint**: `/api/health/summary` returns app_up, db_ok, stripe_ok, error_count
+- **Dashboard HealthOverview**: Client component fetches and displays system health
+- **Location**: `api/health/summary.py`, `levqor-site/src/components/dashboard/HealthOverview.tsx`
+
+### Auto-Scaling Logic (v14 INITIAL IMPLEMENTED)
+- **Scaling Policy Module**: `security_core/scaling_policy.py` with load-based rate limit adjustment
+- **Functions**: `choose_rate_limits()`, `get_limit_for_endpoint()`
+- **Load Tiers**: low, medium, high, critical with corresponding limit profiles
+- **NOTE**: Logical auto-scaling only; infrastructure scaling configured separately
+
+### Auto-Marketing Cycle (v14 INITIAL IMPLEMENTED)
+- **Script**: `scripts/automation/auto_marketing_cycle.py`
+- **Behavior**: Queries DB for user segments, proposes email campaigns
+- **Output**: Recommendations logged to `logs/auto_marketing.log`
+- **TODO**: Wire to email provider (Resend, SendGrid)
+
+### Growth Engine (v14 INITIAL IMPLEMENTED)
+- **Templates Module**: `modules/growth_engine/templates.py` with 8 starter templates
+- **Referrals Module**: `modules/growth_engine/referrals.py` with code generation and tracking
+- **Dashboard GrowthPanel**: Shows templates and referral link
+- **Categories**: lead_capture, customer_support, reporting, data_sync, notifications, sales_automation
+
+### Auto-Weekly Report (v14 INITIAL IMPLEMENTED)
+- **Script**: `scripts/automation/auto_weekly_report.py`
+- **Behavior**: Aggregates metrics (users, API usage, revenue), generates Markdown report
+- **Output**: Report saved to `logs/weekly_report.md`
+- **TODO**: Schedule with cron, send via email or sync to Notion
 
 ---
 
@@ -199,6 +228,11 @@ These are referenced in v10-v14 plans but not yet implemented:
 | Safety Gate | DONE | `scripts/monitoring/safety_gate_full.py` |
 | i18n | DONE | `levqor-site/messages/` |
 | Auto-Deploy | DONE | `scripts/ci/auto_deploy.py` |
+| Auto-Health | DONE | `api/health/summary.py` |
+| Auto-Scaling | INITIAL | `security_core/scaling_policy.py` |
+| Auto-Marketing | INITIAL | `scripts/automation/auto_marketing_cycle.py` |
+| Growth Engine | INITIAL | `modules/growth_engine/` |
+| Auto-Reports | INITIAL | `scripts/automation/auto_weekly_report.py` |
 | Partner API | PARTIAL | `modules/partner_api/` |
 | Enterprise SSO | NOT FOUND | - |
 | White-Label | NOT FOUND | - |

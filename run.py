@@ -961,6 +961,7 @@ from api.omega.dashboard import bp as omega_dashboard_bp
 from api.privacy import privacy_bp
 from api.workflows import workflows_bp
 from api.community import community_bp
+from api.health.summary import health_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -980,6 +981,7 @@ app.register_blueprint(omega_dashboard_bp)
 app.register_blueprint(privacy_bp)
 app.register_blueprint(workflows_bp)
 app.register_blueprint(community_bp)
+app.register_blueprint(health_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():

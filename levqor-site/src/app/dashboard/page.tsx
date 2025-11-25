@@ -7,6 +7,8 @@ import AIHelpPanel from "@/components/ai/AIHelpPanel";
 import LifecycleBanner from "@/components/LifecycleBanner";
 import DashboardOnboarding from "@/components/DashboardOnboarding";
 import QuickstartPanel from "@/components/dashboard/QuickstartPanel";
+import HealthOverview from "@/components/dashboard/HealthOverview";
+import GrowthPanel from "@/components/dashboard/GrowthPanel";
 import { DashboardBrainCanvas } from "@/components/brain";
 import DashboardClientWrapper from "@/components/dashboard/DashboardClientWrapper";
 import type { Metadata } from 'next'
@@ -124,7 +126,11 @@ export default async function Dashboard(){
           </div>
           
           <div className="space-y-6">
+            <HealthOverview />
+            
             <AnalyticsWidget />
+            
+            <GrowthPanel />
             
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
