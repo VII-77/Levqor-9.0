@@ -6,6 +6,7 @@ import AnalyticsWidget from "@/components/AnalyticsWidget";
 import AIHelpPanel from "@/components/ai/AIHelpPanel";
 import LifecycleBanner from "@/components/LifecycleBanner";
 import DashboardOnboarding from "@/components/DashboardOnboarding";
+import QuickstartPanel from "@/components/dashboard/QuickstartPanel";
 import { DashboardBrainCanvas } from "@/components/brain";
 import DashboardClientWrapper from "@/components/dashboard/DashboardClientWrapper";
 import type { Metadata } from 'next'
@@ -78,6 +79,8 @@ export default async function Dashboard(){
             </div>
           </div>
         </div>
+        
+        <QuickstartPanel className="mb-6" />
         
         <DashboardOnboarding />
         

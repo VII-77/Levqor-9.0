@@ -1,20 +1,48 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import SupportForm from "@/components/SupportForm";
 
 export const metadata: Metadata = {
   title: "Support",
-  description: "Get help with Levqor - documentation, guides, and contact options for technical support.",
+  description: "Get help with Levqor - AI-powered first-line support, documentation, guides, and contact options.",
 };
 
 export default function SupportPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <h1 className="text-5xl font-bold text-gray-900 mb-4">Support & Help Center</h1>
           <p className="text-xl text-gray-600">
             Get help with Levqor. We're here to assist you.
           </p>
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-blue-50 border border-blue-200 rounded-2xl p-8 mb-12">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-3xl">🧠</span>
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">AI-Powered Support</h2>
+              <p className="text-gray-600">Get instant answers from Levqor Brain</p>
+            </div>
+          </div>
+          <p className="text-gray-700 mb-4">
+            Our AI assistant handles first-line questions instantly. For complex issues 
+            that need human attention, we'll automatically escalate to our support team.
+          </p>
+          <div className="flex flex-wrap gap-3 text-sm">
+            <span className="bg-white/70 px-3 py-1.5 rounded-full text-gray-700">
+              ✓ Instant answers to common questions
+            </span>
+            <span className="bg-white/70 px-3 py-1.5 rounded-full text-gray-700">
+              ✓ Auto-escalation for complex issues
+            </span>
+            <span className="bg-white/70 px-3 py-1.5 rounded-full text-gray-700">
+              ✓ 24/7 availability
+            </span>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-12">
@@ -63,7 +91,12 @@ export default function SupportPage() {
           </div>
         </div>
 
-        <div className="bg-blue-50 rounded-xl p-8 mt-12">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Contact Us</h2>
+          <SupportForm />
+        </div>
+
+        <div className="bg-blue-50 rounded-xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Common Questions</h2>
           <div className="space-y-4">
             <div>

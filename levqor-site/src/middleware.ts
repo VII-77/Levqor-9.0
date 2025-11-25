@@ -70,6 +70,8 @@ export default auth((req) => {
     "/builder",
     "/onboarding",
     "/legal",
+    "/welcome",
+    "/auth",
   ]
   
   if (

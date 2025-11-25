@@ -96,6 +96,25 @@ These components are fully implemented and tested:
   - Sound intensity uses refs for animation loop updates
   - Feature flag guards prevent unnecessary WebGL/audio initialization
 
+### Revenue + Automation Core (v11/v12/v13 PARTIAL)
+- **v11 Revenue Funnel**:
+  - Pricing page with 4 tiers (Starter £9, Launch £29, Growth £59, Agency £149)
+  - DFY packages and add-ons with live Stripe checkout
+  - Homepage → Pricing → Checkout → Welcome flow wired
+  - Post-checkout `/welcome` page with Brain branding
+  - Session verification API (`/api/billing/verify-session`)
+- **v11 Onboarding**:
+  - Multi-step onboarding flow (`/onboarding`)
+  - QuickstartPanel in dashboard (first-time user detection)
+  - Brain-guided workflow creation prompt
+- **v12 Support Entry**:
+  - Enhanced `/support` page with AI-first messaging
+  - SupportForm component with contact form
+  - Support ticket API (`/api/support/ticket`)
+- **v13 i18n Funnel**:
+  - 9 language files with translated CTAs (en, de, fr, es, it, pt, ar, hi, zh-Hans)
+  - Language switcher on pricing page
+
 ---
 
 ## PARTIALLY DONE (Needs Work)

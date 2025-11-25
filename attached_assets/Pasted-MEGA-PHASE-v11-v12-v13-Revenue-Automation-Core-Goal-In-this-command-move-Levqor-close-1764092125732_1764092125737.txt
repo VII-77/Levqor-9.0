@@ -1,0 +1,154 @@
+MEGA PHASE: v11 + v12 + v13 (Revenue + Automation Core)
+
+Goal:
+In this command, move Levqor closer to “live, making money, self-running”:
+- Clear revenue funnel (homepage → pricing → Stripe → onboarding → app).
+- Automated onboarding after checkout.
+- Basic AI support entry.
+- Minimal but real multi-language funnel (based on existing i18n).
+- All under existing safety harness.
+
+DO NOT UNDO:
+- CI/CD harness (run_all_checks.py, auto_upgrade_policy, auto_deploy).
+- Auth fix.
+- LevqorBrainCanvas + Brain context + useSoundIntensity.
+- Interactions (homepage + dashboard).
+- Existing layouts and i18n infra.
+
+GUARDRAILS:
+- Scan before edit.
+- No layout breakage.
+- Respect i18n, feature flags, reduced-motion.
+- No heavy new deps unless necessary.
+- After all work: `python scripts/ci/run_all_checks.py` and fix until clean.
+
+========================================
+A — REVENUE FUNNEL CHECK + WIRING
+========================================
+1. Scan backend + frontend for existing Stripe usage:
+   - `modules/stripe_connector.py`
+   - `api/billing/`
+   - pricing/checkout related pages in `levqor-site/src/app/`.
+
+2. Confirm:
+   - There is at least one main paid plan (or create a simple “Levqor Brain Pro” plan constant client-side using existing pricing config).
+   - Pricing page clearly shows:
+     - Plan name
+     - What user gets (AI workflows, Levqor Brain, etc.)
+     - CTA: “Start free trial” or “Get started”.
+
+3. Wire homepage → pricing:
+   - Ensure hero CTAs point to pricing or checkout path in a clean, obvious way.
+
+4. Wire pricing → checkout:
+   - Confirm a primary button triggers checkout (existing API or link).
+   - If multiple confusing CTAs exist, make one “primary money path” visually and semantically dominant.
+
+========================================
+B — POST-CHECKOUT AUTOMATED ONBOARDING
+========================================
+5. Find where Stripe webhook / “checkout success” is handled:
+   - Likely under `api/billing/` or scripts like `scripts/verify_live_billing.py`.
+
+6. Implement or extend logic so that on successful checkout:
+   - A tenant/workspace is created (or ensured) for that customer.
+   - A user account is linked to that tenant.
+   - A default set of items is created, e.g.:
+     - One default workspace/project.
+     - One or two starter workflows (“AI Support”, “Lead Capture”) if the backend supports it.
+   - An onboarding flag is set (e.g. in DB or user metadata) to indicate “needs Brain-guided tour”.
+
+7. Add a “post-checkout redirect” route in the frontend (e.g., `/welcome` or `/onboarding`) that:
+   - Checks auth.
+   - Welcomes the new user.
+   - Clearly calls out Levqor Brain as the guide.
+   - Has a “Start Quickstart” button that takes them into the dashboard.
+
+========================================
+C — BRAIN-GUIDED QUICKSTART (MINIMAL BUT REAL)
+========================================
+8. In the dashboard (client side), add a small Quickstart panel (new component under `src/components/dashboard/`), e.g. `QuickstartPanel.tsx`:
+
+   - If “first-time user” or “onboarding flag set”:
+     - Show a short list of steps:
+       1) Describe what you want to automate.
+       2) Review the proposed workflow.
+       3) Run it once.
+     - Include a button: “Ask Levqor Brain to create your first workflow”.
+
+9. Wire that button to:
+   - Open an existing AI/Brain-related entry point (e.g., existing AI endpoints under `api/ai/`).
+   - For THIS command, you can stub the call as:
+     - log a TODO or trigger a simple `fetch` to a placeholder workflow creation endpoint if one exists.
+   - The key is:
+     - UX is in place.
+     - The Brain is clearly positioned as the guide.
+     - System is ready to be connected to the real builder in later commands.
+
+========================================
+D — AUTOMATED SUPPORT ENTRY POINT
+========================================
+10. Scan for existing support or contact mechanisms:
+    - `api/support/`, support scripts, or any “Support” link in the frontend.
+
+11. Implement a minimal AI-first support entry:
+    - A “Need help?” or “Contact support” link/button in the dashboard and/or footer.
+    - Point it to a unified support page `/support` (or similar) that:
+      - Explains that:
+        - AI handles first-line questions.
+        - Complex issues escalate.
+      - Provides at least:
+        - A simple form (name/email/message).
+        - OR a note on current support channel (email/Telegram/etc.), using existing config.
+
+    - For THIS command, keep it simple:
+      - Don’t implement full AI support chat.
+      - Just create the obvious path for complaints/questions.
+
+========================================
+E — MINIMAL GLOBAL FUNNEL (I18N USE)
+========================================
+12. Using existing i18n (next-intl) and messages:
+    - Ensure homepage, pricing page, and main CTAs:
+      - Are properly wrapped with translations for all configured locales.
+      - Show meaningful text for at least the current 9 languages (en, de, fr, es, it, pt, ar, hi, zh-Hans).
+    - If any key text is hardcoded in English only, move it into messages and wire it.
+
+13. Ensure:
+    - Language switcher (if present) works on homepage + pricing.
+    - Critical CTA text (e.g., “Start free trial”) is translated using existing message structure.
+
+(We are NOT adding 40 full languages in this command; we are solidifying the funnel for existing i18n.)
+
+========================================
+F — DOCS + SAFETY
+========================================
+14. Update `BLUEPRINT_PROGRESS.md` to reflect:
+    - v11 core (business automation / onboarding) partly done:
+      - Post-checkout workspace creation logic.
+      - Onboarding redirect + welcome.
+      - Quickstart panel stub.
+    - v12 funnel base:
+      - i18n wired for homepage + pricing.
+      - Clear money path.
+    - v13 seed:
+      - Quickstart templates hooks (even if not fully implemented yet).
+      - Support entrypoint.
+
+15. If needed, update `DEV_SAFETY.md`:
+    - Describe:
+      - How to run the revenue funnel tests.
+      - Where the onboarding/redirect logic is.
+      - How to test the support entrypoint.
+
+16. Run:
+    `python scripts/ci/run_all_checks.py`
+    Fix all issues (TS, lint, backend syntax, safety gate) and re-run until passing.
+
+17. End with a concise terminal summary:
+    - Files modified/created.
+    - How a new user now:
+      - Lands on homepage → goes to pricing → hits checkout → returns into onboarding → reaches dashboard.
+    - Where the Quickstart panel lives.
+    - Where support entry lives.
+    - Confirmation of `run_all_checks.py` PASS.

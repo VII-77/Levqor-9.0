@@ -1,10 +1,42 @@
-# Levqor X 9.0 — V13.8 Living Canvas Edition
+# Levqor X 9.0 — V14.0 Revenue + Automation Core Edition
 
 ## Overview
 
 Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication with guaranteed login path, auth diagnostics, Living Canvas brain visualization, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions.
 
 ## Recent Changes (November 25, 2025)
+
+### V14 Revenue + Automation Core (November 25, 2025)
+
+**Summary:** Delivered complete post-checkout revenue funnel, dashboard QuickstartPanel for brain-guided onboarding, and enhanced support page with AI-first messaging.
+
+**Revenue Funnel:**
+- **Welcome Page** (`/welcome`) — Post-checkout success page with Brain branding
+- **Session Verification** — `/api/billing/verify-session` validates Stripe checkout sessions
+- **Checkout Update** — Redirects to `/welcome` instead of `/success`
+- **Pricing Page** — 4 subscription tiers (£9/29/59/149) + DFY packages with live Stripe checkout
+
+**Dashboard Quickstart:**
+- **QuickstartPanel Component** — Brain-guided workflow creation prompt
+- **First-Time Detection** — Shows expanded panel for new users
+- **AI Workflow Creation** — Direct input to describe automation in plain English
+- **State Integration** — Uses LevqorBrainContext for visual feedback
+
+**Support Enhancement:**
+- **AI-First Messaging** — Prominent AI-powered support banner
+- **SupportForm Component** — Contact form with categories
+- **Ticket API** — `/api/support/ticket` endpoint for submissions
+- **24/7 Availability** — Auto-escalation for complex issues
+
+**Key Files:**
+- `levqor-site/src/app/welcome/page.tsx` — Post-checkout welcome page
+- `levqor-site/src/components/dashboard/QuickstartPanel.tsx` — Dashboard quickstart
+- `levqor-site/src/components/SupportForm.tsx` — Contact form component
+- `levqor-site/src/app/api/billing/verify-session/route.ts` — Session verification
+- `levqor-site/src/app/api/support/ticket/route.ts` — Support ticket endpoint
+
+**i18n:**
+- 9 language files with translated CTAs (en, de, fr, es, it, pt, ar, hi, zh-Hans)
 
 ### V10 FINAL — Living Canvas Complete (November 25, 2025)
 

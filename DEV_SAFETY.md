@@ -75,6 +75,28 @@ brain.setState(nextState);
 
 ---
 
+## Revenue Funnel Testing
+
+### User Journey
+1. **Homepage** → Primary CTA links to `/signin`, secondary to `/pricing`
+2. **Pricing** → 4 subscription tiers + DFY packages with Stripe checkout
+3. **Checkout** → Stripe-hosted payment flow
+4. **Welcome** → `/welcome?session_id=...` post-checkout success page
+5. **Dashboard** → QuickstartPanel prompts first-time users
+
+### Key Endpoints
+- `POST /api/billing/checkout` — Creates Stripe checkout session
+- `GET /api/billing/verify-session` — Verifies post-checkout session
+- `POST /api/support/ticket` — Submits support ticket
+
+### Where Things Live
+- **Welcome Page**: `levqor-site/src/app/welcome/page.tsx`
+- **QuickstartPanel**: `levqor-site/src/components/dashboard/QuickstartPanel.tsx`
+- **Support Form**: `levqor-site/src/components/SupportForm.tsx`
+- **Onboarding Flow**: `levqor-site/src/app/onboarding/page.tsx`
+
+---
+
 ## Master Safety Command
 
 Before any deployment or major code changes, run the master safety command:
