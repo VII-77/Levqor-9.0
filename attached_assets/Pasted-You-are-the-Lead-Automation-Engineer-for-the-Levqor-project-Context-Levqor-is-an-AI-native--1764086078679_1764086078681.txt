@@ -1,0 +1,147 @@
+You are the Lead Automation Engineer for the Levqor project.
+
+Context:
+- Levqor is an AI-native, multi-tenant SaaS platform.
+- We are in the final 33 hours before full v10–v14 launch.
+- The blueprint is frozen; no re-architecture or big rewrites.
+- Your job is to BUILD ON TOP of what exists, not redo it.
+- Auto-deploy is enabled with HYBRID safety: you may change any file, but only deploy after strong tests and safety checks pass.
+
+Global rules (MUST FOLLOW AT ALL TIMES):
+1. Never assume something is missing. FIRST, scan the repo and confirm whether it already exists.
+2. After EVERY change:
+   - Show a clear `git diff` summary.
+   - Run the full safety pipeline.
+   - Stop immediately if anything fails and fix it.
+3. ALWAYS verify results using real outputs:
+   - `grep` / `rg` in files to confirm code.
+   - `curl` or equivalent for key endpoints, if runnable.
+   - Render critical pages locally and check generated HTML where possible.
+4. Treat “build succeeded” or “tests passed” as NOT enough:
+   - Also check that the intended behavior is actually present in the code or output.
+5. Do NOT remove or rewrite existing working systems unless strictly necessary.
+6. Commit in small, logical chunks with clear messages.
+7. Keep a running log in a file called `AUTO_CHANGELOG.md` at the repo root describing each change in simple English.
+
+Your tasks for this command:
+
+PHASE 0 – DISCOVERY (NO WRITES YET)
+-----------------------------------
+1. Inspect the repository layout and produce a short, structured summary:
+   - Frontend app(s) (e.g., `levqor-site`).
+   - Backend/API services.
+   - Scripts (`scripts/monitoring`, etc.).
+   - Any existing i18n / localization code.
+   - Any existing AI engine / DSL / workflow code.
+   - Any CI or deployment scripts.
+2. Identify and list:
+   - Where auth & Stripe are implemented.
+   - Where monitoring and the “safety gate” script lives.
+   - Where multi-tenancy logic lives (tenants, tenant_users, etc.).
+3. Output your findings clearly in the terminal so the human can read them later.
+
+PHASE 1 – SAFETY & TEST HARNESS STANDARDIZATION
+-----------------------------------------------
+Goal: define a single master safety command for future auto-upgrades.
+
+4. Locate any existing commands/scripts for:
+   - Running tests (e.g., `npm test`, `npm run test`, `pytest`, etc.).
+   - Running type checks (`npm run lint`, `npm run typecheck`, `mypy`, etc.).
+   - Running monitoring / safety scripts (e.g., `python scripts/monitoring/safety_gate_full.py`).
+5. If a file like `scripts/monitoring/safety_gate_full.py` exists:
+   - Open it and understand what it checks.
+   - DO NOT delete or rewrite it; only extend or wrap it if needed.
+6. Create a new Python script at `scripts/ci/run_all_checks.py` that:
+   - Sequentially runs:
+     - Frontend tests (if any).
+     - Backend tests (if any).
+     - Lint and/or type checks (where configured).
+     - The safety gate script.
+   - Exits non-zero if ANY step fails.
+   - Prints a clear summary of results.
+
+7. Add documentation in `README.md` or a `DEV_SAFETY.md` file describing:
+   - How to run the master safety command.
+   - What it checks.
+   - What “pass” vs “fail” means.
+
+Verification required for Phase 1:
+- Show the contents of `scripts/ci/run_all_checks.py`.
+- Show the updated doc section you added.
+- Run `python scripts/ci/run_all_checks.py` and show the full output.
+- If anything fails, fix the immediate issue (if local and small), re-run, and document what you did.
+
+PHASE 2 – AUTO-UPGRADE POLICY CONFIG
+------------------------------------
+8. Create a YAML file at the repo root called `auto_upgrade_policy.yml` with two sections:
+   - `critical_modules`: list paths/patterns for:
+     - Auth & login.
+     - Billing & Stripe integration.
+     - Database migrations.
+     - Core backend API logic.
+   - `non_critical_modules`: list paths/patterns for:
+     - Marketing pages.
+     - Docs.
+     - Email templates.
+     - UI copy and non-essential frontend components.
+9. Populate these lists based on what you discovered in Phase 0.
+
+10. Add a small helper script at `scripts/ci/check_change_scope.py` that:
+    - Given a list of changed files (e.g., from `git diff --name-only`),
+    - Prints whether the change touches critical modules, non-critical modules, or both.
+    - This will be used later by the auto-upgrade engine.
+
+Verification required for Phase 2:
+- Show the contents of `auto_upgrade_policy.yml`.
+- Show the contents of `scripts/ci/check_change_scope.py`.
+- Demonstrate running the script against a simulated list of files or current `git diff`.
+
+PHASE 3 – AUTO-DEPLOY SCRIPT SKELETON
+-------------------------------------
+11. Create a script at `scripts/ci/auto_deploy.py` that:
+    - Assumes we are on the correct branch (e.g., `main`).
+    - Runs `python scripts/ci/run_all_checks.py`.
+    - If checks pass:
+      - (For now) prints a message like “SAFE TO DEPLOY”.
+      - Appends a timestamped entry to `AUTO_CHANGELOG.md` with the last commit hash and a short summary.
+    - Does NOT yet call any external deployment API (Vercel/Replit) — we will wire that later.
+
+12. Ensure this script:
+    - Fails fast if checks fail.
+    - Exits with 0 only on complete success.
+
+Verification required for Phase 3:
+- Show the contents of `scripts/ci/auto_deploy.py`.
+- Run it once and show the output (it may say “SAFE TO DEPLOY” or fail if tests currently fail; if they fail, note and do NOT hide it).
+
+PHASE 4 – CLASSIFICATION OF EXISTING WORK
+-----------------------------------------
+13. Based on everything discovered:
+    - Create or update a file `BLUEPRINT_PROGRESS.md` summarizing:
+      - Items that are clearly DONE (AI engine parts, multi-tenancy, auth, Stripe, etc.).
+      - Items that appear PARTIALLY DONE.
+      - Items NOT FOUND that will need building in later phases (v10–v14).
+
+14. Make sure the summary is written in simple English so a non-technical founder can read it and immediately see:
+    - What is already in place.
+    - What is missing.
+
+Verification required for Phase 4:
+- Show the contents of `BLUEPRINT_PROGRESS.md`.
+
+GENERAL REQUIREMENTS:
+- For EVERY file you create or modify:
+  - Show the path.
+  - Show a short excerpt of the change (diff or snippet).
+- After all changes:
+  - Run `python scripts/ci/run_all_checks.py` one final time.
+  - Report clearly whether it passed or failed.
+  - If it fails on something major that you cannot fix safely in this command, document it in `BLUEPRINT_PROGRESS.md` under a clear “ISSUES TO FIX” section.
+
+Do NOT proceed to building new v10+ features in this command.
+This command is ONLY for:
+- Discovery
+- Safety harness
+- Auto-upgrade policy config
+- Auto-deploy skeleton
+- Progress classification
