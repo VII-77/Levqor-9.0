@@ -1,0 +1,74 @@
+{
+  "common": {
+    "learnMore": "Learn more",
+    "getStarted": "Get Started",
+    "startTrial": "Start free trial",
+    "seePricing": "See pricing",
+    "contact": "Contact",
+    "signIn": "Sign In"
+  },
+  "hero": {
+    "title": "Automate work. Ship faster. Pay only for results.",
+    "subtitle": "Levqor runs your workflows, monitors failures, and self-heals. Email, Sheets, Slack, CRM, and more.",
+    "cta": "Start free trial"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "step1": {
+      "title": "Describe",
+      "description": "Tell Levqor what you want to automate in plain English"
+    },
+    "step2": {
+      "title": "Generate",
+      "description": "AI builds your complete workflow with triggers and actions"
+    },
+    "step3": {
+      "title": "Run",
+      "description": "Deploy instantly with self-healing and monitoring built-in"
+    }
+  },
+  "templates": {
+    "title": "Template Gallery",
+    "subtitle": "Start with pre-built workflows for common use cases",
+    "categories": {
+      "all": "All",
+      "marketing": "Marketing",
+      "sales": "Sales",
+      "operations": "Operations",
+      "hr": "HR",
+      "finance": "Finance"
+    }
+  },
+  "builder": {
+    "title": "AI Workflow Builder",
+    "placeholder": "Describe what you want to automate...",
+    "generate": "Generate with AI",
+    "userType": {
+      "individual": "Individual",
+      "business": "Business"
+    }
+  },
+  "pricing": {
+    "title": "Simple, transparent pricing",
+    "subtitle": "Start with a 7-day free trial. No credit card required.",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "starter": {
+      "name": "Starter",
+      "price": "9",
+      "period": "month",
+      "features": ["5 workflows", "1,000 runs/month", "Email support"]
+    }
+  },
+  "concierge": {
+    "title": "Levqor Assistant",
+    "placeholder": "Ask anything about Levqor...",
+    "greeting": "Hi! I'm the Levqor AI assistant. How can I help you today?"
+  },
+  "footer": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "cookies": "Cookie Policy",
+    "contact": "Contact"
+  }
+}

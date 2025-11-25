@@ -1,0 +1,74 @@
+{
+  "common": {
+    "learnMore": "Más información",
+    "getStarted": "Empezar",
+    "startTrial": "Prueba gratis",
+    "seePricing": "Ver precios",
+    "contact": "Contacto",
+    "signIn": "Iniciar sesión"
+  },
+  "hero": {
+    "title": "Automatiza. Entrega más rápido. Paga solo por resultados.",
+    "subtitle": "Levqor ejecuta tus workflows, monitorea errores y se auto-repara.",
+    "cta": "Prueba gratis"
+  },
+  "howItWorks": {
+    "title": "Cómo funciona",
+    "step1": {
+      "title": "Describe",
+      "description": "Dile a Levqor qué quieres automatizar en lenguaje natural"
+    },
+    "step2": {
+      "title": "Genera",
+      "description": "La IA construye tu workflow completo con disparadores y acciones"
+    },
+    "step3": {
+      "title": "Ejecuta",
+      "description": "Despliega al instante con auto-reparación y monitoreo integrados"
+    }
+  },
+  "templates": {
+    "title": "Galería de plantillas",
+    "subtitle": "Comienza con workflows preconstruidos para casos de uso comunes",
+    "categories": {
+      "all": "Todos",
+      "marketing": "Marketing",
+      "sales": "Ventas",
+      "operations": "Operaciones",
+      "hr": "RRHH",
+      "finance": "Finanzas"
+    }
+  },
+  "builder": {
+    "title": "Constructor de workflows IA",
+    "placeholder": "Describe lo que quieres automatizar...",
+    "generate": "Generar con IA",
+    "userType": {
+      "individual": "Individual",
+      "business": "Empresa"
+    }
+  },
+  "pricing": {
+    "title": "Precios simples y transparentes",
+    "subtitle": "Comienza con una prueba gratuita de 7 días.",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "starter": {
+      "name": "Starter",
+      "price": "9",
+      "period": "mes",
+      "features": ["5 workflows", "1.000 ejecuciones/mes", "Soporte por email"]
+    }
+  },
+  "concierge": {
+    "title": "Asistente Levqor",
+    "placeholder": "Pregunta sobre Levqor...",
+    "greeting": "¡Hola! Soy el asistente IA de Levqor. ¿Cómo puedo ayudarte?"
+  },
+  "footer": {
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "cookies": "Política de cookies",
+    "contact": "Contacto"
+  }
+}

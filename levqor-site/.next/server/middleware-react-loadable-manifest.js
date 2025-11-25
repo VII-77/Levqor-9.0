@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"app/workflows/ai-create/page.tsx -> @/components/ai/NaturalLanguageWorkflowBuilder\":{\"id\":\"app/workflows/ai-create/page.tsx -> @/components/ai/NaturalLanguageWorkflowBuilder\",\"files\":[\"static/chunks/_app-pages-browser_src_components_ai_NaturalLanguageWorkflowBuilder_tsx.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"

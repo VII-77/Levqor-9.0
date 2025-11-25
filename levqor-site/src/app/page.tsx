@@ -115,6 +115,59 @@ export default function Home() {
         </p>
       </section>
 
+      {/* How It Works Section */}
+      <section className="bg-white py-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
+          <p className="text-xl text-gray-600 text-center mb-12 max-w-2xl mx-auto">
+            Get from idea to automation in three simple steps
+          </p>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">💬</span>
+              </div>
+              <div className="text-sm font-medium text-primary-600 mb-2">Step 1</div>
+              <h3 className="text-xl font-bold mb-2">Describe</h3>
+              <p className="text-gray-600">
+                Tell Levqor what you want to automate in plain English. No technical knowledge required.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-secondary-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">⚡</span>
+              </div>
+              <div className="text-sm font-medium text-secondary-600 mb-2">Step 2</div>
+              <h3 className="text-xl font-bold mb-2">Generate</h3>
+              <p className="text-gray-600">
+                AI builds your complete workflow with triggers, actions, and smart error handling.
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-success-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🚀</span>
+              </div>
+              <div className="text-sm font-medium text-success-600 mb-2">Step 3</div>
+              <h3 className="text-xl font-bold mb-2">Run</h3>
+              <p className="text-gray-600">
+                Deploy instantly. Self-healing and monitoring are built-in. Pay only for results.
+              </p>
+            </div>
+          </div>
+          <div className="text-center mt-12">
+            <Link
+              href="/builder"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-secondary-700 transition-all"
+            >
+              Start with AI
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* AI Builder CTA Section */}
       <section className="bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600 py-16">
         <div className="max-w-6xl mx-auto px-6">
@@ -255,6 +308,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Template Teaser Section */}
+      <section className="bg-gray-50 py-20">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">Popular Templates</h2>
+            <p className="text-xl text-gray-600">
+              Start fast with pre-built workflows for common use cases
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { name: "Email to Slack Alerts", icon: "📧", category: "Operations" },
+              { name: "Lead Capture to CRM", icon: "🎯", category: "Sales" },
+              { name: "Social Media Scheduler", icon: "📱", category: "Marketing" },
+              { name: "Invoice Processor", icon: "💰", category: "Finance" },
+            ].map((template) => (
+              <Link
+                key={template.name}
+                href="/templates"
+                className="bg-white p-6 rounded-2xl shadow-sm border hover:shadow-md hover:border-primary-200 transition-all group"
+              >
+                <span className="text-3xl mb-3 block">{template.icon}</span>
+                <h3 className="font-semibold group-hover:text-primary-600 transition-colors mb-1">{template.name}</h3>
+                <p className="text-sm text-gray-500">{template.category}</p>
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link
+              href="/templates"
+              className="inline-flex items-center gap-2 text-primary-600 font-semibold hover:underline"
+            >
+              Browse all 20+ templates
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="bg-black text-white py-20">
         <div className="max-w-4xl mx-auto px-6 text-center">
@@ -262,12 +356,21 @@ export default function Home() {
           <p className="text-xl text-gray-300 mb-8">
             Join hundreds of teams shipping faster with Levqor. Start your 7-day free trial today.
           </p>
-          <Link
-            href="/signin"
-            className="inline-block px-8 py-4 bg-white text-black rounded-xl font-semibold hover:bg-gray-100 transition-colors text-lg"
-          >
-            Start free trial
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/builder"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-black rounded-xl font-semibold hover:bg-gray-100 transition-colors text-lg"
+            >
+              <span>🤖</span>
+              Start with AI
+            </Link>
+            <Link
+              href="/templates"
+              className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-white text-white rounded-xl font-semibold hover:bg-white/10 transition-colors text-lg"
+            >
+              Browse Templates
+            </Link>
+          </div>
         </div>
       </section>
     </main>

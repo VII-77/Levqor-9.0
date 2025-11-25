@@ -1,0 +1,74 @@
+{
+  "common": {
+    "learnMore": "En savoir plus",
+    "getStarted": "Commencer",
+    "startTrial": "Essai gratuit",
+    "seePricing": "Voir les tarifs",
+    "contact": "Contact",
+    "signIn": "Connexion"
+  },
+  "hero": {
+    "title": "Automatisez. Livrez plus vite. Payez uniquement pour les résultats.",
+    "subtitle": "Levqor exécute vos workflows, surveille les erreurs et s'auto-répare.",
+    "cta": "Essai gratuit"
+  },
+  "howItWorks": {
+    "title": "Comment ça marche",
+    "step1": {
+      "title": "Décrivez",
+      "description": "Dites à Levqor ce que vous voulez automatiser en langage courant"
+    },
+    "step2": {
+      "title": "Générez",
+      "description": "L'IA construit votre workflow complet avec déclencheurs et actions"
+    },
+    "step3": {
+      "title": "Exécutez",
+      "description": "Déployez instantanément avec auto-réparation et surveillance intégrées"
+    }
+  },
+  "templates": {
+    "title": "Galerie de modèles",
+    "subtitle": "Commencez avec des workflows préconstruits pour les cas d'usage courants",
+    "categories": {
+      "all": "Tous",
+      "marketing": "Marketing",
+      "sales": "Ventes",
+      "operations": "Opérations",
+      "hr": "RH",
+      "finance": "Finance"
+    }
+  },
+  "builder": {
+    "title": "Constructeur de workflow IA",
+    "placeholder": "Décrivez ce que vous voulez automatiser...",
+    "generate": "Générer avec l'IA",
+    "userType": {
+      "individual": "Particulier",
+      "business": "Entreprise"
+    }
+  },
+  "pricing": {
+    "title": "Tarification simple et transparente",
+    "subtitle": "Commencez avec un essai gratuit de 7 jours.",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "starter": {
+      "name": "Starter",
+      "price": "9",
+      "period": "mois",
+      "features": ["5 workflows", "1 000 exécutions/mois", "Support par email"]
+    }
+  },
+  "concierge": {
+    "title": "Assistant Levqor",
+    "placeholder": "Posez vos questions sur Levqor...",
+    "greeting": "Bonjour ! Je suis l'assistant IA Levqor. Comment puis-je vous aider ?"
+  },
+  "footer": {
+    "privacy": "Politique de confidentialité",
+    "terms": "Conditions d'utilisation",
+    "cookies": "Politique des cookies",
+    "contact": "Contact"
+  }
+}

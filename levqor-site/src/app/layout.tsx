@@ -5,6 +5,7 @@ import { Providers } from '@/components/providers'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CookieBanner from '@/components/CookieBanner'
+import ConciergeButton from '@/components/ConciergeButton'
 import './globals.css'
 
 // Force cache clear - deployment timestamp: 2025-11-11T12:32
@@ -86,6 +87,7 @@ export default async function RootLayout({
 
           <Footer />
           <CookieBanner />
+          <ConciergeButton />
         </NextIntlClientProvider>
       </body>
     </html>

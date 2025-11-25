@@ -1,0 +1,74 @@
+{
+  "common": {
+    "learnMore": "Mehr erfahren",
+    "getStarted": "Jetzt starten",
+    "startTrial": "Kostenlos testen",
+    "seePricing": "Preise ansehen",
+    "contact": "Kontakt",
+    "signIn": "Anmelden"
+  },
+  "hero": {
+    "title": "Automatisieren. Schneller liefern. Nur für Ergebnisse zahlen.",
+    "subtitle": "Levqor führt Ihre Workflows aus, überwacht Fehler und repariert sich selbst.",
+    "cta": "Kostenlos testen"
+  },
+  "howItWorks": {
+    "title": "So funktioniert es",
+    "step1": {
+      "title": "Beschreiben",
+      "description": "Erklären Sie Levqor in einfacher Sprache, was Sie automatisieren möchten"
+    },
+    "step2": {
+      "title": "Generieren",
+      "description": "KI erstellt Ihren kompletten Workflow mit Auslösern und Aktionen"
+    },
+    "step3": {
+      "title": "Ausführen",
+      "description": "Sofort bereitstellen mit integrierter Selbstheilung und Überwachung"
+    }
+  },
+  "templates": {
+    "title": "Vorlagen-Galerie",
+    "subtitle": "Beginnen Sie mit vorgefertigten Workflows für häufige Anwendungsfälle",
+    "categories": {
+      "all": "Alle",
+      "marketing": "Marketing",
+      "sales": "Vertrieb",
+      "operations": "Betrieb",
+      "hr": "Personal",
+      "finance": "Finanzen"
+    }
+  },
+  "builder": {
+    "title": "KI-Workflow-Builder",
+    "placeholder": "Beschreiben Sie, was Sie automatisieren möchten...",
+    "generate": "Mit KI generieren",
+    "userType": {
+      "individual": "Einzelperson",
+      "business": "Unternehmen"
+    }
+  },
+  "pricing": {
+    "title": "Einfache, transparente Preise",
+    "subtitle": "Starten Sie mit einer 7-tägigen kostenlosen Testversion.",
+    "monthly": "Monatlich",
+    "yearly": "Jährlich",
+    "starter": {
+      "name": "Starter",
+      "price": "9",
+      "period": "Monat",
+      "features": ["5 Workflows", "1.000 Ausführungen/Monat", "E-Mail-Support"]
+    }
+  },
+  "concierge": {
+    "title": "Levqor-Assistent",
+    "placeholder": "Fragen Sie alles über Levqor...",
+    "greeting": "Hallo! Ich bin der Levqor KI-Assistent. Wie kann ich Ihnen helfen?"
+  },
+  "footer": {
+    "privacy": "Datenschutz",
+    "terms": "Nutzungsbedingungen",
+    "cookies": "Cookie-Richtlinie",
+    "contact": "Kontakt"
+  }
+}

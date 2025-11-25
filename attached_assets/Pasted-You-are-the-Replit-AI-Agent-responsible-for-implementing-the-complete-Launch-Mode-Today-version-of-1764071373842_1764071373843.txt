@@ -1,0 +1,171 @@
+You are the Replit AI Agent responsible for implementing the complete “Launch Mode Today” version of Levqor. 
+Follow every instruction EXACTLY as written. 
+Do NOT skip steps. 
+Do NOT invent files. 
+Do NOT refactor beyond instructions. 
+Always verify file changes by showing diffs. 
+Always run the project after large changes. 
+Always fix TypeScript/Next.js errors immediately.
+
+IMPORTANT RULES:
+- ALWAYS check that a file exists before editing.
+- ALWAYS print the updated file after editing.
+- NEVER remove code unrelated to the requested change.
+- If a build error appears, FIX IT before continuing.
+- Follow each phase IN ORDER.
+- Use existing environment variables automatically.
+- NEVER create empty or placeholder files unless instructed.
+- You MUST verify successful builds before moving to next phase.
+- After completing all tasks, RUN the safety gate script if available.
+
+============================================================
+PHASE 1 — PROJECT FOUNDATION CLEANUP
+============================================================
+
+1. Ensure the following directories exist:
+   - /levqor-site/src/app/
+   - /levqor-site/src/components/
+   - /levqor-site/src/data/
+   - /levqor-site/src/app/api/
+   - /levqor-site/src/lib/
+   - /levqor-site/public/
+
+2. Install required packages:
+   - npm install next-intl classnames swr
+
+3. Create i18n foundation:
+   - Create /levqor-site/src/lib/i18n.ts with basic translation loader using next-intl.
+   - Create /levqor-site/src/messages/en.json with placeholder strings.
+   - Ensure root layout imports next-intl provider correctly.
+
+============================================================
+PHASE 2 — HOMEPAGE (LAUNCH VERSION)
+============================================================
+
+Create or update /levqor-site/src/app/page.tsx:
+
+The homepage MUST include:
+- A premium hero section (H1, subhead, CTA buttons).
+- “Start with AI” → /builder.
+- “Browse Templates” → /templates.
+- A 3-step “How it Works” strip.
+- Template teaser strip.
+- Simple footer links (Privacy, Terms).
+- Responsive design.
+
+Keep styling clean and minimal for now.
+
+============================================================
+PHASE 3 — TEMPLATE GALLERY
+============================================================
+
+1. Create /levqor-site/src/data/templates.ts:
+   - Include ~20 templates with fields:
+     id, name, shortDescription, category, difficulty, track, examplePrompt.
+
+2. Create /levqor-site/src/app/templates/page.tsx:
+   - Read data from templates.ts.
+   - Display grid of cards.
+   - Add category filters.
+   - Each card → links to /builder?templateId=<id>.
+
+3. Ensure templates load without errors.
+
+============================================================
+PHASE 4 — BUILDER (AI-ASSISTED MVP)
+============================================================
+
+1. Create /levqor-site/src/app/builder/page.tsx with:
+   - textarea for description
+   - select: Individual / Business
+   - “Generate with AI” button
+   - Render list of returned steps
+
+2. Create backend API:
+   /levqor-site/src/app/api/autogen-mvp/route.ts
+   - POST handler using OpenAI API via existing libs.
+   - Generate 5–10 workflow steps in structured JSON.
+
+3. Handle templateId prefill:
+   - If query param exists, load examplePrompt.
+
+============================================================
+PHASE 5 — DASHBOARD (SIMPLIFIED)
+============================================================
+
+Update /dashboard (already protected by auth):
+- Show saved systems (create mock DB or use existing storage).
+- Add button: “Create new system” → /builder.
+
+Create:
+- /levqor-site/src/app/dashboard/page.tsx (if missing)
+- Display placeholder user systems.
+
+============================================================
+PHASE 6 — AI CONCIERGE MVP
+============================================================
+
+1. Create floating chat button in root layout:
+   /levqor-site/src/components/ConciergeButton.tsx
+
+2. Create side panel or modal:
+   /levqor-site/src/components/ConciergePanel.tsx
+
+3. Add backend endpoint:
+   /levqor-site/src/app/api/concierge/route.ts
+   - Process messages,
+   - Provide simple AI assistance,
+   - Only answer questions about Levqor, templates, or onboarding.
+
+4. Add global layout wrapper so concierge appears on ALL pages.
+
+============================================================
+PHASE 7 — LEGAL PAGES
+============================================================
+
+Create:
+- /levqor-site/src/app/legal/privacy/page.tsx
+- /levqor-site/src/app/legal/terms/page.tsx
+
+Simple readable content for now.
+
+============================================================
+PHASE 8 — SEO & AUTH SAFETY CHECKS
+============================================================
+
+1. Ensure /dashboard/v2 is still:
+   - noindex, nofollow
+   - protected by auth
+2. Ensure robots meta tags appear in layout.
+3. Ensure /dashboard redirects correctly when not signed in.
+
+============================================================
+PHASE 9 — RUN & FIX BUILD
+============================================================
+
+RUN the build:
+- npm run build
+
+If ANY errors appear:
+- FIX THEM IMMEDIATELY.
+- Show diffs for all file edits.
+
+============================================================
+PHASE 10 — FINAL SAFETY GATE
+============================================================
+
+If safety gate script exists:
+- Run python scripts/monitoring/safety_gate_full.py
+
+Fix any failures.
+
+============================================================
+PHASE 11 — CONFIRM READY FOR DEPLOYMENT
+============================================================
+
+Once everything passes:
+- Output: “LAUNCH MODE TODAY COMPLETE. Safe to deploy.”
+- STOP.
+
+Do NOT continue writing code after finishing.
+Await deployment confirmation.
