@@ -1,1 +1,13 @@
-{}
+{
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/api/[...path]/route": "app/api/[...path]/route.js",
+  "/[locale]/page": "app/[locale]/page.js",
+  "/[locale]/(public)/help/page": "app/[locale]/(public)/help/page.js",
+  "/[locale]/(public)/contact/page": "app/[locale]/(public)/contact/page.js",
+  "/[locale]/(public)/about/page": "app/[locale]/(public)/about/page.js",
+  "/[locale]/(legal)/terms/page": "app/[locale]/(legal)/terms/page.js",
+  "/[locale]/(legal)/privacy/page": "app/[locale]/(legal)/privacy/page.js",
+  "/[locale]/(public)/templates/page": "app/[locale]/(public)/templates/page.js",
+  "/[locale]/(auth)/signin/page": "app/[locale]/(auth)/signin/page.js",
+  "/[locale]/(public)/pricing/page": "app/[locale]/(public)/pricing/page.js"
+}

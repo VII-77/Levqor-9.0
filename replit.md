@@ -73,6 +73,19 @@ Levqor X is a comprehensive data backup and retention management platform offeri
 - K8s HPA, AWS ASG, Replit Autoscale integration guides
 - Capacity planning formulas
 
+### i18n Routing Architecture Fix (November 25, 2025)
+
+**Hybrid Locale Routing:**
+- Implemented proper next-intl v4 App Router structure with `[locale]` segment
+- Using `localePrefix: 'as-needed'` for clean URLs (default locale at `/`, others at `/es`, `/fr`, etc.)
+- All pages relocated under `app/[locale]/` with route groups:
+  - `(public)/` - Marketing pages (pricing, about, help, contact, templates, etc.)
+  - `(auth)/` - Auth-protected pages (signin, dashboard)
+  - `(legal)/` - Legal pages (terms, privacy, gdpr, sla, etc.)
+- Root level retains only: `admin/`, `auth/` (NextAuth), `api/`
+- 9 supported languages: en, es, fr, de, ar, hi, zh-Hans, it, pt
+- Middleware chains NextAuth and next-intl for both auth and i18n
+
 ### MEGA PHASE v23-v31: Launch Hardening (November 25, 2025)
 
 **Legal Compliance (LEGAL-0):**
