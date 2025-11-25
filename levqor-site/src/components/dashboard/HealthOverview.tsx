@@ -25,6 +25,7 @@ export default function HealthOverview({ className = "" }: { className?: string 
   const [error, setError] = useState<string | null>(null);
 
   const fetchHealth = useCallback(async () => {
+    const startTime = performance.now();
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const res = await fetch(`${apiUrl}/api/health/summary`, {
@@ -38,6 +39,11 @@ export default function HealthOverview({ className = "" }: { className?: string 
       const data = await res.json();
       setHealth(data);
       setError(null);
+      
+      const duration = performance.now() - startTime;
+      if (duration > 2000) {
+        console.warn(`[Perf] HealthOverview fetch slow: ${duration.toFixed(0)}ms`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch health status");
     } finally {

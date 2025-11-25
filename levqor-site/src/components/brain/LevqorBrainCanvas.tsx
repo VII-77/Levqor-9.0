@@ -254,8 +254,13 @@ function WebGLRenderer({
     };
     const stateValue = stateMap[brainState] ?? 0;
 
+    let frameCount = 0;
+    let lastPerfCheck = performance.now();
+    
     const render = () => {
       if (!canvas || !gl || !program) return;
+      
+      const frameStart = performance.now();
 
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
@@ -289,6 +294,17 @@ function WebGLRenderer({
       gl.uniform1f(soundLocation, soundIntensityRef.current);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      
+      frameCount++;
+      const now = performance.now();
+      if (now - lastPerfCheck > 5000) {
+        const avgFrameTime = (now - lastPerfCheck) / frameCount;
+        if (avgFrameTime > 50) {
+          console.warn(`[Perf] LevqorBrainCanvas slow: ${avgFrameTime.toFixed(1)}ms/frame avg`);
+        }
+        frameCount = 0;
+        lastPerfCheck = now;
+      }
 
       if (!reducedMotion) {
         animationRef.current = requestAnimationFrame(render);
