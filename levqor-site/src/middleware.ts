@@ -15,17 +15,67 @@ export default auth((req) => {
   const url = req.nextUrl.clone()
   const pathname = url.pathname
 
-  // 1) Hard bypass for root, status, API, and all Next internals / static assets
+  // 1) Hard bypass for root, status, API, all Next internals, static assets, and all core pages
   // This prevents catch-all slug matching and locale rewrite loops
+  const bypassPaths = [
+    "/",
+    "/pricing",
+    "/status",
+    "/docs",
+    "/support",
+    "/signin",
+    "/trial",
+    "/consultation",
+    "/contact",
+    "/about",
+    "/blog",
+    "/careers",
+    "/terms",
+    "/privacy",
+    "/security",
+    "/roadmap",
+    "/integrations",
+    "/use-cases",
+    "/how-it-works",
+    "/workflows",
+    "/community",
+    "/founder-playbook",
+    "/automation-for-everyone",
+    "/global-support",
+    "/gdpr",
+    "/dpa",
+    "/ai-transparency",
+    "/data-rights",
+    "/cookies",
+    "/sla",
+    "/refunds",
+    "/cancellation",
+    "/fair-use",
+    "/acceptable-use",
+    "/support-policy",
+    "/guarantee",
+    "/revisions",
+    "/disputes",
+    "/demo",
+    "/tour",
+    "/thanks",
+    "/screenshots",
+    "/intelligence",
+    "/marketplace",
+    "/developer",
+    "/insights",
+    "/dfy-contract",
+    "/team",
+  ]
+  
   if (
-    pathname === "/" ||
+    bypassPaths.some(p => pathname === p || pathname.startsWith(p + "/")) ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname === "/favicon.ico" ||
     pathname === "/robots.txt" ||
     pathname === "/sitemap.xml" ||
-    pathname.startsWith("/manifest") ||
-    pathname.startsWith("/status")
+    pathname.startsWith("/manifest")
   ) {
     return NextResponse.next()
   }
