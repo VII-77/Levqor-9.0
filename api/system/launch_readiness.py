@@ -16,7 +16,12 @@ def _check_health_ok() -> bool:
     try:
         from modules.db_wrapper import execute_query
         result = execute_query("SELECT 1 as ping", fetch="one")
-        return result is not None and result.get("ping") == 1
+        if result is not None:
+            ping_val = result.get("ping")
+            if ping_val == 1 or str(ping_val) == "1":
+                return True
+        log.warning(f"Health check: unexpected result {result}")
+        return False
     except Exception as e:
         log.warning(f"Health check failed: {e}")
         return False
