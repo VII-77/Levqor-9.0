@@ -1,5 +1,6 @@
 {
   "/page": "app/page.js",
+  "/api/[...path]/route": "app/api/[...path]/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/[...path]/route": "app/api/[...path]/route.js"
+  "/signin/page": "app/signin/page.js"
 }

@@ -1,0 +1,361 @@
+You are the Replit AI Agent responsible for upgrading Levqor from “Launch Mode Today” to the next level of the frozen Levqor Master Blueprint.
+
+You MUST:
+- Work systematically in PHASES.
+- Inspect existing code and config BEFORE changing anything.
+- Show diffs for each changed file.
+- Fix all build errors BEFORE moving phases.
+- Run safety_gate_full.py at the end, and DO NOT call the upgrade complete unless it passes.
+- NEVER remove working functionality unless replacing it with something better AND tested.
+
+The top priorities for this run are:
+
+1) Fix broken auth experience as much as code can:
+   - Make sign-in / sign-up actually usable, or at minimum:
+     - Expose REAL provider/env errors cleanly so the human can fix Google/Azure/email config.
+     - Ensure there is a working way for at least ONE user to log in and use the dashboard.
+
+2) Make the user journey clean and coherent:
+   - Homepage → Templates → Builder → Dashboard → Concierge → Billing.
+
+3) Add a light but real onboarding layer:
+   - First-time experience that helps users start with goals/templates.
+
+4) Add basic analytics hooks & growth hooks:
+   - Non-breaking, minimal, but ready for future.
+
+Do NOT try to implement every single idea in the blueprint in this run. Focus on:
+- auth,
+- onboarding,
+- journey clarity,
+- minimal growth hooks,
+- zero broken flows.
+
+============================================================
+PHASE 0 — DISCOVERY (DO NOT SKIP)
+============================================================
+
+1. Open and REVIEW (read only, don’t edit yet):
+
+   - NextAuth / auth config:
+     - Search for `NextAuth` and `authOptions`:
+       - likely in `levqor-site/src/pages/api/auth/[...nextauth].ts`
+       - or in `levqor-site/src/app/api/auth/[...nextauth]/route.ts` (if using app router)
+   - Sign-in page:
+     - any of:
+       - `levqor-site/src/app/signin/page.tsx`
+       - `levqor-site/src/app/(auth)/signin/page.tsx`
+       - or similar.
+   - Dashboard:
+     - `levqor-site/src/app/dashboard/page.tsx` (and any layout group around it).
+   - Env / config helpers:
+     - `levqor-site/src/lib/*auth*`, `config`, or similar helper files.
+
+2. Summarize for yourself (no need to print to user):
+   - Which NextAuth version? (v4 pages router, or app router handlers)
+   - Which providers are configured? (Google, Azure/Microsoft, Email, Credentials?)
+   - Whether there is an Adapter (Prisma / Supabase / none).
+   - Where errors are currently surfaced (e.g. `error` query param on /signin).
+
+ONLY once you understand the current auth structure, continue.
+
+============================================================
+PHASE 1 — AUTH UX & ERROR SURFACING (NO BREAKING CHANGES YET)
+============================================================
+
+Goal: Before changing logic, make the auth UX **honest and clear**.
+
+1. Update the sign-in page component to:
+
+   - Clearly show:
+     - A heading: “Sign in to Levqor”.
+     - Distinct sections for:
+       - OAuth providers (Google, Microsoft) — **only if they are configured**.
+       - Email / magic link / credentials, if present.
+   - If NextAuth passes `error` in query string, show a clear error message box:
+     - e.g. “Sign-in failed: [error code]. This is often caused by misconfigured provider settings or invalid redirect URL.”
+
+2. IMPORTANT:
+   - Do NOT delete any providers yet.
+   - Do NOT refactor authOptions heavily.
+   - Just ensure:
+     - Existing Google/Microsoft buttons call `signIn("google")`, `signIn("azure-ad")` or whatever keys are actually configured.
+     - The page no longer silently fails; it must surface errors.
+
+3. Run the app locally if possible (or at least rely on existing configs) and ensure:
+   - `/signin` renders without crashing.
+   - The UI displays provider buttons and error messages nicely.
+
+If you MUST change any imports or client/server boundaries (e.g. add `"use client"`), do so in the smallest possible way and re-build.
+
+============================================================
+PHASE 2 — ENSURE AT LEAST ONE RELIABLE LOGIN PATH
+============================================================
+
+Goal: Provide at least one guaranteed working path for login that does NOT depend on external provider consoles being correctly configured.
+
+Priority ordering:
+
+   A) If a Credentials provider already exists AND is wired to a database, make sure it has:
+      - A sign-up form (email + password).
+      - A sign-in form (email + password).
+      - Proper password hashing.
+      - Basic validation.
+
+   B) If no Credentials provider exists, and the app is using only OAuth/email:
+      - ADD a Credentials provider in authOptions, but DO NOT break existing providers.
+      - Use an existing DB or adapter if already present (e.g. Prisma).
+      - If there is no DB/adapter at all, fall back to an in-memory demo user ONLY as a last resort, and mark this clearly in code comments as TEMPORARY.
+
+Steps:
+
+1. Inspect authOptions:
+   - If `CredentialsProvider` is already present, inspect how it validates users.
+   - If it’s not there, add it in the least disruptive way.
+
+2. Implement or verify:
+
+   - `signUp` flow:
+     - If there is an existing endpoint to create users, integrate with it.
+     - If not, and a Prisma adapter exists, add minimal user creation logic:
+       - `email` unique
+       - `password` hashed with bcrypt
+   - `signIn` flow:
+       - Look up user by email
+       - Compare password hash
+       - Return a user object to NextAuth
+
+3. Update the sign-in UI:
+
+   - Add a clear “Create account” form or flow for the Credentials path.
+   - Add a simple sign-in form for existing users.
+
+4. Make sure:
+
+   - `/dashboard` works end-to-end when logged in via Credentials.
+   - Logging out and logging back in works.
+   - No redirect loops occur.
+
+5. Run:
+
+   - `cd levqor-site && npm run build`
+
+Fix ANY build errors immediately.
+
+If it is impossible to implement secure Credentials auth cleanly because of missing adapters or unreadable structure, then:
+
+   - Do NOT hack in unsafe auth.
+   - Instead:
+     - Improve the sign-in page messaging.
+     - Add a “Request access” section that lets users contact support (e.g. mailto link).
+     - Clearly mark Google/Microsoft as “coming soon” if they are completely unusable.
+
+============================================================
+PHASE 3 — ONBOARDING FLOW (SMALL BUT REAL)
+============================================================
+
+Goal: Give new, logged-in users a guided start.
+
+1. Create an onboarding experience component:
+
+   - Location:
+     - `levqor-site/src/app/onboarding/page.tsx`
+     - OR a dedicated component used inside `/dashboard` when user has 0 systems.
+
+2. Onboarding content:
+
+   - Step 1: “What are you trying to do?”
+     - radio buttons or cards:
+       - “Automate my business workflows”
+       - “Manage client work as an agency”
+       - “Set up creator/solo workflows”
+   - Step 2: “Pick a starting template”
+     - Use the `templates.ts` data.
+   - Step 3: “Open in Builder”
+     - Sends user to `/builder?templateId=...`
+
+3. Logic:
+
+   - If user has NO saved systems / workflows:
+     - Redirect them to `/onboarding` from `/dashboard`, or show onboarding inline in `/dashboard` as a first-time panel.
+   - If user has at least one system:
+     - Show the normal dashboard.
+
+4. Ensure all new routes:
+
+   - Build without errors.
+   - Use existing layout components.
+   - Are protected by auth if they’re meant to be behind login.
+
+Rebuild and fix.
+
+============================================================
+PHASE 4 — DASHBOARD UX TIGHTENING
+============================================================
+
+Goal: Make `/dashboard` feel like a real control center.
+
+1. Open `levqor-site/src/app/dashboard/page.tsx`.
+
+2. Enhance it (without breaking auth):
+
+   - Show:
+     - “Your Systems” list (use existing a DB / API if present; otherwise reuse whatever the current system uses for saved workflows).
+     - For each system:
+       - Name
+       - Created date
+       - Status (e.g. “Draft”)
+       - Button: “Open in Builder”
+   - Add obvious call-to-action:
+       - “Create new system” → `/builder`
+       - “Browse templates” → `/templates`
+
+3. If there is any existing workflows list component, reuse it; don’t reinvent.
+
+4. Ensure:
+
+   - Dashboard renders correctly when logged in.
+   - Redirect to `/signin` still works when not logged in.
+   - No SEO metadata leaks from dashboard routes.
+
+Rebuild and fix.
+
+============================================================
+PHASE 5 — HOMEPAGE & JOURNEY POLISH
+============================================================
+
+Goal: Ensure the public flow is clean and aligned:
+
+   Homepage → Templates → Builder → Sign-in → Dashboard.
+
+1. Confirm `/` has:
+
+   - Clear hero.
+   - “Start with AI” → `/builder`.
+   - “Browse templates” → `/templates`.
+   - “Dashboard” link somewhere that goes to `/dashboard` (auth-guarded).
+
+2. Confirm `/templates`:
+
+   - Uses `templates.ts` data.
+   - Filters work.
+   - Clicking a template opens `/builder?templateId=...`.
+
+3. Confirm `/builder`:
+
+   - Handles `templateId`.
+   - Shows example prompt.
+   - Calls `autogen-mvp` and renders steps.
+
+Do NOT overcomplicate Autogenesis yet; this phase is UX tightening only.
+
+Rebuild and fix.
+
+============================================================
+PHASE 6 — CONCIERGE UPGRADE (LIGHT)
+============================================================
+
+Goal: Make Concierge feel a bit more intelligent without complex refactors.
+
+1. Open:
+
+   - `levqor-site/src/components/ConciergeButton.tsx`
+   - `levqor-site/src/components/ConciergePanel.tsx`
+   - `levqor-site/src/app/api/concierge/route.ts`
+
+2. Improvements:
+
+   - In the API handler, ensure the system prompt:
+     - Knows pricing tiers (Starter/Launch/Growth/Agency, £9/29/59/149, 7-day trial).
+     - Knows main flows:
+       - “How do I start?” → recommend Templates → Builder.
+       - “How do I log in?” → explain auth.
+   - In the panel UI:
+       - Show a short “Suggested questions” list such as:
+         - “What can I build with Levqor?”
+         - “Which template should I start with?”
+         - “Explain the pricing plans.”
+
+3. Make sure Concierge still works on all pages.
+
+Rebuild and fix.
+
+============================================================
+PHASE 7 — ANALYTICS & GROWTH HOOKS (NON-BREAKING)
+============================================================
+
+Goal: Prepare the system for future analytics WITHOUT introducing heavy dependencies.
+
+1. Create a tiny analytics utility:
+
+   - `levqor-site/src/lib/analytics.ts`
+   - For now, just export functions that LOG to console:
+     - `trackEvent(name: string, props?: Record<string, any>)`
+   - Later, this can be wired to a real provider (Posthog, Plausible, etc.)
+
+2. Use `trackEvent()` in:
+
+   - Homepage CTA clicks.
+   - Template card clicks.
+   - Builder “Generate with AI” clicks.
+   - Successful login.
+   - Onboarding completion.
+
+3. Make sure these calls are only in `"use client"` components.
+
+Rebuild and fix.
+
+============================================================
+PHASE 8 — FINAL BUILD & SAFETY GATE
+============================================================
+
+1. Run:
+
+   - `cd levqor-site && npm run build`
+
+Fix ALL errors and serious warnings.  
+Do NOT leave unhandled build failures.
+
+2. Then run the safety gate:
+
+   - `cd ~/workspace && python scripts/monitoring/safety_gate_full.py`
+
+If ANY check fails:
+   - Diagnose and fix:
+     - Landing page,
+     - Dashboard auth,
+     - /dashboard/v2 SEO,
+     - /api/checkout.
+
+Only once ALL checks pass, continue.
+
+============================================================
+PHASE 9 — COMPLETION CRITERIA
+============================================================
+
+You are only allowed to consider this upgrade COMPLETE if ALL of the following are true:
+
+1. `/signin`:
+   - Renders without crashing.
+   - Shows clear messages for provider errors.
+   - Provides either:
+     - A WORKING Credentials login path,
+     - OR at minimum, honest messaging about closed beta.
+
+2. `/dashboard`:
+   - Redirects to `/signin` when logged out.
+   - Works end-to-end when logged in via the working auth path.
+
+3. Public flow:
+   - `/` → `/templates` → `/builder` all work.
+   - Concierge responds.
+   - Pricing is correct and consistent.
+
+4. Safety gate:
+   - All PASS (4/4).
+
+When finished, output EXACTLY:
+
+“FULL SYSTEM UPGRADE COMPLETE. AUTH PATH STABILIZED. SAFE TO USE IN PRODUCTION.”
+
+Then stop.
