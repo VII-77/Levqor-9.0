@@ -1,14 +1,38 @@
-# Levqor X 9.0 — V15.0 Hardening & Production-Ready Edition
+# Levqor X 9.0 — V18.0 Self-Running Workflow Engine Edition
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions with complete automation core, auto-health monitoring, auto-scaling, auto-marketing, growth engine, and auto-reports.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, improved dashboard UX, and a **self-running workflow execution engine** with AI-powered builder, approval system, scheduling, and analytics. The project's ambition is to provide robust, scalable, and globally accessible data management solutions with complete automation core.
 
 ## Recent Changes (November 25, 2025)
 
-### V15 Hardening & Real-World Alignment
+### MEGA PHASE v15-v18: Self-Running Workflow Engine
 
-**Summary:** Production hardening phase validating real-world readiness, performance monitoring, and auto-engine stability. All 4/4 safety checks passing.
+**Summary:** Complete workflow execution engine with AI-powered builder, Class A/B/C approval system, scheduling, and analytics. All 4/4 safety checks passing.
+
+**Workflow Execution Engine (v15):**
+- Created `modules/workflows/` package with models, runner, events, storage
+- Implemented step types: `http_request`, `delay`, `log`, `email`, `condition`
+- Email and external HTTP requests trigger approval (Class C)
+- Event logging for all workflow runs and step executions
+
+**AI Brain Builder (v16):**
+- Created `api/ai/brain_builder.py` for natural language workflow creation
+- Impact classification system (Class A=Safe, B=Soft, C=Critical)
+- Approval queue with pending/approved/rejected states
+
+**Frontend Components (v17):**
+- `BrainWorkflowBuilder.tsx` - AI workflow builder with brain state integration
+- `ApprovalPanel.tsx` - Manage pending approvals
+- API endpoints for approval queue management
+
+**Scheduling & Analytics (v18):**
+- `scripts/automation/workflow_scheduler.py` (one-shot and continuous modes)
+- `modules/analytics/usage.py` with metrics aggregation
+- `AnalyticsPanel.tsx` and `WorkflowHistoryPanel.tsx` for dashboard
+- Documentation: `docs/workflows.md`, `docs/operations.md`
+
+### V15 Hardening & Real-World Alignment
 
 **Real-World Hardening:**
 - Repo-wide scan completed — no dead code found
@@ -20,7 +44,7 @@ Levqor X is a comprehensive data backup and retention management platform offeri
 - HealthOverview: Fetch timing (warns if >2000ms)
 
 **Auto-Engine Validation:**
-- All 6 engines tested: health_bp, scaling_policy, templates, referrals, auto_marketing_cycle, auto_weekly_report
+- All 6 original engines tested: health_bp, scaling_policy, templates, referrals, auto_marketing_cycle, auto_weekly_report
 
 **ICP/Real-World Alignment:**
 - Created `/docs/real_world_alignment.md` with ICP, workflows, and guardrails
