@@ -11,31 +11,33 @@ const intlMiddleware = createIntlMiddleware({
   localePrefix: 'as-needed',
 })
 
-// Paths that should bypass i18n middleware entirely (no locale prefix)
-const bypassI18nPaths = ['/status', '/robots.txt', '/sitemap.xml']
-
 export default auth((req) => {
   const url = req.nextUrl.clone()
   const pathname = url.pathname
-  
-  // Bypass middleware for Next.js internal data requests (critical for client-side navigation)
-  // Without this, /_next/data/*/status.json gets rewritten by i18n and causes 404
-  if (pathname.startsWith('/_next/data/')) {
+
+  // 1) Hard bypass for root, status, API, and all Next internals / static assets
+  // This prevents catch-all slug matching and locale rewrite loops
+  if (
+    pathname === "/" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname.startsWith("/manifest") ||
+    pathname.startsWith("/status")
+  ) {
     return NextResponse.next()
   }
-  
-  // Canonical domain redirect: www → naked domain
+
+  // 2) Canonical domain redirect: www → naked domain
   if (url.hostname === 'www.levqor.ai') {
     url.hostname = CANONICAL_HOST
     return NextResponse.redirect(url, 308)
   }
 
+  // 3) Auth check for protected routes
   const isAuthenticated = !!req.auth
-
-  // Bypass i18n middleware for specific paths (serve directly without locale prefix)
-  if (bypassI18nPaths.some(path => pathname === path || pathname.startsWith(path + '/'))) {
-    return NextResponse.next()
-  }
 
   // Strip locale prefix for auth check to support localized protected routes
   // Matches: /en/dashboard, /de/dashboard, /fr/dashboard, /es/dashboard
@@ -50,11 +52,12 @@ export default auth((req) => {
     return NextResponse.redirect(new URL('/signin', req.url))
   }
 
-  // Apply i18n middleware for all requests
+  // 4) Apply i18n middleware only for content routes that need locale handling
   return intlMiddleware(req)
 })
 
 export const config = {
-  // Exclude API routes, Next.js internals, and static assets from middleware
-  matcher: ['/((?!api|_next/static|_next/image|_next/data|favicon.ico).*)'],
+  matcher: [
+    "/((?!_next/static|_next/image|_next/data|favicon.ico|robots.txt|sitemap.xml|manifest|api).*)",
+  ],
 }

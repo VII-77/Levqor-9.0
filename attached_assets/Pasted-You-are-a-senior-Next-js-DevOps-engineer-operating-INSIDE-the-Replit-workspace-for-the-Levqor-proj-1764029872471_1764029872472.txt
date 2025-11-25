@@ -1,0 +1,287 @@
+You are a senior Next.js + DevOps engineer operating INSIDE the Replit workspace for the Levqor project.
+
+GOAL
+Fix the production routing so that:
+- https://levqor.ai (root) returns HTTP 200 with the real homepage (no redirect loop, no white screen)
+- https://www.levqor.ai redirects at most once to https://levqor.ai
+- https://levqor.ai/status returns HTTP 200 with the new minimal status page
+- The /status route NO LONGER hits the [...slug] catch-all or gets trapped in i18n / locale rewrites
+- All Blueprint rules remain intact (pricing, trial, SLA, legal, schema, package.json).
+
+KEY CONTEXT (DO NOT IGNORE)
+- Repo root: /home/runner/workspace
+- Frontend app: /home/runner/workspace/levqor-site (Next.js 14 app router)
+- We use Cloudflare in front of Vercel.
+- We have i18n + middleware-based locale handling.
+- We saw this from curl -IL https://levqor.ai:
+  - x-matched-path: /[...slug]
+  - set-cookie: NEXT_LOCALE=en
+  This proves the homepage is being matched by the catch-all slug and the middleware/i18n logic is rewriting with a locale cookie.
+- /status is implemented at: levqor-site/src/app/status/page.tsx
+- Previous bug: middleware was not bypassing /_next/data, causing 404s for /status.
+- We MUST NOT change any pricing, trial, SLA, legal text, database schema, or package.json. Only touch routing/middleware + status page if needed.
+
+ABSOLUTE RULES (DO NOT VIOLATE)
+1. Do NOT change any pricing text:
+   - Monthly: £9 / £29 / £59 / £149
+   - Yearly: £90 / £290 / £590 / £1,490
+   - DFY: £149 / £299 / £499
+2. Do NOT change “7-day free trial” copy or the “Card required · Cancel before Day 7 to avoid charges” rule.
+3. Do NOT change SLA numbers: 48h / 24h / 12h / 4h.
+4. Do NOT modify Terms, Privacy, Refunds, DPA, SLA or legal content.
+5. Do NOT run any DB migrations or edit SQL/schema files.
+6. Do NOT edit package.json or install new dependencies.
+7. Use existing environment variables and integrations only.
+8. Always VERIFY changes with real commands (tsc, build, curl, grep) and show their output.
+
+YOUR TASKS (STEP BY STEP)
+
+PHASE 1 — INSPECT CURRENT MIDDLEWARE & STATUS PAGE
+1. Go to repo root:
+   - cd /home/runner/workspace
+
+2. Inspect the middleware and status page:
+   - sed -n '1,220p' levqor-site/src/middleware.ts || echo "NO_MIDDLEWARE"
+   - sed -n '1,160p' levqor-site/src/app/status/page.tsx || echo "NO_STATUS_PAGE"
+
+3. Confirm we still have a minimal safe StatusPage component:
+   - It should be a default export with `export const dynamic = "force-dynamic"` at the top and a simple “System Status” message.
+   - If it is missing, recreate the minimal page:
+
+   File: levqor-site/src/app/status/page.tsx
+   Content:
+
+   ```tsx
+   // levqor-site/src/app/status/page.tsx
+   export const dynamic = "force-dynamic";
+
+   export default function StatusPage() {
+     return (
+       <main className="px-6 py-20 max-w-5xl mx-auto">
+         <h1 className="text-3xl font-bold mb-6">System Status</h1>
+         <p className="text-gray-600 mb-4">
+           All core Levqor systems are operational. This page is primarily for
+           internal observability and does not change any pricing, trial, or SLA terms.
+         </p>
+         <p className="text-gray-500 text-sm">
+           Growth metrics and advanced analytics will be shown here when the
+           metrics API is reachable. If it is temporarily unavailable, the rest
+           of the product continues to function normally.
+         </p>
+       </main>
+     );
+   }
+
+PHASE 2 — FIX MIDDLEWARE (MAIN ROOT CAUSE) Goal: ensure middleware does NOT interfere with:
+
+root /
+
+/status
+
+Next internals (/_next/*, including /_next/data)
+
+favicon, robots, sitemap, manifest
+
+API routes
+
+
+1. Open and edit levqor-site/src/middleware.ts to enforce this logic:
+
+a) At the top of the middleware function (before any locale rewriting), ensure we have:
+
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // 1) Hard bypass for root, status, API and all Next internals / static assets
+  if (
+    pathname === "/" ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/api") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/robots.txt" ||
+    pathname === "/sitemap.xml" ||
+    pathname.startsWith("/manifest") ||
+    pathname.startsWith("/status")
+  ) {
+    return NextResponse.next();
+  }
+
+  // 2) Force locale to 'en' to avoid redirect loops for now
+  req.nextUrl.locale = "en";
+
+  // 3) Keep any existing logic AFTER this line, but ensure you do NOT:
+  //    - redirect "/" again
+  //    - rewrite or redirect /status
+  //    - rewrite /_next/*, /api/*, or assets
+  //
+  // Example: if you already had some locale detection or redirects, keep them
+  // but guard them so they only run on REAL content paths, not on the ones we just bypassed.
+  // ...
+}
+
+b) Update the middleware matcher at the bottom of the file so it EXCLUDES the safe paths and Next internals:
+
+export const config = {
+  matcher: [
+    "/((?!_next/static|_next/image|_next/data|favicon.ico|robots.txt|sitemap.xml|manifest|api).*)",
+  ],
+};
+
+Important:
+
+Ensure there is ONLY ONE export const config = { matcher: [...] } block.
+
+Ensure the matcher and function match the code above logically.
+
+Ensure there is no other redirect that can send / or /status back into a slug route or locale-prefixed path.
+
+
+
+2. Save the file.
+
+
+
+PHASE 3 — LOCAL VALIDATION (BUILD + ROUTE MANIFEST)
+
+1. Run TypeScript:
+
+cd /home/runner/workspace/levqor-site
+
+npx tsc --noEmit 2>&1 | head -40 || echo "TSC_OK"
+
+
+
+2. Build the Next app:
+
+npm run build 2>&1 | tee /tmp/levqor-build.log
+
+
+Confirm in the output that:
+
+Build succeeds.
+
+Route list includes: ƒ / and ƒ /status.
+
+
+
+3. Check the app-paths manifest to confirm /status and / exist as real pages and NOT as [...slug] only:
+
+cat .next/server/app-paths-manifest.json | grep '"/page"' -n
+
+cat .next/server/app-paths-manifest.json | grep '"status/page"' -n
+
+
+You should see entries like:
+
+"/page": "app/page.js"
+
+"/status/page": "app/status/page.js"
+
+
+
+
+PHASE 4 — GUNICORN / BACKEND SANITY (NO CHANGES) We are NOT changing backend right now, only confirm it is still healthy:
+
+1. From repo root:
+
+cd /home/runner/workspace
+
+ps aux | head -40 || true   # optional, just to ensure backend process exists
+
+DO NOT modify backend code, DB, or config.
+
+
+
+
+PHASE 5 — BLUEPRINT SAFETY CHECKS (MUST PASS) From repo root:
+
+1. Pricing grep (should show matches but NO changes):
+
+cd /home/runner/workspace/levqor-site
+
+grep -R "£9" src/app | head -10 || echo "NO_£9_FOUND"
+
+grep -R "£29" src/app | head -10 || echo "NO_£29_FOUND"
+
+grep -R "£59" src/app | head -10 || echo "NO_£59_FOUND"
+
+grep -R "£149" src/app | head -10 || echo "NO_£149_FOUND"
+
+
+
+2. Trial / SLA:
+
+grep -R "7-day free trial" src/app | head -10 || echo "NO_TRIAL_TEXT"
+
+grep -R "48h" src/app | head -10 || echo "NO_48H_SLA"
+
+
+
+3. Legal & package:
+
+ls package.json
+
+git diff -- package.json || echo "NO_PACKAGE_JSON_CHANGES"
+
+git diff -- src/app/(terms|privacy|legal|dpa|sla)* 2>/dev/null || echo "NO_LEGAL_DIFF"
+
+
+
+
+If ANY diff touches pricing, trial, SLA, legal text, schema, or package.json — STOP and revert.
+
+PHASE 6 — GIT STATUS (SHOW ONLY, DO NOT PUSH) From repo root:
+
+cd /home/runner/workspace
+
+git status --short
+
+
+Confirm that only the intended files are modified:
+
+levqor-site/src/middleware.ts
+
+optionally levqor-site/src/app/status/page.tsx
+
+
+PHASE 7 — POST-DEPLOY TEST PLAN (INSTRUCTIONS FOR USER) At the end of your run, PRINT these exact commands as a “Next steps” block for the human to run AFTER Vercel has deployed:
+
+# 1) Check root
+curl -IL https://levqor.ai | sed -n '1,20p'
+
+# 2) Check www → root redirect
+curl -IL https://www.levqor.ai | sed -n '1,20p'
+
+# 3) Check status page
+curl -IL https://levqor.ai/status | sed -n '1,20p'
+
+# 4) Confirm matched path is NOT /[...slug]
+curl -IL https://levqor.ai | grep -i "x-matched-path" || echo "NO_MATCHED_PATH_HEADER"
+
+EXPECTED:
+
+Root (https://levqor.ai): HTTP 200, x-matched-path should be / or absent, but NOT /[...slug].
+
+WWW: single redirect → https://levqor.ai (301/308 then 200).
+
+/status: HTTP 200, HTML includes “System Status”.
+
+
+OUTPUT FORMAT
+
+Log every significant command you run.
+
+Show the relevant snippets from tsc, build, manifest, and git status.
+
+End with a short summary:
+
+Whether middleware was changed.
+
+Whether build succeeded.
+
+Whether manifest shows / and /status.
+
+Confirmation that no pricing/trial/SLA/legal/package.json changes occurred.

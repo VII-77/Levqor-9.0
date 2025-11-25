@@ -21,10 +21,14 @@ export const localeCurrencies: Record<Locale, string> = {
 };
 
 export default getRequestConfig(async ({ locale }) => {
-  if (!locale || !locales.includes(locale as Locale)) notFound();
+  // Default to 'en' for routes that bypass i18n middleware (/, /status, etc.)
+  // This prevents notFound() from being called when no locale context exists
+  const resolvedLocale = locale && locales.includes(locale as Locale) 
+    ? (locale as Locale) 
+    : defaultLocale;
 
   return {
-    locale: locale as string,
-    messages: (await import(`../messages/${locale}.json`)).default,
+    locale: resolvedLocale,
+    messages: (await import(`../messages/${resolvedLocale}.json`)).default,
   };
 });
