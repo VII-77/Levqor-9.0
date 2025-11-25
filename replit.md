@@ -1,10 +1,29 @@
-# Levqor X 9.0 — V13.6 Auth Stabilization Edition
+# Levqor X 9.0 — V13.8 Living Canvas Edition
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication with guaranteed login path, auth diagnostics, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication with guaranteed login path, auth diagnostics, Living Canvas brain visualization, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions.
 
 ## Recent Changes (November 25, 2025)
+
+### V13.8 Living Canvas Brain UI - COMPLETE
+
+**Summary:** Delivered the Living Canvas brain visualization component with WebGL/Canvas rendering, 4 brain states, accessibility features, and feature flag control. Integrated into homepage hero and dashboard header.
+
+**Key Changes:**
+1. **LevqorBrainCanvas Component** — WebGL shader-based animation with Canvas 2D fallback
+2. **Brain States** — Organic (blue), Neural/Thinking (purple pulse), Quantum/Error (red), Success (green)
+3. **Accessibility** — Respects prefers-reduced-motion, ARIA labels, proper roles
+4. **Feature Flag** — `NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED` controls visibility with placeholder fallback
+5. **Homepage Integration** — Two-column hero layout with Living Canvas on right
+6. **Dashboard Integration** — Header panel shows brain state (hidden on mobile)
+
+**Key Files:**
+- `levqor-site/src/components/brain/LevqorBrainCanvas.tsx` — Main WebGL/Canvas component
+- `levqor-site/src/components/brain/types.ts` — BrainState type and configurations
+- `levqor-site/src/components/brain/useBrainState.ts` — React hook for state management
+- `levqor-site/src/app/page.tsx` — Homepage with Living Canvas hero
+- `levqor-site/src/app/dashboard/page.tsx` — Dashboard with Living Canvas header
 
 ### V13.7 CI/CD Safety Harness - COMPLETE
 
