@@ -1,13 +1,57 @@
 # Levqor Blueprint Progress Report
 
 **Generated**: November 25, 2025  
-**Purpose**: Track what's built, what's partially done, and what's missing for v10-v15 launch.
+**Purpose**: Track what's built, what's partially done, and what's missing for v10-v18 launch.
 
 ---
 
 ## Executive Summary
 
 Levqor is an AI-native, multi-tenant SaaS platform with a solid foundation in place. The core infrastructure (auth, billing, API, AI engine) is largely complete. The platform is production-ready with live Stripe integration and automated safety checks.
+
+---
+
+## MEGA PHASE v15-v18 — Self-Running Engine + Workflow Execution (November 25, 2025)
+
+### Summary
+Complete workflow execution engine with AI-powered builder, approval system, scheduling, and analytics.
+
+### v15 — Workflow Execution Engine (Backend Core)
+- [x] Created `modules/workflows/` package (models.py, runner.py, events.py, storage.py)
+- [x] Implemented workflow step types: `http_request`, `delay`, `log`, `email`, `condition`
+- [x] Email steps marked as Class C (requires approval)
+- [x] Event logging for workflow runs and steps
+- [x] Database tables: `workflows`, `workflow_runs`, `workflow_events`
+- [x] API endpoints: list, get, create, run, runs history
+
+### v16 — AI Workflow Builder (Levqor Brain)
+- [x] Created `api/ai/brain_builder.py` with AI-powered workflow generation
+- [x] Impact classification system (Class A/B/C)
+- [x] Created `modules/approval_policy/` for impact level helpers
+- [x] Created `modules/approvals/queue.py` for DB-backed approval queue
+- [x] Approval queue table with pending/approved/rejected states
+
+### v17 — Frontend Brain Builder UI + Approval Panel
+- [x] Created `BrainWorkflowBuilder.tsx` with brain state integration
+- [x] Created `ApprovalPanel.tsx` for managing approval queue
+- [x] Created approval API endpoints: list, approve, reject, stats
+- [x] Full i18n-ready component structure
+
+### v18 — Scheduling, Analytics, Event History & Docs
+- [x] Created `scripts/automation/workflow_scheduler.py` (one-shot and continuous modes)
+- [x] Created `modules/analytics/usage.py` with metrics aggregation
+- [x] Created `AnalyticsPanel.tsx` for workflow analytics
+- [x] Created `WorkflowHistoryPanel.tsx` for run history
+- [x] Created `/docs/workflows.md` (workflow schema, step types, API reference)
+- [x] Created `/docs/operations.md` (scheduler, auto-engines, maintenance)
+
+### Files Created/Modified
+- **New Modules**: `modules/workflows/`, `modules/approval_policy/`, `modules/approvals/`, `modules/analytics/`
+- **New API**: `api/workflows/execution.py`, `api/ai/brain_builder.py`, `api/approvals/`, `api/analytics/`
+- **New Frontend**: `BrainWorkflowBuilder.tsx`, `ApprovalPanel.tsx`, `AnalyticsPanel.tsx`, `WorkflowHistoryPanel.tsx`
+- **New Scripts**: `scripts/automation/workflow_scheduler.py`
+- **New Docs**: `docs/workflows.md`, `docs/operations.md`
+- **Updated**: `run.py` (blueprint registrations), brain index exports
 
 ---
 

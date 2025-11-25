@@ -75,6 +75,70 @@ brain.setState(nextState);
 
 ---
 
+## Workflow Approval Model (Class A/B/C)
+
+The workflow system uses an impact classification to determine which actions require manual approval:
+
+### Impact Levels
+
+| Level | Name | Description | Approval Required |
+|-------|------|-------------|-------------------|
+| A | SAFE | Internal operations only (log steps) | No |
+| B | SOFT | Limited external effects (delay, condition) | No |
+| C | CRITICAL | External services, emails, financial ops | **Yes** |
+
+### How Classification Works
+
+1. **Email steps** → Always Class C
+2. **HTTP requests to external URLs** → Class C
+3. **Delay/Condition steps** → Class B
+4. **Log steps** → Class A
+
+Workflow overall impact = highest impact among all steps.
+
+### Managing Approvals
+
+1. View pending approvals: `GET /api/approvals`
+2. Approve an action: `POST /api/approvals/<id>/approve`
+3. Reject an action: `POST /api/approvals/<id>/reject`
+
+### Where Approval Code Lives
+- Impact classification: `modules/approval_policy/__init__.py`
+- Approval queue: `modules/approvals/queue.py`
+- API routes: `api/approvals/routes.py`
+- Frontend panel: `levqor-site/src/components/dashboard/ApprovalPanel.tsx`
+
+---
+
+## Workflow Scheduler
+
+### Running the Scheduler
+
+```bash
+# One-time execution
+python scripts/automation/workflow_scheduler.py --once
+
+# Continuous mode (every 60s)
+python scripts/automation/workflow_scheduler.py
+```
+
+### Cron Setup (every 5 minutes)
+```cron
+*/5 * * * * cd /path/to/levqor && python scripts/automation/workflow_scheduler.py --once
+```
+
+### How It Works
+1. Fetches workflows with `is_active=True` and `schedule_config.enabled=True`
+2. Checks if workflow should run based on `interval_minutes` and `last_run_at`
+3. Executes due workflows and updates schedule state
+
+### Related Files
+- Scheduler: `scripts/automation/workflow_scheduler.py`
+- Workflow storage: `modules/workflows/storage.py`
+- Workflow runner: `modules/workflows/runner.py`
+
+---
+
 ## Revenue Funnel Testing
 
 ### User Journey
