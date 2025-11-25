@@ -962,6 +962,9 @@ from api.privacy import privacy_bp
 from api.workflows import workflows_bp
 from api.community import community_bp
 from api.health.summary import health_bp
+from api.approvals import approvals_bp
+from api.ai.brain_builder import brain_builder_bp
+from api.analytics import analytics_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -982,6 +985,9 @@ app.register_blueprint(privacy_bp)
 app.register_blueprint(workflows_bp)
 app.register_blueprint(community_bp)
 app.register_blueprint(health_bp)
+app.register_blueprint(approvals_bp)
+app.register_blueprint(brain_builder_bp)
+app.register_blueprint(analytics_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():
