@@ -1,6 +1,7 @@
 import NextAuth, { NextAuthConfig } from "next-auth"
 import Google from "next-auth/providers/google"
 import AzureAD from "next-auth/providers/azure-ad"
+import Resend from "next-auth/providers/resend"
 
 const DENYLIST = ['mailinator.com', 'tempmail.com', 'guerrillamail.com', 'temp-mail.org'];
 
@@ -33,6 +34,10 @@ export const authOptions: NextAuthConfig = {
       clientId: process.env.MICROSOFT_CLIENT_ID || "",
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET || "",
       allowDangerousEmailAccountLinking: true,
+    }),
+    Resend({
+      apiKey: process.env.RESEND_API_KEY || "",
+      from: process.env.AUTH_FROM_EMAIL || "Levqor <noreply@levqor.ai>",
     }),
   ],
   pages: {

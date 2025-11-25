@@ -89,6 +89,16 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* reexport safe */ _auth_core_providers_google__WEBPACK_IMPORTED_MODULE_0__[\"default\"])\n/* harmony export */ });\n/* harmony import */ var _auth_core_providers_google__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @auth/core/providers/google */ \"(rsc)/./node_modules/@auth/core/providers/google.js\");\n\n\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9nb29nbGUuanMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBNEM7QUFDVSIsInNvdXJjZXMiOlsid2VicGFjazovL2xldnFvci1zaXRlLy4vbm9kZV9tb2R1bGVzL25leHQtYXV0aC9wcm92aWRlcnMvZ29vZ2xlLmpzPzY3NjIiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0ICogZnJvbSBcIkBhdXRoL2NvcmUvcHJvdmlkZXJzL2dvb2dsZVwiO1xuZXhwb3J0IHsgZGVmYXVsdCB9IGZyb20gXCJAYXV0aC9jb3JlL3Byb3ZpZGVycy9nb29nbGVcIjtcbiJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/providers/google.js\n");
 
+/***/ }),
+
+/***/ "(rsc)/./node_modules/next-auth/providers/resend.js":
+/*!****************************************************!*\
+  !*** ./node_modules/next-auth/providers/resend.js ***!
+  \****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* reexport safe */ _auth_core_providers_resend__WEBPACK_IMPORTED_MODULE_0__[\"default\"])\n/* harmony export */ });\n/* harmony import */ var _auth_core_providers_resend__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @auth/core/providers/resend */ \"(rsc)/./node_modules/@auth/core/providers/resend.js\");\n\n\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9yZXNlbmQuanMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBNEM7QUFDVSIsInNvdXJjZXMiOlsid2VicGFjazovL2xldnFvci1zaXRlLy4vbm9kZV9tb2R1bGVzL25leHQtYXV0aC9wcm92aWRlcnMvcmVzZW5kLmpzPzZmYWUiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0ICogZnJvbSBcIkBhdXRoL2NvcmUvcHJvdmlkZXJzL3Jlc2VuZFwiO1xuZXhwb3J0IHsgZGVmYXVsdCB9IGZyb20gXCJAYXV0aC9jb3JlL3Byb3ZpZGVycy9yZXNlbmRcIjtcbiJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/providers/resend.js\n");
+
 /***/ })
 
 };

@@ -10,12 +10,20 @@ interface ConciergePanelProps {
   onClose: () => void;
 }
 
+const SUGGESTED_QUESTIONS = [
+  "What can I build with Levqor?",
+  "Which template should I start with?",
+  "Explain the pricing plans",
+  "How do I get started?",
+];
+
 export default function ConciergePanel({ onClose }: ConciergePanelProps) {
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: "Hi! I'm the Levqor AI assistant. I can help you with:\n\n• Understanding how Levqor works\n• Finding the right template for you\n• Getting started with automation\n\nWhat would you like to know?" }
+    { role: "assistant", content: "Hi! I'm the Levqor AI assistant. I can help you with:\n\n• Understanding how Levqor works\n• Finding the right template for you\n• Getting started with automation\n• Pricing and plans\n\nWhat would you like to know?" }
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -26,20 +34,18 @@ export default function ConciergePanel({ onClose }: ConciergePanelProps) {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || loading) return;
+  const sendMessage = async (messageText: string) => {
+    if (!messageText.trim() || loading) return;
 
-    const userMessage = input.trim();
-    setInput("");
-    setMessages(prev => [...prev, { role: "user", content: userMessage }]);
+    setShowSuggestions(false);
+    setMessages(prev => [...prev, { role: "user", content: messageText }]);
     setLoading(true);
 
     try {
       const res = await fetch("/api/concierge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({ message: messageText }),
       });
 
       const data = await res.json();
@@ -49,6 +55,18 @@ export default function ConciergePanel({ onClose }: ConciergePanelProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const messageText = input.trim();
+    setInput("");
+    await sendMessage(messageText);
+  };
+
+  const handleSuggestionClick = (question: string) => {
+    sendMessage(question);
   };
 
   return (
@@ -91,6 +109,24 @@ export default function ConciergePanel({ onClose }: ConciergePanelProps) {
               </div>
             </div>
           ))}
+          
+          {showSuggestions && messages.length === 1 && (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500 font-medium">Try asking:</p>
+              <div className="flex flex-wrap gap-2">
+                {SUGGESTED_QUESTIONS.map((question, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSuggestionClick(question)}
+                    className="px-3 py-1.5 text-xs bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:border-primary-300 transition-colors text-gray-700"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
           {loading && (
             <div className="flex justify-start">
               <div className="bg-gray-100 p-3 rounded-2xl rounded-bl-sm">

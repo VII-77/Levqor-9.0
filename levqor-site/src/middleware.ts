@@ -66,6 +66,10 @@ export default auth((req) => {
     "/insights",
     "/dfy-contract",
     "/team",
+    "/templates",
+    "/builder",
+    "/onboarding",
+    "/legal",
   ]
   
   if (
