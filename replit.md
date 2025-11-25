@@ -1,8 +1,27 @@
-# Levqor X 9.0 — Compressed
+# Levqor X 9.0 — V13.6 Auth Stabilization Edition
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, enhanced authentication experience with email magic links, guided onboarding, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication with guaranteed login path, auth diagnostics, and improved dashboard UX. The project's ambition is to provide robust, scalable, and globally accessible data management solutions.
+
+## Recent Changes (November 25, 2025)
+
+### V13.6 Auth System Stabilization - COMPLETE
+
+**Summary:** Delivered a stabilized authentication system with guaranteed login path (Credentials/Admin), clear error surfacing on sign-in failures, and auth configuration diagnostics. Safety gate 4/4 PASSED.
+
+**Key Changes:**
+1. **Credentials Provider** — Added ENV-based admin user authentication (ADMIN_EMAIL, ADMIN_PASSWORD)
+2. **Password Form** — Toggle between magic link and password login on sign-in page
+3. **Error Messages** — Comprehensive ERROR_MESSAGES map for all NextAuth error codes
+4. **Auth Diagnostic Page** — `/auth/status` shows provider configuration status with remediation guidance
+5. **Dashboard Link** — Auth Status added to Quick Actions sidebar
+
+**Key Files:**
+- `levqor-site/src/auth.ts` — NextAuth config with Credentials provider
+- `levqor-site/src/app/signin/page.tsx` — Enhanced sign-in with password form
+- `levqor-site/src/app/auth/status/page.tsx` — Auth diagnostic page
+- `levqor-site/src/app/dashboard/page.tsx` — Dashboard with Auth Status link
 
 ## User Preferences
 
