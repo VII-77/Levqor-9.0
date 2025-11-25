@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const KNOWLEDGE_BASE: Record<string, string> = {
-  pricing: "Levqor offers simple, transparent pricing starting at just £9/month for the Starter plan. We also have Growth (£29/month), Business (£59/month), and Scale (£149/month) plans. All plans include a 7-day free trial with no credit card required.",
+  pricing: "Levqor offers simple, transparent pricing starting at just £9/month for the Starter plan. We also have Launch (£29/month), Growth (£59/month), and Agency (£149/month) plans. All plans include a 7-day free trial with no credit card required.",
   trial: "Yes! We offer a 7-day free trial on all plans. No credit card required to start. You can explore all features and decide which plan works best for you.",
-  templates: "We have 50+ pre-built workflow templates across categories like Marketing, Sales, Operations, HR, Finance, Customer Success, Data & Analytics, and IT/DevOps. You can start with any template and customize it with AI.",
+  templates: "We have 20+ pre-built workflow templates across categories like Marketing, Sales, Operations, HR, Finance, Customer Success, Data & Analytics, and IT/DevOps. You can start with any template and customize it with AI.",
   builder: "Our AI Workflow Builder lets you describe what you want to automate in plain English. Just tell us what triggers your workflow and what actions you want, and our AI generates the complete workflow for you.",
-  support: "Support varies by plan:\n• Starter: Email support (48h response)\n• Growth: Email support (24h response)\n• Business: Priority email + chat (12h response)\n• Scale: Dedicated support (4h response, phone access)",
+  support: "Support varies by plan:\n• Starter: Email support (48h response)\n• Launch: Priority email (24h response)\n• Growth: Priority support (12h response)\n• Agency: 4-hour SLA with dedicated support",
   integrations: "Levqor integrates with 100+ apps including Gmail, Slack, Google Sheets, Salesforce, HubSpot, Stripe, Zapier, and more. We're constantly adding new integrations based on customer requests.",
   security: "Security is our top priority. We offer enterprise-grade encryption, SOC 2 Type II compliance, GDPR compliance, and optional SSO/SAML for business plans. All data is encrypted at rest and in transit.",
   "self-healing": "Self-healing means your workflows automatically recover from failures. Levqor monitors every execution, retries failed steps with exponential backoff, and alerts you only when human intervention is needed.",
