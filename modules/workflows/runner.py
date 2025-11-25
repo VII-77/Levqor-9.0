@@ -223,7 +223,8 @@ class WorkflowRunner:
         subject = config.get("subject", "")
         body = config.get("body", "")
         
-        log.info(f"Email step marked as PENDING_EMAIL_SEND (Class C): to={to_email}")
+        email_masked = f"{to_email[:3]}***@{to_email.split('@')[-1]}" if "@" in to_email else "[redacted]"
+        log.info(f"Email step marked as PENDING_EMAIL_SEND (Class C): to={email_masked}")
         
         pending_email = {
             "type": "PENDING_EMAIL_SEND",

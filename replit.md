@@ -1,8 +1,8 @@
-# Levqor X 9.0 — V22.0 Visual Editor + Scaling Edition
+# Levqor X 9.0 — V31.0 Launch Hardening Edition
 
 ## Overview
 
-Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, improved dashboard UX, a **self-running workflow execution engine** with AI-powered builder, approval system, scheduling, and analytics, **25+ workflow templates**, a **visual workflow editor with drag-and-drop**, and **comprehensive scaling documentation**. The project's ambition is to provide robust, scalable, and globally accessible data management solutions with complete automation core.
+Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, improved dashboard UX, a **self-running workflow execution engine** with AI-powered builder, approval system, scheduling, and analytics, **25+ workflow templates**, a **visual workflow editor with drag-and-drop**, **comprehensive scaling documentation**, **GDPR/CCPA compliant data export/delete**, **launch readiness monitoring**, and **preflight testing infrastructure**. The project is now **launch-ready** for production deployment.
 
 ## Recent Changes (November 25, 2025)
 
@@ -72,6 +72,47 @@ Levqor X is a comprehensive data backup and retention management platform offeri
 - Load tier definitions and rate limit profiles
 - K8s HPA, AWS ASG, Replit Autoscale integration guides
 - Capacity planning formulas
+
+### MEGA PHASE v23-v31: Launch Hardening (November 25, 2025)
+
+**Legal Compliance (LEGAL-0):**
+- Created `docs/compliance.md` with GDPR/CCPA baseline
+- Built `modules/compliance/` package with export_utils and delete_utils
+- Added `/api/me/export-data` and `/api/me/delete-account` endpoints (Class C with 30-day grace period)
+- Log hygiene: Email addresses now truncated to `abc***@domain.com` format
+
+**UX Improvements (v23):**
+- Created `GetStartedPanel.tsx` for FTUE (first-time user experience)
+- Added `ErrorDisplay.tsx` shared component for friendly error messages
+- Enhanced error handling in BrainWorkflowBuilder and WorkflowEditor
+
+**Help Center (v24):**
+- Expanded `/help` page with 6 categories and 24 help topics
+- Search functionality and popular topics
+
+**Preflight Testing (v26):**
+- Created `scripts/preflight/test_personas.py` with 3 user journey personas
+- Built `LaunchReadinessPanel.tsx` showing 7 system checks
+
+**Marketing Panel (v27):**
+- Created `MarketingPanel.tsx` with user segments and approval-based campaigns
+- All marketing actions remain proposal-based (Class C)
+
+**Growth Loops (v28):**
+- Added workflow duplication endpoint `POST /api/workflows/<id>/duplicate`
+- Existing referrals UI and template sharing
+
+**Scaling Readiness (v29):**
+- Created `scripts/ops/check_scaling_readiness.py` for capacity verification
+- Checks: health, database, scaling policy, environment, worker capacity
+
+**Launch Readiness API (v30):**
+- Created `api/system/launch_readiness.py` with 7 launch checks
+- Endpoint: `GET /api/system/launch-readiness`
+
+**Launch Page (v31):**
+- Created `/launch` page with hero, features, pricing, CTA
+- Built `scripts/postlaunch/verify_live.py` for post-launch verification
 
 ## User Preferences
 

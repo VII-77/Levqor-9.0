@@ -966,6 +966,8 @@ from api.approvals import approvals_bp
 from api.ai.brain_builder import brain_builder_bp
 from api.analytics import analytics_bp
 from api.templates import templates_bp
+from api.me import me_bp
+from api.system.launch_readiness import system_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -990,6 +992,8 @@ app.register_blueprint(approvals_bp)
 app.register_blueprint(brain_builder_bp)
 app.register_blueprint(analytics_bp)
 app.register_blueprint(templates_bp)
+app.register_blueprint(me_bp)
+app.register_blueprint(system_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():

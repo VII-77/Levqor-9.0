@@ -1,0 +1,216 @@
+FINAL LAUNCH PHASE — “Endgame Hardening, Billing Verification, FTUE Validation, UI Polish, Legal Baseline, and Launch Certification”
+
+Context:
+Assume Phases 0–31 + LEGAL-0 are implemented and passing CI. This command performs the final hardening sequence before the public launch. It MUST operate cautiously, respecting existing logic, safety, approval layers, and i18n.
+
+GLOBAL HARD RULES:
+- Do NOT redesign the app.
+- Do NOT alter billing logic except to FIX real errors.
+- Do NOT auto-send emails or perform external API mutations.
+- Class C (critical actions) MUST enqueue approvals.
+- Scan BEFORE editing; only modify code when strictly necessary.
+- All changes MUST pass `python scripts/ci/run_all_checks.py` before completion.
+
+=========================================================
+PHASE 32 — LIVE BILLING VERIFICATION PREP
+=========================================================
+1. Scan billing-related backend modules:
+   - `api/billing/`
+   - `modules/stripe_connector.py`
+   - `scripts/monitoring/verify_live_billing.py`
+
+2. Validate:
+   - Checkout route correctness.
+   - Subscription activation.
+   - Webhook signature verification.
+   - Graceful handling of trial → paid transitions.
+
+3. Confirm Stripe LIVE MODE env variables are correctly referenced.
+
+4. DO NOT run live-mode charges; only ensure sandbox/live configurations are correct.
+
+If any broken/inconsistent behavior exists, FIX it now.
+
+=========================================================
+PHASE 33 — FTUE (First-Time User Experience) VALIDATION
+=========================================================
+5. Scan dashboard for blank states.
+6. Guarantee:
+   - Templates CTA visible.
+   - Brain Builder CTA visible.
+   - Workflow list shows onboarding message when empty.
+   - No “dead ends” during onboarding.
+
+7. Implement missing skeleton loaders or empty states ONLY IF missing.
+
+=========================================================
+PHASE 34 — TEMPLATE FUNCTIONALITY VERIFICATION
+=========================================================
+8. Validate templates API and existence of template entities.
+9. Ensure template import flow:
+   - List → Select → Create workflow → Edit → Run.
+10. Fix missing fields, broken routes, or missing imports.
+
+=========================================================
+PHASE 35 — BRAIN WORKFLOW BUILDER FINAL CHECK
+=========================================================
+11. Validate:
+   - Brain Builder API endpoint.
+   - Proposal generation (workflow JSON).
+   - Approval queue insertion for CRITICAL workflows.
+   - Workflow creation on approval.
+   - Smooth UI interaction (loading/error states).
+
+12. Fix ONLY if worker/data dependencies cause errors.
+
+=========================================================
+PHASE 36 — APPROVAL QUEUE FINALIZATION
+=========================================================
+13. Validate approval queue:
+   - Listing pending actions.
+   - Approve workflow.
+   - Reject workflow.
+   - Class C logic enforced for:
+     - Emails
+     - External HTTP calls
+     - Data export
+     - Data deletion
+
+14. Confirm approvals UI and backend are consistent.
+
+=========================================================
+PHASE 37 — MARKETING ENGINE SAFE ACTIVATION
+=========================================================
+15. Confirm:
+   - auto_marketing logs → appear properly.
+   - Pending campaigns appear in the UI.
+   - Approve button → enqueues correct action.
+   - No live email sending occurs in this phase.
+
+16. Fix missing components/interfaces if required.
+
+=========================================================
+PHASE 38 — REFERRALS + GROWTH LOOPS
+=========================================================
+17. Validate referral logic:
+   - Referral code generation.
+   - Signup with referral.
+   - Referral count increments.
+
+18. Validate workflow duplication endpoint (Class B).
+19. Validate template sharing or public read-only view if implemented.
+
+=========================================================
+PHASE 39 — GLOBALIZATION & MULTI-LANGUAGE VALIDATION
+=========================================================
+20. Test:
+   - EN, ES, AR, HI, ZH-Hans.
+21. Validate:
+   - Homepage
+   - Dashboard
+   - Templates
+   - Brain Builder
+   - Workflow Editor
+   - Launch page (if exists)
+22. Fix layout overflow or missing i18n keys.
+
+=========================================================
+PHASE 40 — COMPLIANCE BASELINE (LEGAL-1 FINALIZATION)
+=========================================================
+23. Validate presence of:
+   - `/terms`
+   - `/privacy`
+   - `/refund`
+   - `docs/compliance.md`
+   - `docs/scaling.md`
+   - `docs/operations.md`
+   - `docs/real_world_alignment.md`
+
+24. Validate API endpoints:
+   - `GET /api/me/export-data` (Class C)
+   - `POST /api/me/delete-data` (Class C)
+
+25. Confirm logs do NOT store:
+   - raw emails
+   - full names
+   - sensitive text bodies
+
+If ANY location logs PII → redact/truncate.
+
+=========================================================
+PHASE 41 — OPS & SCALING READINESS
+=========================================================
+26. Validate:
+   - `scripts/ops/check_scaling_readiness.py`
+   - `/api/health/summary`
+   - scaling_policy behavior for:
+     - low load
+     - medium load
+     - high load
+     - critical load
+
+27. Fix inconsistencies or missing fields.
+
+=========================================================
+PHASE 42 — LAUNCH CERTIFICATION CHECKLIST
+=========================================================
+28. Validate Launch Checklist (UI + API):
+   - Workflows engine OK
+   - Brain Builder OK
+   - Approvals OK
+   - Templates OK
+   - Scheduler OK
+   - Analytics OK
+   - Docs OK
+   - SEO metadata OK
+   - Stripe live config OK
+
+29. Add missing checks if needed.
+
+=========================================================
+PHASE 43 — LAUNCH PAGE VERIFICATION
+=========================================================
+30. Validate:
+   - `/launch` route exists (if implemented)
+   - Clear feature summary
+   - CTA visible
+   - No broken links
+   - Brain Canvas loads safely
+
+Fix ONLY missing essentials.
+
+=========================================================
+PHASE 44 — POST-LAUNCH VERIFICATION SCRIPT
+=========================================================
+31. Validate `scripts/postlaunch/verify_live.py`:
+   - safety_gate_full
+   - health summary
+   - test workflow run
+   - Brain Builder ping
+
+32. Fix any failing checks.
+
+=========================================================
+PHASE 45 — CI & FINAL PASS
+=========================================================
+33. Run from repo root:
+   - `python scripts/ci/run_all_checks.py`
+   - Fix until PASS (4/4).
+
+34. Output FINAL SUMMARY report in sections:
+   - Billing readiness
+   - FTUE readiness
+   - Template readiness
+   - Brain Builder readiness
+   - Approvals readiness
+   - Marketing readiness
+   - Referrals readiness
+   - Globalization readiness
+   - Compliance readiness
+   - Scaling readiness
+   - Launch Checklist status
+   - /launch page status
+   - Post-launch script status
+   - CI PASS confirmation
+
+END OF COMMAND.

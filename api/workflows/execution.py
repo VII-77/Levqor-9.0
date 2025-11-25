@@ -210,3 +210,57 @@ def api_get_run_events(run_id: str):
     except Exception as e:
         log.error(f"Error getting run events {run_id}: {e}")
         return jsonify({"error": "Failed to get run events"}), 500
+
+
+@workflows_bp.route('/<workflow_id>/duplicate', methods=['POST'])
+def api_duplicate_workflow(workflow_id: str):
+    """
+    POST /api/workflows/<id>/duplicate - Duplicate a workflow (Growth Loop).
+    Creates a copy of an existing workflow with a new name.
+    """
+    try:
+        original = get_workflow_by_id(workflow_id)
+        
+        if not original:
+            return jsonify({"error": "Workflow not found"}), 404
+        
+        data = request.get_json() or {}
+        new_name = data.get("name", f"{original.name} (Copy)")
+        
+        new_id = str(uuid.uuid4())
+        new_steps = [
+            WorkflowStep(
+                id=str(uuid.uuid4()),
+                type=step.type,
+                name=step.name,
+                config=step.config.copy() if step.config else {},
+                timeout=step.timeout,
+                retry_config=step.retry_config.copy() if step.retry_config else None
+            )
+            for step in original.steps
+        ]
+        
+        new_workflow = Workflow(
+            id=new_id,
+            name=new_name,
+            description=data.get("description", original.description),
+            steps=new_steps,
+            created_by=data.get("owner_id") or original.created_by,
+            tenant_id=original.tenant_id,
+            is_active=False,
+            schedule_config=None
+        )
+        
+        created = create_workflow(new_workflow)
+        
+        log.info(f"Workflow duplicated: {workflow_id} -> {new_id}")
+        
+        return jsonify({
+            "original_id": workflow_id,
+            "new_workflow": created.to_dict(),
+            "message": "Workflow duplicated successfully"
+        }), 201
+        
+    except Exception as e:
+        log.error(f"Error duplicating workflow {workflow_id}: {e}")
+        return jsonify({"error": "Failed to duplicate workflow"}), 500

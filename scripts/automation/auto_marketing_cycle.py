@@ -207,7 +207,7 @@ def main():
     for rec in recommendations[:5]:
         log.info(f"  [{rec['priority'].upper()}] {rec['action']}")
         log.info(f"    Segment: {rec['segment']}")
-        log.info(f"    Email: {rec['email']}")
+        log.info(f"    Email: {_truncate_email(rec['email'])}")
         log.info(f"    Subject: {rec['template']}")
         log.info("")
     
