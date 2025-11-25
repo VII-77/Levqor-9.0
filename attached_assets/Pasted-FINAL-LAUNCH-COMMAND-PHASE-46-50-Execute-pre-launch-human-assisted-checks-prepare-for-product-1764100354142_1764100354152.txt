@@ -1,0 +1,91 @@
+FINAL LAUNCH COMMAND — PHASE 46 → 50
+“Execute pre-launch human-assisted checks, prepare for production deploy, and hand off for final manual verification.”
+
+STRICT RULES:
+- Do NOT modify billing logic.
+- Do NOT create new endpoints.
+- Do NOT adjust workflow engine core.
+- Do NOT change Brain Builder logic.
+- Do NOT modify existing templates.
+- Do NOT touch authentication.
+This command prepares the final production launch sequence only.
+
+=========================================================
+PHASE 46 — LIVE BILLING VALIDATION PREP
+=========================================================
+1. Prepare a LIVE billing test checklist for the human operator:
+   - Confirm Stripe LIVE keys.
+   - Confirm webhook secret.
+   - Confirm pricing page in production.
+   - Confirm checkout session creation route.
+   - Confirm subscription status mapping.
+   - Confirm cancellation route health.
+   - Confirm post-purchase redirect.
+2. Generate a short “$1 Live Purchase Test Guide” in the logs.
+3. Do NOT execute live purchase; human must perform.
+
+=========================================================
+PHASE 47 — VISUAL & RESPONSIVE POLISH PREP
+=========================================================
+1. Run static asset checks:
+   - Confirm no missing images.
+   - Confirm favicon + metadata present.
+   - Confirm no console errors during render.
+   - Confirm no hydration warnings.
+2. Prepare a UI/UX visual checklist for human review:
+   - Homepage spacing consistency.
+   - Dashboard card alignment.
+   - Template grid layout.
+   - Brain builder overflow/scroll behavior.
+   - Sidebar behavior on mobile + tablet.
+3. Do NOT modify any CSS unless a critical error is found.
+
+=========================================================
+PHASE 48 — LANGUAGE & GLOBALIZATION SPOT-CHECK SUPPORT
+=========================================================
+1. Scan i18n folders:
+   - Detect missing keys.
+   - Detect untranslated strings.
+2. Log a list of any gaps.
+3. Prepare a human QA guide:
+   - Switch EN → ES → AR → HI → ZH-Hans.
+   - Validate homepage, dashboard, templates, Brain builder.
+   - Flag layout breaks.
+4. If missing i18n keys are found, generate exact patches only.
+
+=========================================================
+PHASE 49 — PUBLIC LAUNCH ANNOUNCEMENT MATERIALS
+=========================================================
+1. Generate:
+   - Product Hunt launch description.
+   - LinkedIn announcement post.
+   - X/Twitter announcement thread.
+   - Reddit r/SaaS launch post.
+2. Place them in logs as structured blocks.
+3. Prepare the “First 48 hours launch playbook”:
+   - Where to post.
+   - When to post.
+   - What to monitor.
+   - How to respond.
+   - How to capture early users.
+
+=========================================================
+PHASE 50 — PRODUCTION DEPLOYMENT READINESS SUMMARY
+=========================================================
+1. Generate a final “GO/NO-GO” checklist for the human operator.
+2. Confirm:
+   - Vercel environment variables match local.
+   - Backend environment variables match production.
+   - Domains + SSL are active.
+   - No missing env variables.
+   - Sentry/logging integrations working (if present).
+   - Health summary passes.
+3. Generate a final command list:
+   - Deploy frontend.
+   - Deploy backend.
+   - Run safety_gate_full.py.
+   - Run postlaunch verify_live.py.
+4. Print a final status message:
+   “READY FOR HUMAN LIVE LAUNCH — ALL AUTOMATION COMPLETE.”
+
+END OF COMMAND.
