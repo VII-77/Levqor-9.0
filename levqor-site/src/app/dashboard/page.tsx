@@ -6,7 +6,8 @@ import AnalyticsWidget from "@/components/AnalyticsWidget";
 import AIHelpPanel from "@/components/ai/AIHelpPanel";
 import LifecycleBanner from "@/components/LifecycleBanner";
 import DashboardOnboarding from "@/components/DashboardOnboarding";
-import { LevqorBrainCanvas } from "@/components/brain";
+import { DashboardBrainCanvas } from "@/components/brain";
+import DashboardClientWrapper from "@/components/dashboard/DashboardClientWrapper";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -39,6 +40,7 @@ export default async function Dashboard(){
   const usage = await getUsage();
   
   return (
+    <DashboardClientWrapper>
     <main className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -70,17 +72,9 @@ export default async function Dashboard(){
               </div>
             </div>
             
-            {/* Right: Levqor Brain Canvas - Neural state for dashboard (thinking/working mode) */}
-            {/* TODO: Wire this to real Brain state (organic/neural/quantum) based on workflow operations */}
-            {/* TODO: Sync with AI actions and workflow execution states */}
-            <div className="hidden md:block w-48 lg:w-64 relative">
-              <LevqorBrainCanvas
-                brainState="neural"
-                className="w-full h-full min-h-[100px]"
-              />
-              <div className="absolute bottom-2 left-2 text-xs text-white/70 bg-black/20 px-2 py-0.5 rounded">
-                Brain: Neural
-              </div>
+            {/* Right: Levqor Brain Canvas - Uses context-driven state */}
+            <div className="hidden md:block w-48 lg:w-64">
+              <DashboardBrainCanvas className="w-full h-full min-h-[100px]" />
             </div>
           </div>
         </div>
@@ -195,5 +189,6 @@ export default async function Dashboard(){
       
       <AIHelpPanel context="dashboard" />
     </main>
+    </DashboardClientWrapper>
   );
 }

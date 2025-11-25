@@ -1,0 +1,61 @@
+You successfully:
+
+- Fixed the Resend email provider issue by removing the breaking provider.
+- Implemented the CI/CD safety harness (run_all_checks.py, auto_upgrade_policy, auto_deploy, DEV_SAFETY).
+- Created the Living Canvas (LevqorBrainCanvas) with WebGL + Canvas fallback.
+- Integrated it into:
+  - Homepage hero (organic state)
+  - Dashboard header (neural state)
+- Wired accessibility, reduced-motion handling, and feature flag NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED.
+
+That is CORRECT. Do NOT undo any of this.
+
+We are now in PHASE 10.2 of the frozen blueprint:
+“Levqor Brain State & Interactions”.
+
+OBJECTIVE FOR THIS COMMAND:
+Turn the Living Canvas from a static visual into a stateful Levqor Brain UI that responds to real user actions and app states.
+
+Global rules (same as before):
+1. Scan before changing anything. No blind edits.
+2. Do NOT redesign the layout. Integrate into what’s there.
+3. Keep all changes incremental and safe.
+4. After each major change, run `python scripts/ci/run_all_checks.py` and fix issues.
+5. Never ignore reduced-motion, accessibility, or feature flags.
+
+TASKS:
+
+PHASE A — CREATE LEVQOR BRAIN CONTEXT
+-------------------------------------
+1. In `levqor-site/src/components/brain/`, create a new file:
+
+   - `LevqorBrainContext.tsx`
+
+   This should export:
+   - `LevqorBrainState = "organic" | "neural" | "quantum" | "success" | "error"`
+   - A React context + provider:
+     - `LevqorBrainProvider`
+     - Hook: `useLevqorBrain()`
+
+   The hook should expose:
+   - `state: LevqorBrainState`
+   - `setState(next: LevqorBrainState)`
+   - Convenience helpers:
+     - `setOrganic()`
+     - `setNeural()`
+     - `setQuantum()`
+     - `setSuccess()`
+     - `setError()`
+
+2. Update `LevqorBrainCanvas.tsx` so it accepts:
+   - `brainState: LevqorBrainState`
+
+PHASE B — WIRE BRAIN CONTEXT INTO LAYOUT
+----------------------------------------
+3. Wrap homepage + dashboard layout trees with `LevqorBrainProvider`.
+
+4. Where you render `LevqorBrainCanvas`, replace hard-coded states with:
+
+   ```ts
+   const { state } = useLevqorBrain();
+   <LevqorBrainCanvas brainState={state} />

@@ -26,6 +26,10 @@ export function useBrainState(initialState: BrainState = "organic"): UseBrainSta
         case "neural":
           return "quantum";
         case "quantum":
+          return "success";
+        case "success":
+          return "error";
+        case "error":
           return "organic";
         default:
           return "organic";

@@ -3,14 +3,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import JsonLd from "@/components/JsonLd";
 import Logo from "@/components/Logo";
-import { LevqorBrainCanvas } from "@/components/brain";
+import { LevqorBrainCanvas, LevqorBrainProvider, useLevqorBrain } from "@/components/brain";
 import { designTokens } from "@/config/design-tokens";
 
 function StatusPill() {
   const [status, setStatus] = useState<{ ok: boolean; message: string }>({ ok: true, message: "Checking status..." });
 
   useEffect(() => {
-    // Use proxy route to avoid CORS issues in development
     fetch("/api/health")
       .then((res) => res.json())
       .then((data) => setStatus({ ok: data.status === "healthy" || data.ok === true, message: "All systems operational" }))
@@ -23,6 +22,11 @@ function StatusPill() {
       {status.message}
     </div>
   );
+}
+
+function ContextAwareBrainCanvas({ className }: { className?: string }) {
+  const { state } = useLevqorBrain();
+  return <LevqorBrainCanvas brainState={state} className={className} />;
 }
 
 export default function Home() {
@@ -52,6 +56,7 @@ export default function Home() {
   };
 
   return (
+    <LevqorBrainProvider initialState="organic">
     <main className="min-h-screen">
       <JsonLd data={structuredData} />
       
@@ -122,8 +127,7 @@ export default function Home() {
           {/* Right Column - Living Canvas */}
           <div className="hidden lg:block animate-fade-in-up" style={{ animationDelay: '200ms' }}>
             <div className="relative">
-              <LevqorBrainCanvas
-                brainState="organic"
+              <ContextAwareBrainCanvas
                 className="w-full h-80 rounded-2xl shadow-2xl"
               />
               <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md">
@@ -136,8 +140,7 @@ export default function Home() {
         
         {/* Mobile Canvas - Shown below content on mobile */}
         <div className="lg:hidden mt-12 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
-          <LevqorBrainCanvas
-            brainState="organic"
+          <ContextAwareBrainCanvas
             className="w-full h-48 rounded-xl shadow-lg"
           />
           <p className="text-center text-sm text-neutral-500 mt-3">Powered by the Levqor Brain</p>
@@ -403,5 +406,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+    </LevqorBrainProvider>
   );
 }

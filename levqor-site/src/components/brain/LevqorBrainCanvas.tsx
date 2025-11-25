@@ -180,7 +180,14 @@ function WebGLRenderer({
     const color2 = hexToRgb(config.colors.secondary);
     const color3 = hexToRgb(config.colors.accent);
 
-    const stateValue = brainState === "organic" ? 0 : brainState === "neural" ? 1 : 2;
+    const stateMap: Record<BrainState, number> = {
+      organic: 0,
+      neural: 1,
+      quantum: 2,
+      success: 3,
+      error: 4,
+    };
+    const stateValue = stateMap[brainState] ?? 0;
 
     const render = () => {
       if (!canvas || !gl || !program) return;
@@ -212,7 +219,7 @@ function WebGLRenderer({
       gl.uniform3f(color1Location, color1[0], color1[1], color1[2]);
       gl.uniform3f(color2Location, color2[0], color2[1], color2[2]);
       gl.uniform3f(color3Location, color3[0], color3[1], color3[2]);
-      gl.uniform1f(stateLocation, stateValue / 2);
+      gl.uniform1f(stateLocation, stateValue / 4);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
