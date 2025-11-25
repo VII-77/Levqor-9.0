@@ -1,0 +1,110 @@
+LEVQOR — FINAL HARDENING:
+BRAIN CANVAS ON + LANGUAGE 404 FIX + 7/7 LAUNCH READINESS
+
+Context:
+- Frontend: levqor-site (Next.js 14 App Router) deployed on Vercel.
+- Backend: https://levqor-backend.replit.app (all health checks PASS).
+- Guardian-Autopilot Mode: ACTIVE and must stay active.
+- Founder Admin Portal: /admin, /admin/console, /admin/revenue, /admin/users, /admin/activity is live.
+- Current symptoms:
+  * Hero shows new WOW UI but Brain Canvas area is a flat blue bar (feature flag or env issue).
+  * Language routes like /es, /fr, etc. are 404 in production.
+  * Launch readiness previously at 6/7 checks passing.
+
+Rules:
+- DO NOT change auth, billing/Stripe logic, or Guardian-Autopilot.
+- DO NOT add destructive actions anywhere.
+- Keep changes minimal, focused, and production-safe.
+
+========================================
+PHASE 1 — DIAGNOSE LAUNCH READINESS GAP
+========================================
+1. Run:
+     python scripts/postlaunch/verify_live.py --api-base https://levqor-backend.replit.app
+2. Identify exactly which of the 7 checks is failing and why.
+3. Log findings to:
+     /workspace-data/autopilot/logs/final_hardening.log
+
+========================================
+PHASE 2 — ENABLE BRAIN CANVAS IN PRODUCTION
+========================================
+1. Inspect env configuration for the frontend:
+   - Vercel env vars (production)
+   - levqor-site env files if present
+2. Ensure this variable exists for the frontend and is exposed to the browser:
+   NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED=true
+3. If it’s missing or blank, set it to true (do not touch any other env vars).
+4. Confirm that LevqorBrainCanvas and related components actually gate on this flag.
+5. Rebuild frontend:
+   cd levqor-site && npm run build
+   cd .. && python scripts/ci/run_all_checks.py
+6. Do NOT ship if build or CI fail; fix and rerun until green.
+
+========================================
+PHASE 3 — FIX LANGUAGE 404s (NEXT-INTL ROUTING)
+========================================
+1. Inspect:
+   - levqor-site/src/i18n.ts
+   - levqor-site/messages/**
+   - levqor-site/src/middleware.ts
+   - levqor-site/src/app/layout.tsx
+   - levqor-site/src/app/page.tsx
+   - any [locale] segments in src/app
+2. Implement or correct path-based locale routing so these URLs work without 404:
+   /        (default)
+   /es
+   /fr
+   /de
+   /ar
+   /hi
+   /zh-Hans
+   /it
+   /pt
+3. Use the standard Next.js 14 + next-intl App Router pattern:
+   - src/app/[locale]/layout.tsx
+   - src/app/[locale]/page.tsx
+   or equivalent route groups, wired into NextIntlClientProvider.
+4. Ensure:
+   - /signin, /dashboard, /pricing still work.
+   - No infinite redirects from middleware.
+5. Rebuild frontend again if necessary:
+   cd levqor-site && npm run build
+   cd .. && python scripts/ci/run_all_checks.py
+
+========================================
+PHASE 4 — RESTORE 7/7 LAUNCH READINESS
+========================================
+1. After Brain Canvas + i18n fixes, rerun:
+     python scripts/postlaunch/verify_live.py --api-base https://levqor-backend.replit.app
+2. Fix ONLY what is necessary to make ALL 7 checks PASS.
+3. Repeat until the report shows:
+   - Health Endpoint: PASS
+   - Launch Readiness: PASS (7/7)
+   - Templates API: PASS
+   - Workflows API: PASS
+
+========================================
+PHASE 5 — PRODUCTION VERIFICATION
+========================================
+1. Ensure a production redeploy of levqor-site is triggered after env & routing changes.
+2. Verify against the live site (https://levqor.ai), not just dev:
+   - Brain Canvas is visible and animating in the hero.
+   - /, /es, /fr, /de, /ar, /hi, /zh-Hans, /it, /pt all load without 404.
+   - /signin and /dashboard still behave correctly.
+   - /admin and subpages still work.
+
+========================================
+PHASE 6 — SUMMARY FOR FOUNDER
+========================================
+Output a concise, human-readable summary:
+   - Which files were changed for:
+     * Brain Canvas flag / config
+     * i18n routing
+   - Which launch readiness check was failing and how it was fixed.
+   - Confirmation that:
+     * scripts/ci/run_all_checks.py passes
+     * python scripts/postlaunch/verify_live.py --api-base https://levqor-backend.replit.app shows 7/7 PASS
+     * Brain Canvas is ACTIVE on the live homepage
+     * Language routes no longer 404
+     * Admin portal still works as before.
+End of command.
