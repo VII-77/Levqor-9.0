@@ -1,0 +1,287 @@
+You are the Replit AI Agent working on the Levqor project.
+
+GOAL:
+Stabilize and upgrade the authentication system and sign-in experience so that:
+
+1. At least ONE login path works reliably end-to-end in production.
+2. The sign-in UI is clear and honest (no “mystery failures”).
+3. Any remaining provider/env misconfiguration (Google/Microsoft/Magic Link) is surfaced in a **diagnostic page**, not hidden.
+4. The dashboard and onboarding flows behave correctly for logged-in vs not-logged-in users.
+5. All changes keep the existing working site (homepage, templates, builder, concierge, pricing, SEO) intact and functional.
+6. Final build passes and the existing safety gate script passes.
+
+You MUST:
+- Work in PHASES.
+- Inspect before editing.
+- Show diffs for every file you change.
+- Fix all build errors immediately.
+- Run the safety gate at the end.
+- Do NOT rip out existing working flows.
+
+============================================================
+PHASE 0 — AUTH DISCOVERY (READ ONLY)
+============================================================
+
+1. Identify where NextAuth is configured:
+   - Search for files matching:
+     - `pages/api/auth/[...nextauth].ts`
+     - `src/app/api/auth/[...nextauth]/route.ts`
+     - Any file containing `NextAuth(` or `authOptions`.
+
+2. Open and READ (do NOT edit yet):
+   - The NextAuth config file (auth options).
+   - The main sign-in page:
+     - Likely under `src/app/(auth)/signin/page.tsx`, `src/app/signin/page.tsx`, or similar.
+   - The dashboard page:
+     - `src/app/dashboard/page.tsx` and any layouts around it.
+
+3. From this, determine:
+   - Which providers are defined (Google, Azure/Microsoft, Email, Credentials, etc.).
+   - Whether there is an Adapter (Prisma or something else).
+   - How errors are currently propagated (e.g. `error` query param).
+
+ONLY AFTER you understand the current auth structure, move on.
+
+============================================================
+PHASE 1 — SIGN-IN UI & ERROR SURFACING
+============================================================
+
+Goal: Make the sign-in page honest, clear, and non-broken at the UI level.
+
+1. Locate the sign-in page component and open it.
+
+2. Update the sign-in UI so that it:
+
+   - Displays:
+     - Heading: “Sign in to Levqor”
+     - Optional subtext: “Use your preferred method below.”
+   - Clearly shows buttons for each configured provider:
+     - Google: `signIn("google")`
+     - Microsoft/Azure: `signIn("azure-ad")` or the actual provider id you find.
+     - Email/Magic Link: call `signIn("email")` if an Email provider exists.
+   - If there is a Credentials provider, we will enhance it in PHASE 2.
+
+3. Error handling:
+   - If NextAuth passes an `error` query parameter to the sign-in page (very likely), display a box at the top like:
+     - “Sign-in failed: [error]. This is often caused by misconfigured provider settings (redirect URLs, secrets, or environment variables).”
+   - Map a few common error codes/messages to friendlier text if possible (`Configuration`, `AccessDenied`, etc.).
+
+4. Ensure that the sign-in page:
+   - Renders without crashing.
+   - Does not show any raw stack traces.
+   - Does not silently fail when there is an error.
+
+Do NOT remove providers here. Just tidy up the UI and error messaging.
+
+Run `cd levqor-site && npm run build` and fix any errors if you introduced them.
+
+============================================================
+PHASE 2 — GUARANTEED LOGIN PATH (CREDENTIALS OR CONTROLLED BACKDOOR)
+============================================================
+
+Goal: Provide at least ONE reliable, deterministic way to log into Levqor that does NOT depend on external provider consoles being perfectly configured.
+
+Priority:
+
+1) If a Credentials provider already exists, upgrade it.
+2) If not, add a Credentials provider with a safe, minimal implementation.
+3) Only as an absolute fallback, add a single “admin” user powered by env variables.
+
+Steps:
+
+1. In the NextAuth config:
+
+   - Check if `CredentialsProvider` already exists.
+   - If YES:
+     - Inspect how it validates users.
+   - If NO:
+     - Add `CredentialsProvider` in the least disruptive way.
+
+2. Look for any existing user model / adapter:
+   - Search for `PrismaClient`, `prisma.user`, or `adapter:`.
+   - If there is a Prisma/DB adapter:
+     - Implement a minimal user model (if not already):
+       - Fields: id, email (unique), hashedPassword, createdAt, updatedAt.
+     - Implement:
+       - Signup logic (create user with hashed password).
+       - Credentials validation logic (compare hashed password on sign-in).
+   - If there is NO DB/adapter at all:
+     - Implement a TEMPORARY, ENV-DRIVEN admin user:
+
+       - Read `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `process.env`.
+       - In the Credentials provider, validate:
+         - If email and password match those env values, return a user object like:
+           `{ id: "admin", name: "Admin", email: ADMIN_EMAIL }`
+         - Otherwise, throw a “Invalid credentials” error.
+
+     - Add clear comments in code that this is a temporary admin-only path for early access and must be replaced with proper DB-backed users later.
+
+3. Update the sign-in page to include a **Credentials** section:
+
+   - Email input.
+   - Password input.
+   - “Sign in” button that triggers `signIn("credentials", ...)`.
+   - If using the ENV-based admin path, add a subtle note like:
+     - “Early access: use your invited admin credentials.”
+
+4. Implement a very simple sign-up flow ONLY IF you have a proper DB/adapter:
+   - A “Create account” form that:
+     - calls a route like `/api/auth/signup`,
+     - creates a user with hashed password,
+     - and then redirects to sign-in or logs the user in.
+
+5. TEST FLOW:
+
+   - Using the Credentials/ADMIN path:
+     - Sign in.
+     - Load `/dashboard`.
+     - Confirm you are treated as logged-in.
+     - Confirm redirect from `/dashboard` → `/signin` still works when NOT logged in.
+
+Run `cd levqor-site && npm run build` again and fix all errors.
+
+============================================================
+PHASE 3 — AUTH DIAGNOSTIC PAGE (FOR EXTERNAL CONFIG HELP)
+============================================================
+
+Goal: Create a clear diagnostic page that helps the human fix Google/Microsoft/Magic Link without guessing.
+
+1. Create a page:
+
+   - `levqor-site/src/app/auth/status/page.tsx`
+
+2. This page should:
+
+   - Be **auth-protected** (only visible when logged in via Credentials/admin).
+   - Read from `process.env` (without printing full secrets) to determine:
+     - Whether `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are present.
+     - Whether any Microsoft/Azure client vars are present.
+     - Whether email provider envs are present.
+   - Show a simple status table:
+
+     Example:
+     - Google: ENV present: yes/no, Config status: “likely OK / likely misconfigured”.
+     - Microsoft: ENV present: yes/no.
+     - Email provider: ENV present: yes/no.
+     - NEXTAUTH_URL: show the value of `process.env.NEXTAUTH_URL`.
+
+   - Show a “How to fix” section with static instructions, for example:
+
+     - For Google:
+       - “In Google Cloud Console, ensure redirect URI: https://www.levqor.ai/api/auth/callback/google”
+     - For Microsoft:
+       - Async: https://www.levqor.ai/api/auth/callback/… (use actual provider id)
+     - For Magic Link:
+       - “Ensure your email provider env vars are set: …”
+
+3. Make sure this page does NOT expose secrets. Only show booleans / trimmed values.
+
+4. Add a link to `/auth/status` from the dashboard, visible only to the logged-in admin for now (e.g. a small “Auth status” link).
+
+Rebuild and fix.
+
+============================================================
+PHASE 4 — DASHBOARD + ONBOARDING INTEGRATION WITH AUTH
+============================================================
+
+Goal: Ensure that once a user is successfully logged in (via Credentials/admin), the dashboard behaves properly.
+
+1. Open `levqor-site/src/app/dashboard/page.tsx` and any related components.
+
+2. Confirm:
+
+   - If user is not logged in:
+     - They are redirected to `/signin`.
+   - If user IS logged in:
+     - Show:
+       - “Welcome back, [name or email]”
+       - A list of workflows/systems if present (reuse existing logic).
+       - Buttons:
+         - “Create new system” → `/builder`
+         - “Browse templates” → `/templates`
+
+3. Add basic “first-time user” experience:
+
+   - If the logged-in user has 0 workflows:
+     - Show a simple onboarding panel:
+       - Ask: “What do you want to build?”
+       - Suggest 3–5 templates.
+       - Buttons that go to `/builder?templateId=...`.
+
+Do NOT overcomplicate. Just make it not-empty and not-confusing.
+
+Rebuild and fix.
+
+============================================================
+PHASE 5 — FINAL QA: PUBLIC FLOW + AUTH FLOW
+============================================================
+
+Goal: Confirm everything is coherent.
+
+1. Check PUBLIC (logged-out) flows:
+
+   - `/` loads as before.
+   - `/templates` shows templates.
+   - `/builder` works with and without `templateId`.
+   - Clicking “Dashboard” from nav logs you out → redirect to `/signin`.
+
+2. Check AUTH flows:
+
+   - Use Credentials (or ENV-based admin):
+     - Sign in.
+     - Reach `/dashboard`.
+     - Reach `/auth/status`.
+     - Confirm status page loads.
+
+3. Ensure that the broken Google/Microsoft/Magic flows:
+   - No longer appear as “mystery failures” — they show clear errors if clicked.
+   - Optionally label them “Requires configuration” if envs are missing.
+
+Rebuild and fix.
+
+============================================================
+PHASE 6 — BUILD & SAFETY GATE
+============================================================
+
+1. Run:
+
+   - `cd levqor-site && npm run build`
+
+Fix ALL errors and serious warnings. Do NOT leave any build failure.
+
+2. Then run:
+
+   - `cd ~/workspace && python scripts/monitoring/safety_gate_full.py`
+
+If any of the checks fail:
+   - Fix the failing area (web, auth, SEO, billing).
+   - Re-run both the build and the safety gate until all pass.
+
+============================================================
+PHASE 7 — COMPLETION
+============================================================
+
+You may ONLY consider this task complete if:
+
+1. Sign-in page:
+   - Renders cleanly.
+   - Shows clear error messages when providers fail.
+   - Offers at least ONE working login path (Credentials/admin).
+
+2. Dashboard:
+   - Redirects to `/signin` when logged out.
+   - Renders correctly when logged in.
+   - Offers CTAs to Builder and Templates.
+
+3. Auth status page:
+   - Shows config guidance for Google/Microsoft/Magic.
+   - Does NOT leak secrets.
+
+4. Safety gate:
+   - All checks PASS.
+
+When everything above is true, output EXACTLY:
+
+“AUTH SYSTEM STABILIZED. AT LEAST ONE LOGIN PATH WORKING. SAFE FOR ENTERPRISE LAYER ON TOP.”
+
+Then stop.

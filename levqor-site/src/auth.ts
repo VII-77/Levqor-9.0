@@ -2,6 +2,7 @@ import NextAuth, { NextAuthConfig } from "next-auth"
 import Google from "next-auth/providers/google"
 import AzureAD from "next-auth/providers/azure-ad"
 import Resend from "next-auth/providers/resend"
+import Credentials from "next-auth/providers/credentials"
 
 const DENYLIST = ['mailinator.com', 'tempmail.com', 'guerrillamail.com', 'temp-mail.org'];
 
@@ -25,6 +26,34 @@ async function sendAuditEvent(event: string, email: string, userAgent?: string, 
 
 export const authOptions: NextAuthConfig = {
   providers: [
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
+        
+        if (!adminEmail || !adminPassword) {
+          throw new Error("Admin credentials not configured");
+        }
+        
+        const email = credentials?.email as string;
+        const password = credentials?.password as string;
+        
+        if (email === adminEmail && password === adminPassword) {
+          return {
+            id: "admin",
+            name: "Admin",
+            email: adminEmail,
+          };
+        }
+        
+        throw new Error("Invalid credentials");
+      },
+    }),
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",

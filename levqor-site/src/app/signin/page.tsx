@@ -4,6 +4,8 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+type SignInMode = "oauth" | "credentials" | "magic-link";
+
 const ERROR_MESSAGES: Record<string, string> = {
   OAuthSignin: "There was a problem starting the sign-in process. Please try again.",
   OAuthCallback: "There was a problem completing the sign-in. Please try a different method.",
@@ -19,8 +21,10 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 function SignInContent() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showCredentials, setShowCredentials] = useState(false);
   const searchParams = useSearchParams();
   const errorCode = searchParams.get("error");
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
@@ -76,6 +80,29 @@ function SignInContent() {
       await signIn(provider, { callbackUrl });
     } catch (err) {
       console.error("OAuth sign-in error:", err);
+      setLoading(false);
+    }
+  }
+  
+  async function handleCredentialsSignIn(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        callbackUrl,
+        redirect: false,
+      });
+      
+      if (result?.error) {
+        window.location.href = `/signin?error=CredentialsSignin&callbackUrl=${encodeURIComponent(callbackUrl)}`;
+      } else if (result?.ok) {
+        window.location.href = callbackUrl;
+      }
+    } catch (err) {
+      console.error("Credentials sign-in error:", err);
+    } finally {
       setLoading(false);
     }
   }
@@ -154,44 +181,119 @@ function SignInContent() {
                   <div className="w-full border-t border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-white text-gray-500">Or continue with email</span>
+                  <span className="px-3 bg-white text-gray-500">Or sign in with email</span>
                 </div>
               </div>
 
-              <form onSubmit={submit} className="space-y-4">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                    Email address
-                  </label>
-                  <input 
-                    id="email"
-                    type="email" 
-                    className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                    placeholder="you@example.com" 
-                    value={email} 
-                    onChange={e => setEmail(e.target.value)} 
-                    required
+              {showCredentials ? (
+                <form onSubmit={handleCredentialsSignIn} className="space-y-4">
+                  <div>
+                    <label htmlFor="cred-email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email address
+                    </label>
+                    <input 
+                      id="cred-email"
+                      type="email" 
+                      className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                      placeholder="you@example.com" 
+                      value={email} 
+                      onChange={e => setEmail(e.target.value)} 
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                      Password
+                    </label>
+                    <input 
+                      id="password"
+                      type="password" 
+                      className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                      placeholder="Enter your password" 
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      required
+                      disabled={loading}
+                    />
+                  </div>
+                  <button 
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
+                    type="submit"
                     disabled={loading}
-                  />
+                  >
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                        </svg>
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign in"
+                    )}
+                  </button>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowCredentials(false)}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Use magic link instead
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 text-center">
+                    Early access: use your invited admin credentials.
+                  </p>
+                </form>
+              ) : (
+                <div className="space-y-4">
+                  <form onSubmit={submit} className="space-y-4">
+                    <div>
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        Email address
+                      </label>
+                      <input 
+                        id="email"
+                        type="email" 
+                        className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                        placeholder="you@example.com" 
+                        value={email} 
+                        onChange={e => setEmail(e.target.value)} 
+                        required
+                        disabled={loading}
+                      />
+                    </div>
+                    <button 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                          </svg>
+                          Sending...
+                        </>
+                      ) : (
+                        "Send magic link"
+                      )}
+                    </button>
+                  </form>
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowCredentials(true)}
+                      className="text-sm text-blue-600 hover:underline"
+                    >
+                      Sign in with password instead
+                    </button>
+                  </div>
                 </div>
-                <button 
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
-                  type="submit"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                      </svg>
-                      Sending...
-                    </>
-                  ) : (
-                    "Send magic link"
-                  )}
-                </button>
-              </form>
+              )}
               
               <div className="mt-6 pt-6 border-t border-gray-100">
                 <p className="text-xs text-gray-500 text-center">
