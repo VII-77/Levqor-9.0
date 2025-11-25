@@ -2,7 +2,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
 
 function buildTargetUrl(req: Request, params: { path: string[] }): string {
   const reqUrl = new URL(req.url);
-  const pathname = '/' + params.path.join('/');
+  const pathname = '/api/' + params.path.join('/');
   const search = reqUrl.search;
   return `${API_BASE}${pathname}${search}`;
 }

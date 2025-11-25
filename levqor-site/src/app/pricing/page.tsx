@@ -7,8 +7,6 @@ import CurrencySwitcher from "@/components/CurrencySwitcher";
 import ExitIntentModal from "@/components/ExitIntentModal";
 import ReferralInvite from "@/components/referrals/ReferralInvite";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
-
 type Term = "monthly" | "yearly";
 type Tier = "starter" | "launch" | "growth" | "agency";
 
@@ -84,7 +82,7 @@ function DFYCard({
   
   const handleClick = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/billing/checkout`, {
+      const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 
@@ -139,7 +137,7 @@ function AddonCard({
   
   const handleClick = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/billing/checkout`, {
+      const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 
@@ -187,7 +185,7 @@ function Card({
   
   const handleClick = async () => {
     try {
-      const response = await fetch(`${API_BASE}/api/billing/checkout`, {
+      const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 

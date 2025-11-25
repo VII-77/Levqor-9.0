@@ -1,3 +1,6 @@
 {
-  "/page": "app/page.js"
+  "/api/[...path]/route": "app/api/[...path]/route.js",
+  "/page": "app/page.js",
+  "/api/portal/checkout/route": "app/api/portal/checkout/route.js",
+  "/pricing/page": "app/pricing/page.js"
 }
