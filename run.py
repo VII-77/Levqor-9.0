@@ -895,6 +895,7 @@ def openapi():
 from api.admin.flags import bp as flags_bp
 from api.admin.ledger import bp as ledger_bp
 from api.admin.growth import bp as growth_bp
+from api.admin.dashboard import bp as admin_dashboard_bp
 from api.billing.pricing import bp as pricing_bp
 from api.billing.discounts import bp as discounts_bp
 from api.billing.checkout import bp as billing_checkout_bp
@@ -921,6 +922,7 @@ from api.routes.intelligence import bp as intelligence_bp
 app.register_blueprint(flags_bp)
 app.register_blueprint(ledger_bp)
 app.register_blueprint(growth_bp)
+app.register_blueprint(admin_dashboard_bp)
 app.register_blueprint(pricing_bp)
 app.register_blueprint(discounts_bp)
 app.register_blueprint(billing_checkout_bp)
