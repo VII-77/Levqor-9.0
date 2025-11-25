@@ -55,11 +55,12 @@ def send_alert(level, message):
             logger.error(f"Telegram alert failed: {e}")
             results["telegram"] = "failed"
     
-    # Email via Resend (if configured)
+    # Email via Resend (using centralized email service)
     resend_key = os.getenv("RESEND_API_KEY")
-    receiving_email = os.getenv("RECEIVING_EMAIL")
+    from_email = os.getenv("AUTH_FROM_EMAIL", "notifications@levqor.ai")
+    founder_email = os.getenv("FOUNDER_EMAIL") or os.getenv("AUTH_FROM_EMAIL")
     
-    if resend_key and receiving_email:
+    if resend_key and founder_email:
         try:
             response = requests.post(
                 "https://api.resend.com/emails",
@@ -68,8 +69,8 @@ def send_alert(level, message):
                     "Content-Type": "application/json"
                 },
                 json={
-                    "from": "alerts@levqor.ai",
-                    "to": receiving_email,
+                    "from": from_email,
+                    "to": founder_email,
                     "subject": f"[{level.upper()}] Levqor Alert",
                     "text": message
                 },
