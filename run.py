@@ -169,9 +169,23 @@ def security_core_before_request():
 
 @app.after_request
 def add_headers(r):
-    r.headers["Access-Control-Allow-Origin"] = "https://levqor.ai"
+    # Dynamic CORS based on request origin
+    origin = request.headers.get("Origin", "")
+    allowed_origins = [
+        "https://levqor.ai",
+        "https://www.levqor.ai",
+        "http://localhost:5000",
+        "http://localhost:3000",
+        "http://127.0.0.1:5000",
+    ]
+    # Also allow Replit dev origins
+    if origin and (origin in allowed_origins or ".replit.dev" in origin or ".replit.app" in origin):
+        r.headers["Access-Control-Allow-Origin"] = origin
+    else:
+        r.headers["Access-Control-Allow-Origin"] = "https://levqor.ai"
     r.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS,PATCH"
     r.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Api-Key"
+    r.headers["Access-Control-Allow-Credentials"] = "true"
     r.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
     r.headers["Content-Security-Policy"] = "default-src 'none'; connect-src https://levqor.ai https://api.levqor.ai; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
     r.headers["Cross-Origin-Opener-Policy"] = "same-origin"
