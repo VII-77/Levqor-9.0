@@ -8,7 +8,7 @@
 
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import Logo from './Logo';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { useState } from 'react';

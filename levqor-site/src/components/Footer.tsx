@@ -6,7 +6,7 @@
  * SAFETY: Visual-only changes, maintains all existing links and legal text
  */
 
-import Link from 'next/link';
+import { Link } from '@/i18n/routing';
 import Logo from './Logo';
 
 export default function Footer() {

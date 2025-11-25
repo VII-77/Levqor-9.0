@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useCallback, useRef } from "react";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
 import { computeNextBrainState, getTransientDuration } from "./brainStateMachine";
