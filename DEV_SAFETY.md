@@ -1,5 +1,35 @@
 # Levqor Development Safety Guide
 
+## Levqor Brain Interactions
+
+The Living Canvas brain visualization responds to user interactions across the platform:
+
+### Homepage Brain Interactions
+- **Primary CTA ("Start free trial")**: Hover triggers `neural` (thinking) state, click triggers `success` state
+- **Secondary CTA ("See pricing")**: Hover triggers `quantum` (processing) state
+- **Location**: `levqor-site/src/components/brain/InteractiveHeroCTA.tsx`
+
+### Dashboard Brain Interactions
+- **Test Brain Button**: Cycles through all 5 states (organic → neural → quantum → success → error → organic)
+- **Location**: `levqor-site/src/components/brain/TestBrainButton.tsx`
+- **Note**: Replace with real workflow execution wiring when available
+
+### Brain Context Usage
+- `useLevqorBrain()` hook provides: `state`, `setState`, `setOrganic`, `setNeural`, `setQuantum`, `setSuccess`, `setError`
+- Homepage wrapped with `LevqorBrainProvider` at `page.tsx`
+- Dashboard wrapped with `DashboardClientWrapper` → `LevqorBrainProvider`
+
+### Sound Reactivity (Optional)
+- **Hook**: `useSoundIntensity()` in `levqor-site/src/components/brain/useSoundIntensity.ts`
+- **Requirements for activation**:
+  1. `NEXT_PUBLIC_LEVQOR_BRAIN_SOUND_ENABLED=true` in environment
+  2. User grants microphone permission
+  3. `prefers-reduced-motion` is NOT active
+- **Behavior**: Returns intensity 0-1, modulates canvas visuals subtly
+- **Privacy**: Intensity-only. No recording, no storage, no network transmission.
+
+---
+
 ## Master Safety Command
 
 Before any deployment or major code changes, run the master safety command:

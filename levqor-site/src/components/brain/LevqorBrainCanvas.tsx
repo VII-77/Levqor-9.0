@@ -3,10 +3,12 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import type { BrainState } from "./types";
 import { BRAIN_STATE_CONFIGS } from "./types";
+import { useSoundIntensity } from "./useSoundIntensity";
 
 interface LevqorBrainCanvasProps {
   brainState: BrainState;
   className?: string;
+  soundIntensity?: number;
 }
 
 function hexToRgb(hex: string): [number, number, number] {
@@ -49,6 +51,7 @@ const FRAGMENT_SHADER = `
   uniform vec3 u_color2;
   uniform vec3 u_color3;
   uniform float u_state;
+  uniform float u_sound;
 
   float noise(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -57,7 +60,8 @@ const FRAGMENT_SHADER = `
   void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
     
-    float t = u_time * 0.5;
+    float soundMod = 1.0 + u_sound * 0.3;
+    float t = u_time * 0.5 * soundMod;
     
     float wave1 = sin(uv.x * 3.0 + t) * 0.5 + 0.5;
     float wave2 = sin(uv.y * 2.0 - t * 0.7) * 0.5 + 0.5;
@@ -65,16 +69,18 @@ const FRAGMENT_SHADER = `
     
     float blend = (wave1 + wave2 + wave3) / 3.0;
     
-    float intensity = 0.3 + u_state * 0.2;
+    float intensity = 0.3 + u_state * 0.2 + u_sound * 0.15;
     float speed = 1.0 + u_state * 0.5;
     
     blend = blend * intensity + (1.0 - intensity) * 0.5;
     
     vec3 color = mix(u_color1, u_color2, blend);
-    color = mix(color, u_color3, wave3 * 0.3);
+    color = mix(color, u_color3, wave3 * 0.3 + u_sound * 0.1);
     
     float gradient = 1.0 - uv.y * 0.3;
     color *= gradient;
+    
+    color = color * (1.0 + u_sound * 0.1);
     
     gl_FragColor = vec4(color, 1.0);
   }
@@ -84,15 +90,22 @@ function WebGLRenderer({
   canvasRef,
   brainState,
   reducedMotion,
+  soundIntensity = 0,
 }: {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   brainState: BrainState;
   reducedMotion: boolean;
+  soundIntensity?: number;
 }) {
   const glRef = useRef<WebGLRenderingContext | null>(null);
   const programRef = useRef<WebGLProgram | null>(null);
   const animationRef = useRef<number>(0);
   const startTimeRef = useRef<number>(Date.now());
+  const soundIntensityRef = useRef<number>(soundIntensity);
+
+  useEffect(() => {
+    soundIntensityRef.current = soundIntensity;
+  }, [soundIntensity]);
 
   const createShader = useCallback(
     (gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null => {
@@ -211,6 +224,7 @@ function WebGLRenderer({
       const color2Location = gl.getUniformLocation(program, "u_color2");
       const color3Location = gl.getUniformLocation(program, "u_color3");
       const stateLocation = gl.getUniformLocation(program, "u_state");
+      const soundLocation = gl.getUniformLocation(program, "u_sound");
 
       const elapsed = reducedMotion ? 0 : (Date.now() - startTimeRef.current) / 1000;
 
@@ -220,6 +234,7 @@ function WebGLRenderer({
       gl.uniform3f(color2Location, color2[0], color2[1], color2[2]);
       gl.uniform3f(color3Location, color3[0], color3[1], color3[2]);
       gl.uniform1f(stateLocation, stateValue / 4);
+      gl.uniform1f(soundLocation, soundIntensityRef.current);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -233,7 +248,7 @@ function WebGLRenderer({
     return () => {
       cancelAnimationFrame(animationRef.current);
     };
-  }, [canvasRef, brainState, reducedMotion]);
+  }, [canvasRef, brainState, reducedMotion, soundIntensity]);
 
   return null;
 }
@@ -309,11 +324,13 @@ function isBrainCanvasEnabled(): boolean {
   return featureFlag !== "false";
 }
 
-export default function LevqorBrainCanvas({ brainState, className = "" }: LevqorBrainCanvasProps) {
+export default function LevqorBrainCanvas({ brainState, className = "", soundIntensity: externalSoundIntensity }: LevqorBrainCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isWebGLSupported, setIsWebGLSupported] = useState<boolean | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isEnabled, setIsEnabled] = useState(() => isBrainCanvasEnabled());
+  const hookSoundIntensity = useSoundIntensity();
+  const soundIntensity = externalSoundIntensity ?? hookSoundIntensity;
 
   useEffect(() => {
     setIsEnabled(isBrainCanvasEnabled());
@@ -371,6 +388,7 @@ export default function LevqorBrainCanvas({ brainState, className = "" }: Levqor
           canvasRef={canvasRef}
           brainState={brainState}
           reducedMotion={reducedMotion}
+          soundIntensity={soundIntensity}
         />
       ) : (
         <Canvas2DFallback

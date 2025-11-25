@@ -2,6 +2,7 @@
 
 import LevqorBrainCanvas from "./LevqorBrainCanvas";
 import { useLevqorBrain } from "./LevqorBrainContext";
+import TestBrainButton from "./TestBrainButton";
 
 export default function DashboardBrainCanvas({ className }: { className?: string }) {
   const { state } = useLevqorBrain();
@@ -10,6 +11,9 @@ export default function DashboardBrainCanvas({ className }: { className?: string
       <LevqorBrainCanvas brainState={state} className="w-full h-full" />
       <div className="absolute bottom-2 left-2 text-xs text-white/70 bg-black/20 px-2 py-0.5 rounded">
         Brain: {state.charAt(0).toUpperCase() + state.slice(1)}
+      </div>
+      <div className="absolute top-2 right-2">
+        <TestBrainButton />
       </div>
     </div>
   );

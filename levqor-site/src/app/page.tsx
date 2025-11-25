@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import JsonLd from "@/components/JsonLd";
 import Logo from "@/components/Logo";
-import { LevqorBrainCanvas, LevqorBrainProvider, useLevqorBrain } from "@/components/brain";
+import { LevqorBrainCanvas, LevqorBrainProvider, useLevqorBrain, InteractiveHeroCTA } from "@/components/brain";
 import { designTokens } from "@/config/design-tokens";
 
 function StatusPill() {
@@ -86,22 +86,13 @@ export default function Home() {
               Levqor runs your workflows, monitors failures, and self-heals. Email, Sheets, Slack, CRM, and more.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-              <Link
-                href="/signin"
-                className="group px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-secondary-700 transition-all text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-              >
-                Start free trial
-                <svg className="inline-block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Link>
-              <Link
-                href="/pricing"
-                className="group px-8 py-4 border-2 border-neutral-800 text-neutral-900 rounded-xl font-semibold hover:bg-neutral-800 hover:text-white transition-all text-lg"
-              >
-                See pricing
-              </Link>
+            <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+              <InteractiveHeroCTA
+                primaryHref="/signin"
+                primaryText="Start free trial"
+                secondaryHref="/pricing"
+                secondaryText="See pricing"
+              />
             </div>
             
             {/* Trust Signals */}

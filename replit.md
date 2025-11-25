@@ -6,6 +6,27 @@ Levqor X is a comprehensive data backup and retention management platform offeri
 
 ## Recent Changes (November 25, 2025)
 
+### V14.0 Living Canvas Brain Real UX Interactions + Sound Reactivity - COMPLETE
+
+**Summary:** Delivered real user interactions driving brain state changes on homepage and dashboard, plus optional sound-reactive mode using microphone intensity for subtle visual modulation.
+
+**Key Changes:**
+1. **InteractiveHeroCTA** — Homepage CTA buttons drive brain state (hover → neural/quantum, click → success)
+2. **TestBrainButton** — Dashboard dev button cycles through all 5 states for testing
+3. **useSoundIntensity Hook** — Returns 0-1 intensity from microphone, respects feature flag + reduced-motion
+4. **Sound-Reactive Canvas** — WebGL shader modulates visuals based on sound intensity (subtle effects)
+5. **Privacy-Safe** — Sound hook: intensity-only, no recording, no storage, no network transmission
+
+**Key Files:**
+- `levqor-site/src/components/brain/InteractiveHeroCTA.tsx` — Interactive CTA with brain state triggers
+- `levqor-site/src/components/brain/TestBrainButton.tsx` — Dev button to test brain states
+- `levqor-site/src/components/brain/useSoundIntensity.ts` — Microphone intensity hook
+- `levqor-site/src/components/brain/LevqorBrainCanvas.tsx` — Updated with sound integration
+
+**Feature Flags:**
+- `NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED` — Controls canvas rendering
+- `NEXT_PUBLIC_LEVQOR_BRAIN_SOUND_ENABLED` — Controls sound reactivity (disabled by default)
+
 ### V13.9 Living Canvas Brain State & Interactions - COMPLETE
 
 **Summary:** Delivered stateful Living Canvas with React Context for cross-component state management. Extended brain states to 5 (organic, neural, quantum, success, error) with shared context enabling coordinated state transitions across dashboard widgets.

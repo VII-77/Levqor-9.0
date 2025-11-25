@@ -1,0 +1,172 @@
+You have already completed:
+
+- CI/CD safety harness (run_all_checks.py, auto_upgrade_policy, auto_deploy, DEV_SAFETY).
+- Fix for the Resend email provider (no more breaking magic-link auth).
+- Living Canvas (LevqorBrainCanvas) with WebGL + Canvas fallback.
+- Brain context + shared state:
+  - LevqorBrainContext with states: organic | neural | quantum | success | error
+  - Homepage wrapped correctly.
+  - Dashboard wrapped via DashboardClientWrapper.
+- Verified with python scripts/ci/run_all_checks.py (4/4 passing).
+
+Do NOT undo any of this.
+
+We are now in PHASE 10.3:
+“Levqor Brain: Real UX Interactions + Sound Reactivity (Light Version)”.
+
+GOAL FOR THIS COMMAND:
+1) Ensure the Brain actually responds to concrete user actions (homepage + dashboard).
+2) Add a safe, optional sound-reactivity hook that ONLY uses intensity, never stores or sends audio.
+
+Global rules (unchanged):
+- Scan before editing; never blindly change things.
+- Keep layout intact; no redesigns.
+- Respect:
+  - NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED
+  - prefers-reduced-motion
+  - accessibility constraints
+- After major changes, run `python scripts/ci/run_all_checks.py` and fix issues.
+
+PHASE A — VERIFY & IMPLEMENT REAL INTERACTIONS (HOMEPAGE)
+---------------------------------------------------------
+1. Open the homepage file (e.g., `levqor-site/src/app/page.tsx`) and confirm:
+
+   - The main hero CTA buttons (e.g. “Get started”, “Start free”, etc.).
+   - The existing Levqor Brain context usage (ContextAwareBrainCanvas, etc.).
+
+2. If no Brain state interactions are currently bound to user actions, implement the following:
+
+   - Import `useLevqorBrain()` inside the hero section component (or a nearby client component).
+   - Wire interactions:
+
+     - On hover over the primary CTA:
+       - Call `setNeural()` to show the “thinking/engaged” state.
+     - On click of the primary CTA:
+       - Immediately call `setSuccess()`.
+       - After ~1500ms, revert back to `setOrganic()` using `setTimeout`.
+
+3. If some interactions are already wired, verify they match or exceed this behavior and adjust if necessary.
+
+4. Ensure:
+   - If `NEXT_PUBLIC_LEVQOR_BRAIN_CANVAS_ENABLED` is false:
+     - No JS errors occur.
+     - The Brain context calls still work, even if the canvas is replaced by a placeholder.
+   - Reduced-motion users still get state transitions, but without heavy animation changes.
+
+PHASE B — VERIFY & IMPLEMENT REAL INTERACTIONS (DASHBOARD)
+----------------------------------------------------------
+5. Open the dashboard page and related components:
+
+   - `levqor-site/src/app/dashboard/page.tsx`
+   - `levqor-site/src/components/dashboard/DashboardClientWrapper.tsx`
+   - Any dashboard action components (tiles, buttons, “Run”, “Refresh”, “Generate”, etc.).
+
+6. Identify at least ONE “real” user action related to work or data that can drive Brain state, for example:
+
+   - A “Run” or “Generate” action.
+   - A “Create workflow” or “Start” button.
+   - A refresh or reload action.
+
+7. If such an action exists:
+
+   - Use `useLevqorBrain()` in the closest relevant client component and wire:
+
+     - When the action is triggered:
+       - Call `setNeural()` immediately.
+     - On success (e.g., promise resolves, data loads, success state set):
+       - Call `setSuccess()` then schedule `setOrganic()` a short time later.
+     - On error (caught exception, error state, etc.):
+       - Call `setError()` and revert to `setOrganic()` after a short delay.
+
+8. If NO such meaningful action exists yet:
+
+   - Create a temporary “Test Brain” button inside the dashboard (preferably in DashboardClientWrapper or a small dedicated client-only component).
+   - Label it clearly, e.g., “Test Levqor Brain (Dev Only)”.
+   - When clicked, cycle the Brain through the states in a sequence:
+     - organic → neural → quantum → success → organic
+   - Add a TODO comment near it to replace this with real workflow execution wiring later.
+
+PHASE C — SOUND-REACTIVE HOOK (INTENSITY-ONLY, SAFE)
+----------------------------------------------------
+9. In `levqor-site/src/components/brain/`, create a hook:
+
+   - `useSoundIntensity.ts`
+
+10. Behavior of `useSoundIntensity`:
+
+   - Returns a number between 0 and 1 representing current sound intensity.
+   - ONLY uses microphone input if ALL of the following are true:
+     - Code is running in the browser (guard against SSR).
+     - User explicitly granted microphone permission.
+     - `NEXT_PUBLIC_LEVQOR_BRAIN_SOUND_ENABLED` (or similarly named env) is set to a truthy value.
+     - `window.matchMedia('(prefers-reduced-motion: reduce)')` is NOT active.
+   - If any of these conditions are false:
+     - Return 0 and do NOT request permission.
+
+   - Implementation sketch:
+     - Use `navigator.mediaDevices.getUserMedia({ audio: true })` with permission prompt.
+     - Create an `AudioContext` + `AnalyserNode`.
+     - Compute RMS / average amplitude in a small buffer loop.
+     - Normalize intensity to [0, 1].
+     - Clean up audio resources on unmount.
+   - DO NOT:
+     - Store audio.
+     - Send audio or intensity over the network.
+     - Persist data in local storage or DB.
+     - Log raw audio or data.
+
+   Add comments explaining:
+   - This is intensity-only.
+   - No recording, no storage, no network transmission.
+
+PHASE D — WIRE SOUND INTENSITY INTO LEVQOR BRAIN CANVAS
+--------------------------------------------------------
+11. Update `LevqorBrainCanvas.tsx` to optionally use the intensity:
+
+   - Either:
+     - Accept an optional `soundIntensity?: number` prop, OR
+     - Internally call `useSoundIntensity()` when the sound feature flag is enabled.
+   - For simplicity in this command, you may call `useSoundIntensity()` inside the canvas component as long as:
+     - It respects `NEXT_PUBLIC_LEVQOR_BRAIN_SOUND_ENABLED`.
+     - It respects reduced motion.
+
+12. Use the `soundIntensity` to subtly modulate the visuals:
+
+   - Example:
+     - Slightly adjust a time or intensity uniform based on sound.
+     - Increase or decrease small pulsing or color variation with intensity.
+   - Keep the effect subtle and CPU-safe.
+   - DO NOT drastically change the existing base state-color mapping; this is a modifier, not a replacement.
+
+PHASE E — DOCUMENTATION & SAFETY
+--------------------------------
+13. Update `DEV_SAFETY.md` or a new small section to describe:
+
+   - The Brain state behaviors on homepage + dashboard.
+   - Where `useLevqorBrain` is used.
+   - The sound-reactivity behavior:
+     - Needs explicit permission.
+     - Uses intensity only.
+     - Respects feature flag and reduced motion.
+     - No recording, no storage, no network.
+
+14. Update `BLUEPRINT_PROGRESS.md` to reflect:
+
+   - PHASE 10.3 completed:
+     - Brain responds to CTA interactions.
+     - Brain responds to at least one dashboard action or Test Brain button.
+     - Sound-reactive mode implemented and feature-flag controlled.
+
+15. Run from repo root:
+
+   - `python scripts/ci/run_all_checks.py`
+
+16. Fix any issues introduced by this command, re-run until clean.
+
+17. At the end, output a concise summary:
+
+   - Files created/modified (with paths).
+   - Which homepage CTA(s) now drive Brain state.
+   - Which dashboard action (or Test Brain) drives Brain state.
+   - Whether sound reactivity is enabled by default and how to turn it on/off.
+   - Confirmation that `python scripts/ci/run_all_checks.py` passes.
