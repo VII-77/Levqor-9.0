@@ -1,0 +1,80 @@
+PHASE 15 — “Hardening, Real-World Alignment & Competitive Readiness”
+
+Goal:
+Reinforce the system to production-grade quality by validating:
+- Real-world performance
+- Reliability under stress
+- Compatibility with mobile, low-end devices, slow networks
+- Cleanliness of codebase, imports, and dependencies
+- All “auto engines” (health, scaling, marketing, growth, reports) working safely in sequence
+
+DO NOT modify any existing functional logic unless a verifiable flaw is found.
+DO NOT redesign layouts or flows.
+DO NOT touch authentication or billing pathways except to FIX real, reproducible issues.
+
+GUARDRAILS:
+- Scan BEFORE editing.
+- Verify existing logic rather than overwrite.
+- Respect feature flags, reduced-motion, i18n.
+- All new code must run through run_all_checks.py until clean.
+
+========================================
+A — REAL-WORLD HARDENING SWEEP
+========================================
+1. Run a repo-wide scan for:
+   - Unused imports
+   - Dead files
+   - Duplicate utilities
+   - Unused components
+   - Redundant logic in dashboard and brain modules
+
+2. Fix ONLY provable issues (unused imports, duplicate functions, obsolete components).  
+   All removals MUST be safe and validated with CI/checks.
+
+========================================
+B — PERFORMANCE & SAFETY VALIDATION
+========================================
+3. Add lightweight metrics to:
+   - LevqorBrainCanvas render cycles (time per frame)
+   - Dashboard page load performance
+   - HealthOverview fetch performance
+
+4. Add console.warn ONLY if performance crosses critical thresholds.  
+   NO noisy logs.
+
+========================================
+C — AUTO-ENGINE VALIDATION
+========================================
+5. For each engine (auto-health, auto-scaling, auto-marketing, growth engine, weekly reports):
+   - Verify module import paths work correctly.
+   - Verify no circular dependencies.
+   - Verify each script can run independently without crashing.
+   - Add “sanity check” comments or guards if needed.
+
+========================================
+D — ICP/Real-World Alignment
+========================================
+6. Add a new doc: /docs/real_world_alignment.md
+   Include:
+   - Who Levqor is for (primary ICP)
+   - Real-world workflows supported today
+   - Future workflows (as TODO markers)
+   - Safety limits and what is manual-approval-locked
+
+========================================
+E — SAFETY + CI CLEAN
+========================================
+7. Update BLUEPRINT_PROGRESS.md with:
+   - PHASE 15 Hardening Started/Completed
+
+8. Run:
+   python scripts/ci/run_all_checks.py
+   Fix issues until PASS (4/4)
+
+9. Final output summary:
+   - Files changed
+   - Dead code removed
+   - Performance guards added
+   - Auto-engine verification notes
+   - Real-world alignment doc path
+   - CI result
