@@ -6,6 +6,7 @@ import AnalyticsWidget from "@/components/AnalyticsWidget";
 import AIHelpPanel from "@/components/ai/AIHelpPanel";
 import LifecycleBanner from "@/components/LifecycleBanner";
 import DashboardOnboarding from "@/components/DashboardOnboarding";
+import { LevqorBrainCanvas } from "@/components/brain";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -40,29 +41,47 @@ export default async function Dashboard(){
   return (
     <main className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white rounded-lg shadow p-6">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-gray-600 mt-1">
-              Welcome back, {session.user.email}
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <Link 
-              href="/builder"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              New Workflow
-            </Link>
-            <Link 
-              href="/templates"
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
-            >
-              Templates
-            </Link>
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-stretch">
+            {/* Left: Header Content */}
+            <div className="flex-1 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
+                <p className="text-gray-600 mt-1">
+                  Welcome back, {session.user.email}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <Link 
+                  href="/builder"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors inline-flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  New Workflow
+                </Link>
+                <Link 
+                  href="/templates"
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Templates
+                </Link>
+              </div>
+            </div>
+            
+            {/* Right: Levqor Brain Canvas - Neural state for dashboard (thinking/working mode) */}
+            {/* TODO: Wire this to real Brain state (organic/neural/quantum) based on workflow operations */}
+            {/* TODO: Sync with AI actions and workflow execution states */}
+            <div className="hidden md:block w-48 lg:w-64 relative">
+              <LevqorBrainCanvas
+                brainState="neural"
+                className="w-full h-full min-h-[100px]"
+              />
+              <div className="absolute bottom-2 left-2 text-xs text-white/70 bg-black/20 px-2 py-0.5 rounded">
+                Brain: Neural
+              </div>
+            </div>
           </div>
         </div>
         

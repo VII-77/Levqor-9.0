@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import JsonLd from "@/components/JsonLd";
 import Logo from "@/components/Logo";
+import { LevqorBrainCanvas } from "@/components/brain";
 import { designTokens } from "@/config/design-tokens";
 
 function StatusPill() {
@@ -55,64 +56,92 @@ export default function Home() {
       <JsonLd data={structuredData} />
       
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-6 py-20 text-center relative overflow-hidden">
+      <section className="max-w-6xl mx-auto px-6 py-20 relative overflow-hidden">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary-50/50 via-transparent to-secondary-50/50 -z-10" />
         
-        <div className="mb-8 animate-fade-in-up">
-          <div className="flex justify-center mb-6">
-            <Logo size="lg" variant="full" />
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Column - Content */}
+          <div className="text-center lg:text-left">
+            <div className="mb-8 animate-fade-in-up">
+              <div className="flex justify-center lg:justify-start mb-6">
+                <Logo size="lg" variant="full" />
+              </div>
+              <StatusPill />
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+                Automate work.
+              </span>
+              {' '}Ship faster.<br />Pay only for results.
+            </h1>
+            
+            <p className="text-xl text-neutral-600 max-w-2xl mb-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+              Levqor runs your workflows, monitors failures, and self-heals. Email, Sheets, Slack, CRM, and more.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+              <Link
+                href="/signin"
+                className="group px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-secondary-700 transition-all text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              >
+                Start free trial
+                <svg className="inline-block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link
+                href="/pricing"
+                className="group px-8 py-4 border-2 border-neutral-800 text-neutral-900 rounded-xl font-semibold hover:bg-neutral-800 hover:text-white transition-all text-lg"
+              >
+                See pricing
+              </Link>
+            </div>
+            
+            {/* Trust Signals */}
+            <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-neutral-600 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+              <div className="flex items-center gap-2">
+                <span className="text-success-500">⭐</span>
+                <span>99.97% uptime</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-primary-500">🔒</span>
+                <span>Enterprise-grade encryption</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-secondary-500">🌍</span>
+                <span>Trusted by teams in 12+ countries</span>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-neutral-500 text-center lg:text-left">
+              Over 150+ workflows automated this month.
+            </p>
           </div>
-          <StatusPill />
+          
+          {/* Right Column - Living Canvas */}
+          <div className="hidden lg:block animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+            <div className="relative">
+              <LevqorBrainCanvas
+                brainState="organic"
+                className="w-full h-80 rounded-2xl shadow-2xl"
+              />
+              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md">
+                <p className="text-sm font-medium text-neutral-700">Powered by the Levqor Brain</p>
+                <p className="text-xs text-neutral-500">AI-native workflow intelligence</p>
+              </div>
+            </div>
+          </div>
         </div>
         
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-          <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-            Automate work.
-          </span>
-          {' '}Ship faster.<br />Pay only for results.
-        </h1>
-        
-        <p className="text-xl text-neutral-600 max-w-2xl mx-auto mb-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-          Levqor runs your workflows, monitors failures, and self-heals. Email, Sheets, Slack, CRM, and more.
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-          <Link
-            href="/signin"
-            className="group px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:from-primary-700 hover:to-secondary-700 transition-all text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            Start free trial
-            <svg className="inline-block w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-            </svg>
-          </Link>
-          <Link
-            href="/pricing"
-            className="group px-8 py-4 border-2 border-neutral-800 text-neutral-900 rounded-xl font-semibold hover:bg-neutral-800 hover:text-white transition-all text-lg"
-          >
-            See pricing
-          </Link>
+        {/* Mobile Canvas - Shown below content on mobile */}
+        <div className="lg:hidden mt-12 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+          <LevqorBrainCanvas
+            brainState="organic"
+            className="w-full h-48 rounded-xl shadow-lg"
+          />
+          <p className="text-center text-sm text-neutral-500 mt-3">Powered by the Levqor Brain</p>
         </div>
-        
-        {/* Trust Signals */}
-        <div className="mt-6 flex flex-wrap justify-center gap-6 text-sm text-neutral-600 animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-          <div className="flex items-center gap-2">
-            <span className="text-success-500">⭐</span>
-            <span>99.97% uptime</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-primary-500">🔒</span>
-            <span>Enterprise-grade encryption</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-secondary-500">🌍</span>
-            <span>Trusted by teams in 12+ countries</span>
-          </div>
-        </div>
-        <p className="mt-3 text-xs text-neutral-500">
-          Over 150+ workflows automated this month.
-        </p>
       </section>
 
       {/* How It Works Section */}
