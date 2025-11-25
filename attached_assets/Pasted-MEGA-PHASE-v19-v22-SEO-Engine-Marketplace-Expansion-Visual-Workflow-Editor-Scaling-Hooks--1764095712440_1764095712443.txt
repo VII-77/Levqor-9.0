@@ -1,0 +1,207 @@
+MEGA PHASE v19–v22 — “SEO Engine + Marketplace Expansion + Visual Workflow Editor + Scaling Hooks”
+
+Goal:
+Cover the remaining major gaps called out in the audit:
+- Real SEO/content engine (but safe, not auto-publishing madness).
+- Expanded template marketplace (usable, discoverable).
+- Visual workflow editor v1 built on the existing workflow engine.
+- Practical auto-scaling hooks + docs (infra-aligned, not fantasy).
+Everything must respect:
+- Existing safety harness
+- Approvals model (Class A/B/C)
+- Levqor Brain integration
+- Current layouts and i18n patterns
+
+DO NOT:
+- Break auth, billing, or existing dashboard pages.
+- Introduce huge new dependencies unless absolutely necessary.
+- Auto-publish content to production without going through approvals.
+- Change pricing or Stripe behavior.
+
+GLOBAL GUARDRAILS:
+- Scan before editing — no blind rewrites.
+- Respect feature flags, reduced-motion, and i18n.
+- Respect Class A/B/C:
+  - A (SAFE): internal-only, read/logging, no approval.
+  - B (SOFT): external but low-risk, auto-run and logged.
+  - C (CRITICAL): money, infra, big batch sends → must go to approval queue.
+- After all work: run `python scripts/ci/run_all_checks.py` from repo root and fix until PASS (4/4).
+
+=====================================================
+v19 — SEO & CONTENT ENGINE (SAFE, PROPOSAL-BASED)
+=====================================================
+1. Scan current frontend for:
+   - Head metadata usage (Next.js head / metadata).
+   - Existing SEO fields on homepage, pricing, dashboard if any.
+
+2. Under `scripts/automation/`, create:
+   - `auto_seo_content.py`
+   Behavior:
+   - For key pages (homepage, pricing, dashboard, support):
+     - Define a small config list of “routes to optimize”.
+   - Use existing AI utilities (e.g. ai_advisor/decision_engine if available) to:
+     - Generate suggestions for:
+       - Page title
+       - Meta description
+       - H1 / hero tagline
+       - 2–3 key bullet points
+   - Output:
+       - A Markdown or JSON file: `logs/seo_suggestions.json` or `.md`
+       - Each entry: route, current text (if available), suggested text, reason.
+   - Classify this as Class A (read + suggestions only).
+   - NO auto-edit of code. Suggestions only.
+
+3. Update `DEV_SAFETY.md`:
+   - Add how to run:
+     - `python scripts/automation/auto_seo_content.py`
+   - Where suggestions are stored.
+   - Note: “Changing SEO copy is a Class C action in code and must be applied manually, or via a future approval flow.”
+
+4. OPTIONAL small improvement (if trivial):
+   - If there are any obviously missing `<title>` / meta description fields on homepage/pricing:
+     - Add them now using static text and existing i18n infra.
+     - Keep it minimal and safe.
+
+=====================================================
+v20 — TEMPLATE MARKETPLACE EXPANSION
+=====================================================
+5. Open `modules/growth_engine/templates.py` and existing template definitions.
+
+6. Expand the template structure to include:
+   - `id`, `name`, `description`, `category`, `difficulty`, `recommended_audience`, `tags`, `estimated_setup_time`.
+   - Keep fields JSON-serializable.
+
+7. Add at least:
+   - 12–20 templates spanning:
+     - Lead capture
+     - Sales follow-up
+     - Customer support triage
+     - Reporting & KPIs
+     - Internal notifications
+     - Onboarding flows
+     - Simple e-commerce flows
+   - Use realistic descriptions that align with what Levqor can actually do.
+
+8. Add a small backend API for templates:
+   - `api/templates/` blueprint:
+     - `GET /api/templates` → list templates with basic filters (category/tag).
+     - `GET /api/templates/<id>` → detail.
+
+9. Frontend:
+   - Create `levqor-site/src/app/templates/page.tsx`:
+     - Page that:
+       - Fetches templates list.
+       - Shows filter controls (category, difficulty).
+       - Renders templates in cards (name, description, tags).
+       - CTA on each card: “Use this template” (for now, link to dashboard with template id in query or show TODO).
+   - Add navigation link to templates page from dashboard and/or main nav (non-destructive, small link).
+
+10. i18n:
+   - For visible labels on this page, use existing i18n patterns where feasible.
+   - Template names/descriptions can remain English in v1, but wiring should be translation-ready.
+
+=====================================================
+v21 — VISUAL WORKFLOW EDITOR v1 (NO HEAVY LIBS)
+=====================================================
+11. Scan:
+   - `modules/workflows/models.py` and `runner.py` (created earlier).
+   - `api/workflows` endpoints for retrieving workflows.
+
+12. Frontend:
+   - Under `levqor-site/src/components/workflows/`, create:
+     - `WorkflowEditor.tsx`
+     - `WorkflowNode.tsx` (if needed)
+   Behavior for `WorkflowEditor`:
+   - Client component that:
+     - Accepts `workflowId` as prop OR reads from query.
+     - Fetches workflow JSON from `/api/workflows/<id>`.
+     - Displays steps as nodes in a simple horizontal/vertical layout:
+       - Each node shows:
+         - Step id/type
+         - Basic config summary
+       - Edges can be simple arrows or connectors; no complex graph lib.
+   - Allow basic edits:
+       - For v1:
+         - Rename workflow
+         - Edit simple fields in step config (like URL for http_request, delay seconds for delay, labels for log).
+   - Provide “Save” button:
+       - Calls a PUT/PATCH endpoint (to be added) to update workflow.
+
+13. Backend:
+   - Extend `api/workflows` blueprint:
+     - Add `PUT /api/workflows/<id>` for updates:
+       - Validate schema server-side.
+       - Respect ImpactLevel:
+         - If a change turns a SAFE workflow into CRITICAL (e.g., adding external http_request/email):
+           - Do NOT auto-apply.
+           - Instead, enqueue an approval action and respond to client with “pending_approval”: true.
+   - Use approval queue created earlier.
+
+14. Integration:
+   - Add a simple entry point from dashboard:
+     - e.g. link “View Workflows” → list of workflows → click “Edit” → opens WorkflowEditor.
+   - Keep layout simple but usable on desktop + mobile.
+
+15. Levqor Brain tie-in:
+   - In WorkflowEditor, when user is actively editing:
+     - Use `useLevqorBrain()` to:
+       - Set state to `neural` during edits.
+       - Set `success` briefly on save.
+       - Set `error` if save fails.
+
+=====================================================
+v22 — SCALING HOOKS + OPS DOCS
+=====================================================
+16. Open:
+   - `security_core/scaling_policy.py`
+   - Any rate-limiting / gateway config.
+
+17. Add a new doc: `docs/scaling.md`:
+   - Describe:
+     - Current “logical auto-scaling” behavior (rate-limit tiers).
+     - Suggested infra setup:
+       - Horizontal scaling (e.g., containers or Dynos).
+       - Basic rules of when to scale up/down (requests/second thresholds).
+     - How to plug Levqor’s /api/health/summary + metrics into an external autoscaler or monitoring stack (e.g., external tool, not implemented here).
+   - Make it explicit:
+     - This project does NOT auto-provision infra.
+     - Infra scaling is controlled externally (Kubernetes, serverless, etc.).
+     - But `scaling_policy.py` gives a ready-made model.
+
+18. Real-world alignment doc:
+   - If not already fully fleshed, enhance `docs/real_world_alignment.md`:
+     - Add sections:
+       - “What Levqor can automate TODAY”
+       - “What is planned/not yet implemented”
+       - “Which actions require human approval (Class C)”
+       - “Support boundaries”
+
+=====================================================
+FINAL: DOCS + BLUEPRINT + CI
+=====================================================
+19. Update `BLUEPRINT_PROGRESS.md`:
+   - v19–v22 items:
+     - SEO engine suggestions: DONE.
+     - Template marketplace expanded: DONE.
+     - Workflow editor v1: DONE.
+     - Scaling docs and hooks: DONE/INITIAL.
+
+20. Update `DEV_SAFETY.md` / `docs/operations.md`:
+   - Mention:
+     - `auto_seo_content.py` usage.
+     - Templates API & page.
+     - WorkflowEditor and approvals.
+     - Where scaling docs live.
+
+21. Run from repo root:
+   - `python scripts/ci/run_all_checks.py`
+   Fix all errors and re-run until PASS (4/4).
+
+22. Final terminal summary:
+   - Files created/modified.
+   - How to:
+     - Run SEO engine.
+     - Use templates marketplace page.
+     - Open and edit workflows visually.
+     - Understand scaling docs.
+   - Confirm CI is green.
