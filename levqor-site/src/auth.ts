@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthConfig } from "next-auth"
+import type { Provider } from "next-auth/providers"
 import Google from "next-auth/providers/google"
 import AzureAD from "next-auth/providers/azure-ad"
-import Resend from "next-auth/providers/resend"
 import Credentials from "next-auth/providers/credentials"
 
 const DENYLIST = ['mailinator.com', 'tempmail.com', 'guerrillamail.com', 'temp-mail.org'];
@@ -24,8 +24,8 @@ async function sendAuditEvent(event: string, email: string, userAgent?: string, 
   }
 }
 
-export const authOptions: NextAuthConfig = {
-  providers: [
+function buildProviders(): Provider[] {
+  const providers: Provider[] = [
     Credentials({
       name: "credentials",
       credentials: {
@@ -54,21 +54,33 @@ export const authOptions: NextAuthConfig = {
         throw new Error("Invalid credentials");
       },
     }),
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
-    }),
-    AzureAD({
-      clientId: process.env.MICROSOFT_CLIENT_ID || "",
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET || "",
-      allowDangerousEmailAccountLinking: true,
-    }),
-    Resend({
-      apiKey: process.env.RESEND_API_KEY || "",
-      from: process.env.AUTH_FROM_EMAIL || "Levqor <noreply@levqor.ai>",
-    }),
-  ],
+  ];
+
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.push(
+      Google({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
+      })
+    );
+  }
+
+  if (process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET) {
+    providers.push(
+      AzureAD({
+        clientId: process.env.MICROSOFT_CLIENT_ID,
+        clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
+        allowDangerousEmailAccountLinking: true,
+      })
+    );
+  }
+
+  return providers;
+}
+
+export const authOptions: NextAuthConfig = {
+  providers: buildProviders(),
   pages: {
     signIn: '/signin',
   },

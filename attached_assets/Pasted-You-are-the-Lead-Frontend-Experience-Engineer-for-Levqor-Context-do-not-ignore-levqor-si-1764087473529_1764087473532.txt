@@ -1,0 +1,160 @@
+You are the Lead Frontend + Experience Engineer for Levqor.
+
+Context (do not ignore):
+- levqor-site is a Next.js/React production app.
+- Levqor is an AI-native automation platform with an internal “Levqor Brain”.
+- We have 33 hours total to ship v10–v14; you must move fast but safely.
+- Tech stack for the new experience is FROZEN: React + WebGL core, with Canvas fallback.
+- The Levqor Brain UI concept is the “Living Canvas” + “Sentient Fractal”:
+  - A living, animated workflow canvas.
+  - Three Brain states: Organic (rest), Neural (reasoning), Quantum (creative).
+  - Sound-reactive, but only based on intensity; no recording or storage.
+  - Accessible, mobile-ready, enterprise-grade.
+
+Global rules (MUST follow at all times):
+1. Before creating anything, scan the project to see what already exists (components, hooks, design system, layout).
+2. Never rip out working code. Extend and integrate.
+3. After EVERY change:
+   - Show a clear diff or file snippet.
+   - Run lint/build/tests where applicable.
+   - Actually verify behavior by inspecting rendered JSX/HTML or component integration, not just “build succeeded”.
+4. Prefer composition over duplication: reuse design tokens, components, and layout primitives.
+5. Keep everything responsive and accessible (ARIA roles, reduced motion, contrast).
+6. All new code must be TypeScript-safe if the app uses TS.
+7. Do NOT add extra dependencies unless absolutely needed; if you do, explain why.
+
+Your tasks for THIS command:
+
+PHASE 1 — DISCOVER EXISTING FRONTEND STRUCTURE (NO WRITES)
+----------------------------------------------------------
+1. Inspect `levqor-site`:
+   - Identify:
+     - App entry (e.g., `src/app` for Next 13+, or `pages` for earlier).
+     - Existing layout components (`Layout`, `Shell`, `Dashboard`, etc.).
+     - Design system (e.g., shadcn, Tailwind classes, styled-components).
+     - Any existing canvas/visualization components.
+   - Identify:
+     - Homepage route (e.g., `src/app/page.tsx`).
+     - Dashboard/workflow route(s) (e.g., `src/app/dashboard`, `/workflows`, etc.).
+2. Print a short summary in the terminal:
+   - What the main layout is.
+   - Where homepage and dashboard live.
+   - Whether there is existing i18n or theming infrastructure you should reuse.
+
+PHASE 2 — CREATE THE LIVING CANVAS SKELETON COMPONENT
+-----------------------------------------------------
+Goal: add a reusable React component that hosts the Living Canvas + Sentient Fractal, using WebGL with Canvas fallback.
+
+3. Under an appropriate directory (e.g., `src/components/brain/`), create:
+   - `LevqorBrainCanvas.tsx` – main component hosting the WebGL/Canvas surface.
+   - `useBrainState.ts` – hook describing the three Brain states: `"organic" | "neural" | "quantum"`.
+   - If idiomatic for this codebase, optionally a `types.ts` for shared types.
+
+4. `useBrainState.ts`:
+   - Export a hook that manages:
+     - `state`: `"organic" | "neural" | "quantum"`.
+     - `setState(nextState)` function.
+     - Optional `mode` or `context` field for future use.
+   - For now, initialize state as `"organic"` and expose a simple API; no complex logic yet.
+
+5. `LevqorBrainCanvas.tsx`:
+   - Props:
+     - `brainState: "organic" | "neural" | "quantum"`.
+     - Optional `className`.
+   - Behavior:
+     - Renders a wrapper `<div>` that is responsive and uses the existing design system (e.g. Tailwind classes) for sizing and background.
+     - Inside, renders:
+       - A `<canvas>` element to be used by WebGL.
+       - Graceful fallback content for environments without WebGL.
+   - Implement a basic WebGL initialization only:
+     - On mount:
+       - Detect WebGL support.
+       - If supported, initialize a minimal shader that:
+         - Clears the canvas with a color that depends on `brainState`:
+           - Organic: a calm base color.
+           - Neural: a sharper, more intense color.
+           - Quantum: a shifting or blended color (for now, a gradient or small time-based change).
+       - On unmount, cleanly dispose resources.
+     - If WebGL is NOT supported:
+       - Use a simple 2D Canvas context to draw a static or mildly animated pattern that also respects `brainState`.
+
+   - Keep this code clean, modular, and easy to extend in future commands; this is only the skeleton.
+
+6. Ensure:
+   - No blocking on heavy animation loops yet; basic requestAnimationFrame usage is fine, but keep CPU-safe.
+   - No third-party heavy libraries (like three.js) unless absolutely necessary; if you decide to use one, explain why and minimize surface area.
+
+PHASE 3 — INTEGRATE LIVING CANVAS INTO HOMEPAGE (PUBLIC VIEW)
+--------------------------------------------------------------
+Goal: put the Sentient Fractal/Living Canvas on the homepage hero section in a non-disruptive, elegant way.
+
+7. Open the homepage component (e.g., `src/app/page.tsx` or equivalent).
+8. Integrate `LevqorBrainCanvas` into the hero section:
+   - Place it in a way that:
+     - Works with current design (likely a two-column layout: text + canvas).
+     - Is responsive: stacks on mobile.
+   - For now, pass:
+     - `brainState="organic"` so visitors see the calm, breathing state by default.
+9. Keep all existing content, CTAs, and layout intact; do NOT break current production UX.
+
+10. Add minimal copy (if appropriate) next to the canvas:
+    - A simple line like: “Powered by the Levqor Brain” (text only; no design overhaul).
+
+Verification for Phase 3:
+- Show the updated homepage JSX snippet around where the canvas is integrated.
+- Run the dev build test command (e.g., `npm run lint`, `npm run build` or the project’s standard commands) and show output.
+- Check the rendered structure (e.g., by printing the JSX tree or confirming via comments).
+
+PHASE 4 — INTEGRATE LIVING CANVAS INTO DASHBOARD (APP VIEW)
+-----------------------------------------------------------
+Goal: embed the same component inside the main dashboard/workflows area so it can later be bound to real Brain state.
+
+11. Identify the main dashboard/workflow route component (e.g., `src/app/dashboard/page.tsx` or similar).
+12. Add the `LevqorBrainCanvas` to a suitable panel/section:
+    - For now, pass `brainState="neural"` for dashboard context, symbolizing “thinking/working” mode.
+    - Position it in a way that does not break existing UX:
+      - Could be a right-side panel, header area, or dedicated section.
+13. Leave hooks for future wiring:
+    - Add TODO comments near the canvas integration indicating:
+      - This will be wired to real Brain state (organic/neural/quantum).
+      - This will later sync with workflow operations and AI actions.
+
+Verification for Phase 4:
+- Show the updated dashboard JSX snippet with the component integration.
+- Run the build/tests again if necessary (or at least `npm run lint` and/or existing project checks).
+- Confirm the component renders in both homepage and dashboard contexts without runtime errors.
+
+PHASE 5 — ACCESSIBILITY, FALLBACKS, AND FLAGS
+----------------------------------------------
+14. Add:
+    - `role="img"` and an accessible `aria-label` or `aria-description` to the canvas wrapper, explaining that this is a visual representation of the Levqor Brain / workflows.
+    - Respect `prefers-reduced-motion`:
+      - If reduced motion is detected, DO NOT animate; render a static representation instead.
+15. Introduce a simple feature flag mechanism (if one already exists, reuse it):
+    - For example, environment variable or config: `LEVQOR_BRAIN_CANVAS_ENABLED`.
+    - If disabled, the component should:
+      - Not initialize WebGL.
+      - Render a static placeholder or nothing, without breaking the layout.
+
+Verification for Phase 5:
+- Show the added accessibility props.
+- Show how the feature flag is implemented (config file or hook).
+- Demonstrate how setting the flag off prevents WebGL initialization (even if you cannot flip env vars here, you can show conditional logic).
+
+FINAL CHECKS FOR THIS COMMAND
+-----------------------------
+16. Run whatever main checks are appropriate for this repo:
+    - `npm run lint` and `npm run build` for levqor-site.
+    - Any existing test suite for frontend code.
+17. If any new warnings or errors appear, fix them before finishing.
+18. Print a short summary at the end of the command:
+    - Where `LevqorBrainCanvas` lives.
+    - Where it is now integrated (homepage + dashboard).
+    - What is implemented (state-based colors, WebGL init, Canvas fallback, accessibility).
+    - What is intentionally left for future commands (richer fractal visuals, dimensional modes, sound reactivity, Brain state wiring).
+
+Do NOT move beyond the skeleton implementation in this command.
+The goal of this command is:
+- Create the base Living Canvas component using React + WebGL + Canvas fallback.
+- Integrate it into homepage and dashboard.
+- Keep everything safe, tested, accessible, and ready for rapid future enhancements.
