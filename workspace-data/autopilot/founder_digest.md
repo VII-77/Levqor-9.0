@@ -1,6 +1,6 @@
 # Levqor Founder Digest
 
-**Generated:** 2025-11-26 11:40:00 UTC
+**Generated:** 2025-11-26 14:01:57 UTC
 **Launch Stage:** POST (LIVE AUTONOMOUS)
 
 ---
@@ -18,7 +18,7 @@
 
 | Metric | Status |
 |--------|--------|
-| Backend | DEGRADED |
+| Backend | HEALTHY |
 | Launch Readiness | 0/7 checks |
 | Pending Approvals | 0 |
 
@@ -77,6 +77,19 @@
 
 ---
 
+## Onboarding UX
+
+**Onboarding Score:** [OK] 100%
+
+| Check | Status |
+|-------|--------|
+| Locales Covered | 9/9 |
+| Signup Route | OK |
+| Header CTA | OK |
+| Homepage Onboarding | OK |
+
+---
+
 ## Recommended Actions
 
 No urgent actions required. System is healthy.
@@ -90,6 +103,7 @@ No urgent actions required. System is healthy.
 - Compliance Audit: `workspace-data/autopilot/compliance_audit.json`
 - Growth Check: `workspace-data/autopilot/growth_check.json`
 - Integrations Map: `workspace-data/autopilot/integrations_map.json`
+- Onboarding UX: `workspace-data/autopilot/onboarding/audit_YYYY-MM-DD.json`
 
 ---
 

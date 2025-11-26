@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-11-26T11:35:17.826291+00:00",
-  "mode": "production",
-  "backend_url": "https://api.levqor.ai",
-  "frontend_url": "https://www.levqor.ai",
+  "timestamp": "2025-11-26T13:59:16.537209+00:00",
+  "mode": "development",
+  "backend_url": "http://localhost:8000",
+  "frontend_url": "http://localhost:5000",
   "launch_stage": {
     "stage": "post",
     "is_live": true,
@@ -25,61 +25,61 @@
     "backend": [
       {
         "status": "OK",
-        "url": "https://api.levqor.ai/health",
+        "url": "http://localhost:8000/health",
         "http_code": 200,
         "expected_codes": [
           200
         ],
-        "response_time_ms": 173.05100000000002,
+        "response_time_ms": 7.532,
         "name": "Health Check"
       },
       {
         "status": "OK",
-        "url": "https://api.levqor.ai/api/health/summary",
+        "url": "http://localhost:8000/api/health/summary",
         "http_code": 200,
         "expected_codes": [
           200
         ],
-        "response_time_ms": 90.973,
+        "response_time_ms": 6.116,
         "name": "Health Summary"
       },
       {
         "status": "OK",
-        "url": "https://api.levqor.ai/api/system/launch-readiness",
+        "url": "http://localhost:8000/api/system/launch-readiness",
         "http_code": 200,
         "expected_codes": [
           200
         ],
-        "response_time_ms": 81.289,
+        "response_time_ms": 5.866,
         "name": "Launch Readiness"
       },
       {
         "status": "OK",
-        "url": "https://api.levqor.ai/api/me/export-data",
+        "url": "http://localhost:8000/api/me/export-data",
         "http_code": 401,
         "expected_codes": [
           200,
           401
         ],
-        "response_time_ms": 91.393,
+        "response_time_ms": 4.5760000000000005,
         "name": "DSAR Export"
       },
       {
-        "status": "FAIL",
-        "url": "https://api.levqor.ai/api/me/delete-account",
-        "http_code": 404,
+        "status": "OK",
+        "url": "http://localhost:8000/api/me/delete-account",
+        "http_code": 401,
         "expected_codes": [
           200,
           401
         ],
-        "response_time_ms": 70.922,
+        "response_time_ms": 7.369,
         "name": "DSAR Delete"
       }
     ],
     "frontend": [
       {
         "status": "OK",
-        "url": "https://www.levqor.ai",
+        "url": "http://localhost:5000",
         "found_markers": [
           "Levqor",
           "workflow",
@@ -107,15 +107,19 @@
         "founder_digest": {
           "status": "OK",
           "path": "/home/runner/workspace/workspace-data/autopilot/founder_digest.md"
+        },
+        "onboarding_ux": {
+          "status": "OK",
+          "path": "/home/runner/workspace-data/autopilot/onboarding/audit_2025-11-26.json"
         }
       }
     }
   },
   "summary": {
-    "total_checks": 10,
-    "passed": 9,
+    "total_checks": 11,
+    "passed": 11,
     "warned": 0,
-    "failed": 1,
-    "overall_status": "FAIL"
+    "failed": 0,
+    "overall_status": "HEALTHY"
   }
 }
