@@ -7,6 +7,10 @@ Responsibilities:
 - Learning from outcomes
 - Cross-engine optimization
 - Generational improvements
+
+Launch Stage Behavior:
+- PRE: Always dry-run, generate proposals only
+- POST: Can execute live evolution cycles
 """
 
 import logging
@@ -14,6 +18,17 @@ from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _get_effective_dry_run(explicit_dry_run: bool) -> bool:
+    """Determine effective dry_run based on launch stage."""
+    try:
+        from config.launch_stage import is_pre_launch
+        if is_pre_launch():
+            return True
+        return explicit_dry_run
+    except ImportError:
+        return explicit_dry_run
 
 
 class EvolutionEngine:
@@ -36,24 +51,26 @@ class EvolutionEngine:
         Args:
             performance_data: Metrics from all growth engines
             engines: Specific engines to evolve (defaults to all)
-            dry_run: If True, only simulate
+            dry_run: If True, only simulate (forced True in pre-launch)
         
         Returns:
             Evolution results and new generation parameters
         """
-        logger.info(f"[EvolutionEngine] Starting evolution cycle (gen {self.current_generation}, dry_run={dry_run})")
+        effective_dry_run = _get_effective_dry_run(dry_run)
+        logger.info(f"[EvolutionEngine] Starting evolution cycle (gen {self.current_generation}, dry_run={effective_dry_run})")
         
         if engines is None:
             engines = ["demand", "mutation", "distribution", "gravity"]
         
         result = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "dry_run": dry_run,
+            "dry_run": effective_dry_run,
             "generation": self.current_generation,
             "input_performance": performance_data,
             "evolved_parameters": {},
             "fitness_improvement": 0.0,
-            "next_actions": []
+            "next_actions": [],
+            "launch_stage_enforced": effective_dry_run != dry_run
         }
         
         current_fitness = self._calculate_fitness(performance_data)

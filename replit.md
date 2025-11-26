@@ -47,6 +47,7 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
 - **Governance**: Hardening checklist, automated health checks, and a comprehensive CI/CD safety harness for safe deployments. Includes preflight testing with user journey personas and launch readiness checks.
 - **Legal & Compliance**: Backend privacy API, 4 legal pages, cookie consent UX, automated file integrity monitoring, and log hygiene (e.g., email truncation).
 - **Authentication System**: Stabilized NextAuth with Credentials provider (admin user), clear error surfacing, and an auth diagnostic page (`/auth/status`).
+- **Launch Stage Management**: Centralized `config/launch_stage.py` with pre-launch (dry-run, approval-required) and post-launch (autonomous execution) modes. Growth Organism engines respect `LEVQOR_LAUNCH_STAGE` environment variable. See `docs/PHASE60_LAUNCH_READY.md` for full documentation.
 
 ## External Dependencies
 

@@ -173,7 +173,7 @@ def run_verification(production: bool = False) -> dict:
     backend_endpoints = [
         {"path": "/health", "name": "Health Check", "expected_codes": [200]},
         {"path": "/api/health/summary", "name": "Health Summary", "expected_codes": [200]},
-        {"path": "/api/billing/checkout/health", "name": "Billing System", "expected_codes": [200, 404]},
+        {"path": "/api/system/launch-readiness", "name": "Launch Readiness", "expected_codes": [200]},
         {"path": "/api/me/export-data", "name": "DSAR Export", "expected_codes": [200, 401]},
         {"path": "/api/me/delete-account", "name": "DSAR Delete", "method": "POST", "expected_codes": [200, 401]},
     ]

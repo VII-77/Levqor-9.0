@@ -7,6 +7,10 @@ Strategies:
 - Churn prediction
 - Re-engagement campaigns
 - Loyalty mechanics
+
+Launch Stage Behavior:
+- PRE: Always dry-run, generate proposals only
+- POST: Can execute live engagement actions
 """
 
 import logging
@@ -14,6 +18,17 @@ from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _get_effective_dry_run(explicit_dry_run: bool) -> bool:
+    """Determine effective dry_run based on launch stage."""
+    try:
+        from config.launch_stage import is_pre_launch
+        if is_pre_launch():
+            return True
+        return explicit_dry_run
+    except ImportError:
+        return explicit_dry_run
 
 
 class GravityEngine:
@@ -42,12 +57,13 @@ class GravityEngine:
         
         Args:
             user_data: User activity and engagement data
-            dry_run: If True, use sample data
+            dry_run: If True, use sample data (forced True in pre-launch)
         
         Returns:
             Gravity score and retention recommendations
         """
-        logger.info(f"[GravityEngine] Calculating gravity score (dry_run={dry_run})")
+        effective_dry_run = _get_effective_dry_run(dry_run)
+        logger.info(f"[GravityEngine] Calculating gravity score (dry_run={effective_dry_run})")
         
         score_components = []
         total_score = 0.0
@@ -64,11 +80,12 @@ class GravityEngine:
         
         result = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "dry_run": dry_run,
+            "dry_run": effective_dry_run,
             "gravity_score": round(total_score, 3),
             "components": score_components,
             "risk_level": self._assess_risk(total_score),
-            "recommendations": self._generate_recommendations(total_score, score_components)
+            "recommendations": self._generate_recommendations(total_score, score_components),
+            "launch_stage_enforced": effective_dry_run != dry_run
         }
         
         logger.info(f"[GravityEngine] Gravity score: {result['gravity_score']} ({result['risk_level']})")
