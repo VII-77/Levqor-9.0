@@ -4,7 +4,23 @@
 
 Levqor X is a comprehensive data backup and retention management platform offering Done-For-You (DFY) service tiers. It features a Python Flask backend API, a Next.js frontend, a PostgreSQL database, and integrates with Stripe for billing. The platform is configured for production, including live Stripe credentials and automatic Vercel deployments. Key capabilities include a 4-layer autonomous operator system, multilingual AI with GPT-4o-mini integration, global internationalization supporting 40 languages, comprehensive legal/compliance infrastructure, stabilized authentication, Living Canvas brain visualization, improved dashboard UX, a **self-running workflow execution engine** with AI-powered builder, approval system, scheduling, and analytics, **25+ workflow templates**, a **visual workflow editor with drag-and-drop**, **comprehensive scaling documentation**, **GDPR/CCPA compliant data export/delete**, **launch readiness monitoring**, and **preflight testing infrastructure**. The project is now **launch-ready** for production deployment.
 
-## Recent Changes (November 25, 2025)
+## Recent Changes (November 26, 2025)
+
+### i18n Locale Switching & Brain Canvas Accessibility Fixes
+
+**Language Switcher Fix:**
+- Fixed `LocaleSwitcher.tsx` to use correct `router.replace(pathname, { locale })` signature
+- Using locale-aware `useRouter` and `usePathname` from `@/i18n/routing`
+- Language changes now work instantly without page refresh
+- All 9 locales verified: EN, ES, FR, DE, ZH-HANS, AR, HI, IT, PT
+
+**Brain Canvas Accessibility (WCAG Compliance):**
+- Added `u_reducedMotion` uniform to WebGL shader
+- All wave animations scaled by `motionScale` (1.0 for full motion, 0.0 for reduced)
+- Success/Error flash overlays reduced to static tints for reduced-motion users
+- Respects `prefers-reduced-motion` system preference
+
+## Previous Changes (November 25, 2025)
 
 ### MEGA PHASE v15-v18: Self-Running Workflow Engine
 
