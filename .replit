@@ -84,10 +84,6 @@ localPort = 44511
 externalPort = 3003
 
 [[ports]]
-localPort = 45547
-externalPort = 8080
-
-[[ports]]
 localPort = 45697
 externalPort = 5000
 
@@ -114,6 +110,7 @@ STRIPE_PRICE_ADDON_PRIORITY_SUPPORT = "price_1SW5zoBNwdcDOF99fb2rBq17"
 STRIPE_PRICE_ADDON_SLA_99 = "price_1SW5zpBNwdcDOF99jcZ90vkG"
 STRIPE_PRICE_ADDON_WHITE_LABEL = "price_1SW5zpBNwdcDOF995naLMZD8"
 STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS = "price_1SW5zpBNwdcDOF995MpJq8eA"
+LEVQOR_LAUNCH_STAGE = "post"
 
 [deployment]
 deploymentTarget = "autoscale"

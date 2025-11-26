@@ -1,85 +1,85 @@
 {
-  "timestamp": "2025-11-26T11:30:13.577487+00:00",
-  "mode": "development",
-  "backend_url": "http://localhost:8000",
-  "frontend_url": "http://localhost:5000",
+  "timestamp": "2025-11-26T11:35:17.826291+00:00",
+  "mode": "production",
+  "backend_url": "https://api.levqor.ai",
+  "frontend_url": "https://www.levqor.ai",
   "launch_stage": {
-    "stage": "pre",
-    "is_live": false,
+    "stage": "post",
+    "is_live": true,
     "permissions": {
-      "growth_organism_execute": false,
-      "content_posting": false,
-      "git_commits": false,
-      "template_deployment": false,
+      "growth_organism_execute": true,
+      "content_posting": true,
+      "git_commits": true,
+      "template_deployment": true,
       "high_risk_auto_approve": false
     },
     "behavior": {
-      "dry_run_default": true,
+      "dry_run_default": false,
       "require_approval_high_risk": true,
       "log_all_actions": true
     },
     "env_var": "LEVQOR_LAUNCH_STAGE",
-    "current_value": "(unset, defaulting to pre)"
+    "current_value": "post"
   },
   "checks": {
     "backend": [
       {
         "status": "OK",
-        "url": "http://localhost:8000/health",
+        "url": "https://api.levqor.ai/health",
         "http_code": 200,
         "expected_codes": [
           200
         ],
-        "response_time_ms": 5.882,
+        "response_time_ms": 173.05100000000002,
         "name": "Health Check"
       },
       {
         "status": "OK",
-        "url": "http://localhost:8000/api/health/summary",
+        "url": "https://api.levqor.ai/api/health/summary",
         "http_code": 200,
         "expected_codes": [
           200
         ],
-        "response_time_ms": 69.05600000000001,
+        "response_time_ms": 90.973,
         "name": "Health Summary"
       },
       {
         "status": "OK",
-        "url": "http://localhost:8000/api/system/launch-readiness",
+        "url": "https://api.levqor.ai/api/system/launch-readiness",
         "http_code": 200,
         "expected_codes": [
           200
         ],
-        "response_time_ms": 193.154,
+        "response_time_ms": 81.289,
         "name": "Launch Readiness"
       },
       {
         "status": "OK",
-        "url": "http://localhost:8000/api/me/export-data",
+        "url": "https://api.levqor.ai/api/me/export-data",
         "http_code": 401,
         "expected_codes": [
           200,
           401
         ],
-        "response_time_ms": 5.24,
+        "response_time_ms": 91.393,
         "name": "DSAR Export"
       },
       {
-        "status": "OK",
-        "url": "http://localhost:8000/api/me/delete-account",
-        "http_code": 401,
+        "status": "FAIL",
+        "url": "https://api.levqor.ai/api/me/delete-account",
+        "http_code": 404,
         "expected_codes": [
           200,
           401
         ],
-        "response_time_ms": 5.05,
+        "response_time_ms": 70.922,
         "name": "DSAR Delete"
       }
     ],
     "frontend": [
       {
         "status": "OK",
-        "url": "http://localhost:5000",
+        "url": "https://www.levqor.ai",
         "found_markers": [
           "Levqor",
           "workflow",
@@ -113,9 +113,9 @@
   },
   "summary": {
     "total_checks": 10,
-    "passed": 10,
+    "passed": 9,
     "warned": 0,
-    "failed": 0,
-    "overall_status": "HEALTHY"
+    "failed": 1,
+    "overall_status": "FAIL"
   }
 }
