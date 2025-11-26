@@ -5,7 +5,85 @@
     "startTrial": "Start free trial",
     "seePricing": "See pricing",
     "contact": "Contact",
-    "signIn": "Sign In"
+    "signIn": "Sign In",
+    "status_checking": "Checking...",
+    "status_operational": "All systems operational"
+  },
+  "home": {
+    "hero": {
+      "title": "AI-Powered",
+      "subtitle": "Automation",
+      "description": "Levqor runs your workflows, monitors failures, and self-heals. Email, Sheets, Slack, CRM, and more.",
+      "cta_trial": "Start free trial",
+      "cta_pricing": "See pricing",
+      "trust_uptime": "99.9% uptime SLA",
+      "trust_encryption": "Bank-grade encryption",
+      "trust_global": "Global CDN",
+      "stats": "Join 1,000+ teams automating with Levqor"
+    },
+    "onboarding": {
+      "newUserHint": "New to Levqor? This will create your account and start your free trial.",
+      "existingUserHint": "Already have an account? Sign in",
+      "noAccountHint": "No account yet? Click 'Start free trial' to create one."
+    },
+    "features": {
+      "title": "Enterprise-Ready Features",
+      "self_healing": {
+        "title": "Self-Healing Workflows",
+        "item1": "Auto-retry failed steps",
+        "item2": "Smart error detection",
+        "item3": "Zero-downtime recovery"
+      },
+      "visual_builder": {
+        "title": "Visual Workflow Builder",
+        "item1": "Drag-and-drop interface",
+        "item2": "50+ pre-built templates",
+        "item3": "No coding required"
+      },
+      "sso": {
+        "title": "Enterprise SSO",
+        "item1": "SAML & OAuth support",
+        "item2": "Role-based access control",
+        "item3": "Audit logging"
+      },
+      "sla": {
+        "title": "99.9% Uptime SLA",
+        "item1": "Global redundancy",
+        "item2": "Real-time monitoring",
+        "item3": "Dedicated support"
+      },
+      "audit": {
+        "title": "Compliance & Audit",
+        "item1": "GDPR compliant",
+        "item2": "SOC 2 ready",
+        "item3": "Full audit trail"
+      },
+      "billing": {
+        "title": "Usage-Based Billing",
+        "item1": "Pay per successful run",
+        "item2": "No hidden fees",
+        "item3": "Cancel anytime"
+      }
+    },
+    "cta": {
+      "title": "Ready to automate?",
+      "description": "Start your 7-day free trial. No credit card required."
+    }
+  },
+  "onboarding": {
+    "newUserHint": "New to Levqor? This will create your account and start your free trial.",
+    "existingUserHint": "Already have an account? Sign in",
+    "noAccountHint": "No account yet? Click 'Start free trial' to create one."
+  },
+  "header": {
+    "home": "Home",
+    "aiBuilder": "AI Builder",
+    "workflows": "Workflows",
+    "pricing": "Pricing",
+    "docs": "Docs",
+    "support": "Support",
+    "signIn": "Sign in",
+    "startTrial": "Start free trial"
   },
   "hero": {
     "title": "Automate work. Ship faster. Pay only for results.",

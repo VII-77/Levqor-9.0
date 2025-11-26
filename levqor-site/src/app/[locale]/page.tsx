@@ -87,13 +87,25 @@ export default function LocaleHomePage() {
               {t('hero.description')}
             </p>
             
-            <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+            <div className="mb-4 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
               <InteractiveHeroCTA
                 primaryHref="/signin"
                 primaryText={t('hero.cta_trial')}
                 secondaryHref="/pricing"
                 secondaryText={t('hero.cta_pricing')}
               />
+            </div>
+            
+            <div className="mb-6 text-center lg:text-left animate-fade-in-up" style={{ animationDelay: '350ms' }}>
+              <p className="text-sm text-neutral-600 mb-2">
+                {t('onboarding.newUserHint')}
+              </p>
+              <Link 
+                href="/signin" 
+                className="text-sm text-primary-600 hover:text-primary-700 underline underline-offset-2 font-medium"
+              >
+                {t('onboarding.existingUserHint')}
+              </Link>
             </div>
             
             <div className="mt-6 flex flex-wrap justify-center lg:justify-start gap-6 text-sm text-neutral-600 animate-fade-in-up" style={{ animationDelay: '400ms' }}>

@@ -1,0 +1,152 @@
+{
+  "common": {
+    "learnMore": "Scopri di più",
+    "getStarted": "Inizia",
+    "startTrial": "Inizia la prova gratuita",
+    "seePricing": "Vedi i prezzi",
+    "contact": "Contatti",
+    "signIn": "Accedi",
+    "status_checking": "Verifica in corso...",
+    "status_operational": "Tutti i sistemi operativi"
+  },
+  "home": {
+    "hero": {
+      "title": "Alimentato dall'IA",
+      "subtitle": "Automazione",
+      "description": "Levqor esegue i tuoi workflow, monitora gli errori e si auto-ripara.",
+      "cta_trial": "Inizia la prova gratuita",
+      "cta_pricing": "Vedi i prezzi",
+      "trust_uptime": "99.9% SLA di uptime",
+      "trust_encryption": "Crittografia bancaria",
+      "trust_global": "CDN globale",
+      "stats": "Unisciti a oltre 1.000 team che automatizzano con Levqor"
+    },
+    "onboarding": {
+      "newUserHint": "Nuovo su Levqor? Questo creerà il tuo account e inizierà la tua prova gratuita.",
+      "existingUserHint": "Hai già un account? Accedi",
+      "noAccountHint": "Non hai un account? Clicca su 'Inizia la prova gratuita' per crearne uno."
+    },
+    "features": {
+      "title": "Funzionalità Enterprise",
+      "self_healing": {
+        "title": "Workflow auto-riparanti",
+        "item1": "Retry automatico",
+        "item2": "Rilevamento intelligente errori",
+        "item3": "Recupero senza interruzioni"
+      },
+      "visual_builder": {
+        "title": "Builder visuale",
+        "item1": "Interfaccia drag-and-drop",
+        "item2": "50+ template predefiniti",
+        "item3": "Nessun codice richiesto"
+      },
+      "sso": {
+        "title": "SSO Enterprise",
+        "item1": "Supporto SAML e OAuth",
+        "item2": "Controllo accessi basato su ruoli",
+        "item3": "Registrazione audit"
+      },
+      "sla": {
+        "title": "99.9% SLA di uptime",
+        "item1": "Ridondanza globale",
+        "item2": "Monitoraggio in tempo reale",
+        "item3": "Supporto dedicato"
+      },
+      "audit": {
+        "title": "Conformità e audit",
+        "item1": "Conforme GDPR",
+        "item2": "Pronto per SOC 2",
+        "item3": "Traccia audit completa"
+      },
+      "billing": {
+        "title": "Fatturazione a consumo",
+        "item1": "Paga per esecuzione riuscita",
+        "item2": "Nessun costo nascosto",
+        "item3": "Annulla quando vuoi"
+      }
+    },
+    "cta": {
+      "title": "Pronto ad automatizzare?",
+      "description": "Inizia la prova gratuita di 7 giorni. Nessuna carta di credito richiesta."
+    }
+  },
+  "onboarding": {
+    "newUserHint": "Nuovo su Levqor? Questo creerà il tuo account e inizierà la tua prova gratuita.",
+    "existingUserHint": "Hai già un account? Accedi",
+    "noAccountHint": "Non hai un account? Clicca su 'Inizia la prova gratuita' per crearne uno."
+  },
+  "header": {
+    "home": "Home",
+    "aiBuilder": "Builder IA",
+    "workflows": "Workflow",
+    "pricing": "Prezzi",
+    "docs": "Documentazione",
+    "support": "Supporto",
+    "signIn": "Accedi",
+    "startTrial": "Inizia la prova gratuita"
+  },
+  "hero": {
+    "title": "Automatizza. Consegna più velocemente. Paga solo per i risultati.",
+    "subtitle": "Levqor esegue i tuoi workflow, monitora gli errori e si auto-ripara.",
+    "cta": "Inizia la prova gratuita"
+  },
+  "howItWorks": {
+    "title": "Come funziona",
+    "step1": {
+      "title": "Descrivi",
+      "description": "Spiega a Levqor cosa vuoi automatizzare in linguaggio semplice"
+    },
+    "step2": {
+      "title": "Genera",
+      "description": "L'IA costruisce il tuo workflow completo con trigger e azioni"
+    },
+    "step3": {
+      "title": "Esegui",
+      "description": "Distribuisci istantaneamente con auto-riparazione e monitoraggio integrati"
+    }
+  },
+  "templates": {
+    "title": "Galleria dei modelli",
+    "subtitle": "Inizia con workflow predefiniti per casi d'uso comuni",
+    "categories": {
+      "all": "Tutti",
+      "marketing": "Marketing",
+      "sales": "Vendite",
+      "operations": "Operazioni",
+      "hr": "Risorse Umane",
+      "finance": "Finanza"
+    }
+  },
+  "builder": {
+    "title": "Costruttore di workflow AI",
+    "placeholder": "Descrivi cosa vuoi automatizzare...",
+    "generate": "Genera con AI",
+    "userType": {
+      "individual": "Individuale",
+      "business": "Azienda"
+    }
+  },
+  "pricing": {
+    "title": "Prezzi semplici e trasparenti",
+    "subtitle": "Inizia con una prova gratuita di 7 giorni.",
+    "monthly": "Mensile",
+    "yearly": "Annuale",
+    "starter": {
+      "name": "Starter",
+      "price": "9",
+      "period": "mese",
+      "features": ["5 workflow", "1.000 esecuzioni/mese", "Supporto email"]
+    }
+  },
+  "concierge": {
+    "title": "Assistente Levqor",
+    "placeholder": "Chiedi qualsiasi cosa su Levqor...",
+    "greeting": "Ciao! Sono l'assistente AI di Levqor. Come posso aiutarti?"
+  },
+  "footer": {
+    "privacy": "Informativa sulla privacy",
+    "terms": "Termini di servizio",
+    "cookies": "Politica sui cookie",
+    "contact": "Contatti"
+  }
+}

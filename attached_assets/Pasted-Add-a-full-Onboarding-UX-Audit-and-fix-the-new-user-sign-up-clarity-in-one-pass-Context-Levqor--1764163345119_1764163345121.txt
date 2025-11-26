@@ -1,0 +1,107 @@
+Add a full Onboarding UX Audit and fix the new-user sign-up clarity in one pass.
+
+Context:
+- Levqor X V10 is live with all 10 phases passing.
+- Technical onboarding works, but UX copy is unclear for new users (no explicit “create account” wording).
+- I want the system to:
+  (1) Make sign-up / account creation obvious to humans.
+  (2) Add an automated Guardian audit so this kind of issue is caught in the future.
+
+PHASE 1 — Fix Signup / Account Creation UX (Copy + Routes)
+1. Homepage hero:
+   - Keep the primary CTA label as: “Start free trial”.
+   - Under/near that button, add clear microcopy in all 9 languages, e.g.:
+     EN: “New to Levqor? This will create your account and start your free trial.”
+     (Add equivalent strings to the i18n message files for all locales.)
+   - Ensure the secondary CTA/link clearly reads:
+     “Already have an account? Sign in”
+     and is localized.
+
+2. Header/nav (logged-out state):
+   - Ensure there is:
+     - A prominent “Start free trial” or “Get started” CTA.
+     - A clear “Sign in” for existing users.
+   - Add a small helper text in an appropriate place (auth box, FAQ, footer) like:
+     “No account yet? Click ‘Start free trial’ to create one.”
+   - Localize this via next-intl.
+
+3. /signup alias:
+   - Add a /signup route/page that redirects or forwards to the existing onboarding/trial flow.
+   - This should NOT duplicate logic; just reuse the same flow as the main CTA.
+   - Ensure it does not break NextAuth, Stripe, or existing routes.
+   - Update any FAQ or legal copy where it helps to say:
+     “To create a new account, start your free trial or visit /signup.”
+
+4. Safety:
+   - Do NOT change backend auth or Stripe logic.
+   - Do NOT touch secrets.
+   - Keep all flows functionally identical; this is copy/UX/navigation clarity only.
+
+PHASE 2 — Implement Onboarding UX Audit Script
+1. Create a new script:
+   - File: scripts/autopilot/onboarding_ux_audit.py
+
+2. Behavior:
+   - Fetch the frontend HTML for at least:
+     - PRODUCTION: https://www.levqor.ai/ and https://www.levqor.ai/pricing
+     - Allow override via env (e.g. FRONTEND_BASE_URL) for dev if this pattern already exists.
+   - Scan the HTML content for key onboarding signals:
+     - New-user CTA keywords: “create account”, “start free trial”, “get started”, “sign up”, “start your trial”.
+     - Returning-user CTA keywords: “Sign in”, “Log in”.
+     - Account/trial clarity: text near the primary CTA mentioning “account” or “trial”.
+   - Produce a JSON report at:
+     workspace-data/autopilot/onboarding_ux_audit.json
+     with fields:
+     - new_user_cta_found: true/false
+     - returning_user_cta_found: true/false
+     - account_clarity_found: true/false
+     - status: "PASS" | "WARN" | "FAIL"
+     - messages: [string, ...]
+   - Logic:
+     - PASS if:
+       - new_user_cta_found == true
+       - returning_user_cta_found == true
+       - account_clarity_found == true
+     - WARN if:
+       - CTAs are present but account_clarity_found == false
+       - (e.g. “Start” but no mention of account/trial)
+     - FAIL if:
+       - new_user_cta_found == false
+       OR
+       - Only sign-in/login language is found without any new-user CTA.
+
+3. Robustness:
+   - Handle network errors gracefully (set status to WARN with message).
+   - Do not crash the entire verification suite if frontend is temporarily unreachable.
+
+PHASE 3 — Integrate Onboarding UX Audit into Existing Verification
+1. Update scripts/postlaunch/verify_full_stack.py:
+   - Import and call onboarding_ux_audit.
+   - Include its status in the final printed summary.
+   - If onboarding_ux_audit returns FAIL, mark the overall verification as WARN or FAIL (depending on the existing conventions in this script).
+   - If WARN, still allow other checks to pass but clearly show the warning.
+
+2. Update scripts/autopilot/founder_digest.py:
+   - Read onboarding_ux_audit.json (if present).
+   - Add a new section “Onboarding UX” to the Founder Digest with:
+     - Status: PASS/WARN/FAIL
+     - Short human-readable explanation (e.g. “New-user CTA and account clarity detected” or “No obvious new-user CTA detected on homepage”).
+
+PHASE 4 — Run and Verify
+1. Run the full CI/safety suite:
+   - `cd ~/workspace && python scripts/ci/run_all_checks.py`
+
+2. Run the full postlaunch verification:
+   - `cd ~/workspace && python scripts/postlaunch/verify_full_stack.py`
+
+3. Confirm:
+   - No TypeScript/Next.js build errors.
+   - The homepage and pricing page now clearly show how a new user creates an account.
+   - onboarding_ux_audit.json exists with sensible data.
+   - The verification summary includes an onboarding UX line.
+   - The Founder Digest includes the new section.
+
+Constraints:
+- Do NOT modify secrets or environment variables.
+- Do NOT change backend security or billing logic.
+- Treat this as a UX + audit-layer enhancement only.

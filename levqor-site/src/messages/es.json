@@ -5,7 +5,85 @@
     "startTrial": "Prueba gratis",
     "seePricing": "Ver precios",
     "contact": "Contacto",
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "status_checking": "Verificando...",
+    "status_operational": "Todos los sistemas operativos"
+  },
+  "home": {
+    "hero": {
+      "title": "Impulsado por IA",
+      "subtitle": "Automatización",
+      "description": "Levqor ejecuta tus workflows, monitorea errores y se auto-repara.",
+      "cta_trial": "Prueba gratis",
+      "cta_pricing": "Ver precios",
+      "trust_uptime": "99.9% SLA de disponibilidad",
+      "trust_encryption": "Cifrado bancario",
+      "trust_global": "CDN global",
+      "stats": "Únete a más de 1,000 equipos automatizando con Levqor"
+    },
+    "onboarding": {
+      "newUserHint": "¿Nuevo en Levqor? Esto creará tu cuenta e iniciará tu prueba gratuita.",
+      "existingUserHint": "¿Ya tienes una cuenta? Iniciar sesión",
+      "noAccountHint": "¿No tienes cuenta? Haz clic en 'Prueba gratis' para crear una."
+    },
+    "features": {
+      "title": "Funciones empresariales",
+      "self_healing": {
+        "title": "Workflows auto-reparables",
+        "item1": "Reintentos automáticos",
+        "item2": "Detección inteligente de errores",
+        "item3": "Recuperación sin interrupciones"
+      },
+      "visual_builder": {
+        "title": "Constructor visual",
+        "item1": "Interfaz drag-and-drop",
+        "item2": "50+ plantillas predefinidas",
+        "item3": "Sin código requerido"
+      },
+      "sso": {
+        "title": "SSO Empresarial",
+        "item1": "Soporte SAML y OAuth",
+        "item2": "Control de acceso basado en roles",
+        "item3": "Registro de auditoría"
+      },
+      "sla": {
+        "title": "99.9% SLA de disponibilidad",
+        "item1": "Redundancia global",
+        "item2": "Monitoreo en tiempo real",
+        "item3": "Soporte dedicado"
+      },
+      "audit": {
+        "title": "Cumplimiento y auditoría",
+        "item1": "Cumple con GDPR",
+        "item2": "Listo para SOC 2",
+        "item3": "Registro completo de auditoría"
+      },
+      "billing": {
+        "title": "Facturación por uso",
+        "item1": "Paga por ejecución exitosa",
+        "item2": "Sin tarifas ocultas",
+        "item3": "Cancela cuando quieras"
+      }
+    },
+    "cta": {
+      "title": "¿Listo para automatizar?",
+      "description": "Comienza tu prueba gratuita de 7 días. Sin tarjeta de crédito."
+    }
+  },
+  "onboarding": {
+    "newUserHint": "¿Nuevo en Levqor? Esto creará tu cuenta e iniciará tu prueba gratuita.",
+    "existingUserHint": "¿Ya tienes una cuenta? Iniciar sesión",
+    "noAccountHint": "¿No tienes cuenta? Haz clic en 'Prueba gratis' para crear una."
+  },
+  "header": {
+    "home": "Inicio",
+    "aiBuilder": "Constructor IA",
+    "workflows": "Workflows",
+    "pricing": "Precios",
+    "docs": "Documentación",
+    "support": "Soporte",
+    "signIn": "Iniciar sesión",
+    "startTrial": "Prueba gratis"
   },
   "hero": {
     "title": "Automatiza. Entrega más rápido. Paga solo por resultados.",

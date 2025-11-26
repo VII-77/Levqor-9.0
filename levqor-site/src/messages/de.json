@@ -5,7 +5,85 @@
     "startTrial": "Kostenlos testen",
     "seePricing": "Preise ansehen",
     "contact": "Kontakt",
-    "signIn": "Anmelden"
+    "signIn": "Anmelden",
+    "status_checking": "Überprüfen...",
+    "status_operational": "Alle Systeme betriebsbereit"
+  },
+  "home": {
+    "hero": {
+      "title": "KI-gestützt",
+      "subtitle": "Automatisierung",
+      "description": "Levqor führt Ihre Workflows aus, überwacht Fehler und repariert sich selbst.",
+      "cta_trial": "Kostenlos testen",
+      "cta_pricing": "Preise ansehen",
+      "trust_uptime": "99,9% SLA-Verfügbarkeit",
+      "trust_encryption": "Bankverschlüsselung",
+      "trust_global": "Globales CDN",
+      "stats": "Schließen Sie sich 1.000+ Teams an, die mit Levqor automatisieren"
+    },
+    "onboarding": {
+      "newUserHint": "Neu bei Levqor? Dies erstellt Ihr Konto und startet Ihre kostenlose Testversion.",
+      "existingUserHint": "Haben Sie bereits ein Konto? Anmelden",
+      "noAccountHint": "Noch kein Konto? Klicken Sie auf 'Kostenlos testen', um eines zu erstellen."
+    },
+    "features": {
+      "title": "Enterprise-Funktionen",
+      "self_healing": {
+        "title": "Selbstheilende Workflows",
+        "item1": "Automatische Wiederholungen",
+        "item2": "Intelligente Fehlererkennung",
+        "item3": "Unterbrechungsfreie Wiederherstellung"
+      },
+      "visual_builder": {
+        "title": "Visueller Builder",
+        "item1": "Drag-and-Drop-Oberfläche",
+        "item2": "50+ vorgefertigte Vorlagen",
+        "item3": "Kein Code erforderlich"
+      },
+      "sso": {
+        "title": "Enterprise SSO",
+        "item1": "SAML & OAuth-Unterstützung",
+        "item2": "Rollenbasierte Zugriffskontrolle",
+        "item3": "Audit-Protokollierung"
+      },
+      "sla": {
+        "title": "99,9% SLA-Verfügbarkeit",
+        "item1": "Globale Redundanz",
+        "item2": "Echtzeit-Überwachung",
+        "item3": "Dedizierter Support"
+      },
+      "audit": {
+        "title": "Compliance & Audit",
+        "item1": "DSGVO-konform",
+        "item2": "SOC 2-bereit",
+        "item3": "Vollständiger Audit-Trail"
+      },
+      "billing": {
+        "title": "Nutzungsbasierte Abrechnung",
+        "item1": "Zahlen pro erfolgreicher Ausführung",
+        "item2": "Keine versteckten Gebühren",
+        "item3": "Jederzeit kündbar"
+      }
+    },
+    "cta": {
+      "title": "Bereit zu automatisieren?",
+      "description": "Starten Sie Ihre 7-tägige kostenlose Testversion. Keine Kreditkarte erforderlich."
+    }
+  },
+  "onboarding": {
+    "newUserHint": "Neu bei Levqor? Dies erstellt Ihr Konto und startet Ihre kostenlose Testversion.",
+    "existingUserHint": "Haben Sie bereits ein Konto? Anmelden",
+    "noAccountHint": "Noch kein Konto? Klicken Sie auf 'Kostenlos testen', um eines zu erstellen."
+  },
+  "header": {
+    "home": "Startseite",
+    "aiBuilder": "KI-Builder",
+    "workflows": "Workflows",
+    "pricing": "Preise",
+    "docs": "Dokumentation",
+    "support": "Support",
+    "signIn": "Anmelden",
+    "startTrial": "Kostenlos testen"
   },
   "hero": {
     "title": "Automatisieren. Schneller liefern. Nur für Ergebnisse zahlen.",

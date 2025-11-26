@@ -1,0 +1,152 @@
+{
+  "common": {
+    "learnMore": "了解更多",
+    "getStarted": "开始使用",
+    "startTrial": "开始免费试用",
+    "seePricing": "查看价格",
+    "contact": "联系我们",
+    "signIn": "登录",
+    "status_checking": "检查中...",
+    "status_operational": "所有系统正常运行"
+  },
+  "home": {
+    "hero": {
+      "title": "AI驱动",
+      "subtitle": "自动化",
+      "description": "Levqor运行您的工作流程，监控故障，并自动修复。",
+      "cta_trial": "开始免费试用",
+      "cta_pricing": "查看价格",
+      "trust_uptime": "99.9% 正常运行时间SLA",
+      "trust_encryption": "银行级加密",
+      "trust_global": "全球CDN",
+      "stats": "加入1,000+使用Levqor自动化的团队"
+    },
+    "onboarding": {
+      "newUserHint": "初次使用Levqor？这将创建您的账户并开始免费试用。",
+      "existingUserHint": "已有账户？登录",
+      "noAccountHint": "还没有账户？点击"开始免费试用"创建一个。"
+    },
+    "features": {
+      "title": "企业级功能",
+      "self_healing": {
+        "title": "自愈工作流程",
+        "item1": "自动重试失败步骤",
+        "item2": "智能错误检测",
+        "item3": "零停机恢复"
+      },
+      "visual_builder": {
+        "title": "可视化构建器",
+        "item1": "拖放界面",
+        "item2": "50+预构建模板",
+        "item3": "无需编码"
+      },
+      "sso": {
+        "title": "企业SSO",
+        "item1": "SAML和OAuth支持",
+        "item2": "基于角色的访问控制",
+        "item3": "审计日志"
+      },
+      "sla": {
+        "title": "99.9%正常运行时间SLA",
+        "item1": "全球冗余",
+        "item2": "实时监控",
+        "item3": "专属支持"
+      },
+      "audit": {
+        "title": "合规与审计",
+        "item1": "符合GDPR",
+        "item2": "SOC 2就绪",
+        "item3": "完整审计追踪"
+      },
+      "billing": {
+        "title": "按用量计费",
+        "item1": "按成功运行付费",
+        "item2": "无隐藏费用",
+        "item3": "随时取消"
+      }
+    },
+    "cta": {
+      "title": "准备好自动化了吗？",
+      "description": "开始7天免费试用。无需信用卡。"
+    }
+  },
+  "onboarding": {
+    "newUserHint": "初次使用Levqor？这将创建您的账户并开始免费试用。",
+    "existingUserHint": "已有账户？登录",
+    "noAccountHint": "还没有账户？点击"开始免费试用"创建一个。"
+  },
+  "header": {
+    "home": "首页",
+    "aiBuilder": "AI构建器",
+    "workflows": "工作流程",
+    "pricing": "价格",
+    "docs": "文档",
+    "support": "支持",
+    "signIn": "登录",
+    "startTrial": "开始免费试用"
+  },
+  "hero": {
+    "title": "自动化工作。更快交付。只为结果付费。",
+    "subtitle": "Levqor运行您的工作流程，监控故障，并自动修复。",
+    "cta": "开始免费试用"
+  },
+  "howItWorks": {
+    "title": "工作原理",
+    "step1": {
+      "title": "描述",
+      "description": "用简单的语言告诉Levqor您想自动化什么"
+    },
+    "step2": {
+      "title": "生成",
+      "description": "AI构建包含触发器和操作的完整工作流程"
+    },
+    "step3": {
+      "title": "运行",
+      "description": "即时部署，内置自动修复和监控功能"
+    }
+  },
+  "templates": {
+    "title": "模板库",
+    "subtitle": "从常见用例的预构建工作流程开始",
+    "categories": {
+      "all": "全部",
+      "marketing": "营销",
+      "sales": "销售",
+      "operations": "运营",
+      "hr": "人力资源",
+      "finance": "财务"
+    }
+  },
+  "builder": {
+    "title": "AI工作流程构建器",
+    "placeholder": "描述您想自动化的内容...",
+    "generate": "使用AI生成",
+    "userType": {
+      "individual": "个人",
+      "business": "企业"
+    }
+  },
+  "pricing": {
+    "title": "简单透明的定价",
+    "subtitle": "从7天免费试用开始。",
+    "monthly": "月付",
+    "yearly": "年付",
+    "starter": {
+      "name": "入门版",
+      "price": "9",
+      "period": "月",
+      "features": ["5个工作流程", "1,000次运行/月", "邮件支持"]
+    }
+  },
+  "concierge": {
+    "title": "Levqor助手",
+    "placeholder": "问任何关于Levqor的问题...",
+    "greeting": "您好！我是Levqor AI助手。有什么可以帮助您的？"
+  },
+  "footer": {
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "cookies": "Cookie政策",
+    "contact": "联系我们"
+  }
+}

@@ -5,7 +5,85 @@
     "startTrial": "Essai gratuit",
     "seePricing": "Voir les tarifs",
     "contact": "Contact",
-    "signIn": "Connexion"
+    "signIn": "Connexion",
+    "status_checking": "Vérification...",
+    "status_operational": "Tous les systèmes opérationnels"
+  },
+  "home": {
+    "hero": {
+      "title": "Propulsé par l'IA",
+      "subtitle": "Automatisation",
+      "description": "Levqor exécute vos workflows, surveille les erreurs et s'auto-répare.",
+      "cta_trial": "Essai gratuit",
+      "cta_pricing": "Voir les tarifs",
+      "trust_uptime": "99.9% SLA de disponibilité",
+      "trust_encryption": "Chiffrement bancaire",
+      "trust_global": "CDN mondial",
+      "stats": "Rejoignez plus de 1 000 équipes qui automatisent avec Levqor"
+    },
+    "onboarding": {
+      "newUserHint": "Nouveau sur Levqor ? Cela créera votre compte et démarrera votre essai gratuit.",
+      "existingUserHint": "Vous avez déjà un compte ? Connexion",
+      "noAccountHint": "Pas encore de compte ? Cliquez sur 'Essai gratuit' pour en créer un."
+    },
+    "features": {
+      "title": "Fonctionnalités entreprise",
+      "self_healing": {
+        "title": "Workflows auto-réparables",
+        "item1": "Réessais automatiques",
+        "item2": "Détection intelligente des erreurs",
+        "item3": "Récupération sans interruption"
+      },
+      "visual_builder": {
+        "title": "Constructeur visuel",
+        "item1": "Interface glisser-déposer",
+        "item2": "50+ modèles pré-construits",
+        "item3": "Aucun code requis"
+      },
+      "sso": {
+        "title": "SSO Entreprise",
+        "item1": "Support SAML et OAuth",
+        "item2": "Contrôle d'accès basé sur les rôles",
+        "item3": "Journal d'audit"
+      },
+      "sla": {
+        "title": "99.9% SLA de disponibilité",
+        "item1": "Redondance mondiale",
+        "item2": "Surveillance en temps réel",
+        "item3": "Support dédié"
+      },
+      "audit": {
+        "title": "Conformité et audit",
+        "item1": "Conforme RGPD",
+        "item2": "Prêt pour SOC 2",
+        "item3": "Piste d'audit complète"
+      },
+      "billing": {
+        "title": "Facturation à l'usage",
+        "item1": "Payez par exécution réussie",
+        "item2": "Pas de frais cachés",
+        "item3": "Annulez quand vous voulez"
+      }
+    },
+    "cta": {
+      "title": "Prêt à automatiser ?",
+      "description": "Commencez votre essai gratuit de 7 jours. Sans carte de crédit."
+    }
+  },
+  "onboarding": {
+    "newUserHint": "Nouveau sur Levqor ? Cela créera votre compte et démarrera votre essai gratuit.",
+    "existingUserHint": "Vous avez déjà un compte ? Connexion",
+    "noAccountHint": "Pas encore de compte ? Cliquez sur 'Essai gratuit' pour en créer un."
+  },
+  "header": {
+    "home": "Accueil",
+    "aiBuilder": "Constructeur IA",
+    "workflows": "Workflows",
+    "pricing": "Tarifs",
+    "docs": "Documentation",
+    "support": "Support",
+    "signIn": "Connexion",
+    "startTrial": "Essai gratuit"
   },
   "hero": {
     "title": "Automatisez. Livrez plus vite. Payez uniquement pour les résultats.",
