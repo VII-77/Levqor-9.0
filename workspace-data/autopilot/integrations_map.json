@@ -1,0 +1,132 @@
+{
+  "generated_at": null,
+  "integrations": [
+    {
+      "service": "Stripe",
+      "env_vars": [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "STRIPE_PUBLISHABLE_KEY",
+        "STRIPE_PRICE_STARTER",
+        "STRIPE_PRICE_STARTER_YEAR",
+        "STRIPE_PRICE_LAUNCH",
+        "STRIPE_PRICE_LAUNCH_YEAR",
+        "STRIPE_PRICE_GROWTH",
+        "STRIPE_PRICE_GROWTH_YEAR",
+        "STRIPE_PRICE_AGENCY",
+        "STRIPE_PRICE_AGENCY_YEAR",
+        "STRIPE_PRICE_DFY_STARTER",
+        "STRIPE_PRICE_DFY_PROFESSIONAL",
+        "STRIPE_PRICE_DFY_ENTERPRISE",
+        "STRIPE_PRICE_ADDON_PRIORITY_SUPPORT",
+        "STRIPE_PRICE_ADDON_SLA_99",
+        "STRIPE_PRICE_ADDON_WHITE_LABEL"
+      ],
+      "purpose": "Payment processing, subscriptions, DFY packages",
+      "criticality": "critical",
+      "ping_method": "stripe.Account.retrieve()",
+      "files": ["modules/stripe_connector.py", "modules/marketplace/payouts.py", "api/billing/"]
+    },
+    {
+      "service": "PostgreSQL",
+      "env_vars": ["DATABASE_URL", "PGHOST", "PGPORT", "PGUSER", "PGPASSWORD", "PGDATABASE"],
+      "purpose": "Primary database for all data storage",
+      "criticality": "critical",
+      "ping_method": "SELECT 1",
+      "files": ["modules/db_utils.py", "modules/db_wrapper.py"]
+    },
+    {
+      "service": "Resend",
+      "env_vars": ["RESEND_API_KEY", "AUTH_FROM_EMAIL"],
+      "purpose": "Transactional email, magic links, notifications",
+      "criticality": "high",
+      "ping_method": "resend.Domains.list()",
+      "files": ["modules/email_service.py", "monitors/alert_router.py"]
+    },
+    {
+      "service": "OpenAI",
+      "env_vars": ["OPENAI_API_KEY", "AI_INTEGRATIONS_OPENAI_API_KEY"],
+      "purpose": "AI chat, workflow builder, debugging assistant",
+      "criticality": "high",
+      "ping_method": "openai.models.list()",
+      "files": ["api/ai/chat.py", "api/ai/workflow.py", "api/ai/brain_builder.py"]
+    },
+    {
+      "service": "Sentry",
+      "env_vars": ["SENTRY_DSN"],
+      "purpose": "Error monitoring and alerting",
+      "criticality": "medium",
+      "ping_method": "HTTP GET to DSN host",
+      "files": ["config/sentry_config.py", "run.py"]
+    },
+    {
+      "service": "Telegram",
+      "env_vars": ["TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID"],
+      "purpose": "Alert notifications to founder",
+      "criticality": "medium",
+      "ping_method": "telegram.Bot.get_me()",
+      "files": ["monitors/alert_router.py", "monitors/incident_response.py"]
+    },
+    {
+      "service": "Slack",
+      "env_vars": ["SLACK_WEBHOOK_URL", "SLACK_SIGNING_SECRET"],
+      "purpose": "Team notifications and alerts",
+      "criticality": "low",
+      "ping_method": "POST to webhook",
+      "files": ["modules/auto_intel/alerts.py"]
+    },
+    {
+      "service": "Google OAuth",
+      "env_vars": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+      "purpose": "Social login authentication",
+      "criticality": "medium",
+      "ping_method": "OAuth discovery endpoint",
+      "files": ["levqor-site/src/auth.ts"]
+    },
+    {
+      "service": "Microsoft OAuth",
+      "env_vars": ["MICROSOFT_CLIENT_ID", "MICROSOFT_CLIENT_SECRET"],
+      "purpose": "Social login authentication",
+      "criticality": "medium",
+      "ping_method": "OAuth discovery endpoint",
+      "files": ["levqor-site/src/auth.ts"]
+    },
+    {
+      "service": "Cloudflare",
+      "env_vars": ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID", "CLOUDFLARE_ZONE_ID", "CF_API_TOKEN"],
+      "purpose": "DNS management, CDN",
+      "criticality": "medium",
+      "ping_method": "cloudflare.zones.list()",
+      "files": ["deployment scripts"]
+    },
+    {
+      "service": "Redis",
+      "env_vars": ["REDIS_URL"],
+      "purpose": "Caching and session storage",
+      "criticality": "medium",
+      "ping_method": "PING command",
+      "files": ["caching layer"]
+    },
+    {
+      "service": "NextAuth",
+      "env_vars": ["NEXTAUTH_SECRET", "NEXTAUTH_URL"],
+      "purpose": "Frontend authentication",
+      "criticality": "critical",
+      "ping_method": "Session validation",
+      "files": ["levqor-site/src/auth.ts", "levqor-site/src/middleware.ts"]
+    },
+    {
+      "service": "GitHub",
+      "env_vars": ["GITHUB_TOKEN"],
+      "purpose": "CI/CD, repository access",
+      "criticality": "low",
+      "ping_method": "github.repos.list()",
+      "files": ["deployment scripts"]
+    }
+  ],
+  "total_services": 13,
+  "critical_count": 3,
+  "high_count": 2,
+  "medium_count": 6,
+  "low_count": 2
+}

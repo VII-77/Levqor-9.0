@@ -1,0 +1,98 @@
+"""
+Mutation Engine - Evolves and optimizes growth strategies.
+
+Capabilities:
+- A/B test generation
+- Copy variation creation
+- Strategy optimization
+- Performance-based mutations
+"""
+
+import logging
+import random
+from datetime import datetime, timezone
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+
+class MutationEngine:
+    """Evolves and optimizes growth strategies through controlled mutations."""
+    
+    def __init__(self):
+        self.mutations = []
+        self.generation = 0
+    
+    def generate_mutations(
+        self,
+        base_strategy: dict,
+        mutation_count: int = 3,
+        dry_run: bool = True
+    ) -> dict:
+        """
+        Generate mutations of a base growth strategy.
+        
+        Args:
+            base_strategy: Original strategy to mutate
+            mutation_count: Number of variants to generate
+            dry_run: If True, only simulate
+        
+        Returns:
+            Dictionary with mutations and recommendations
+        """
+        logger.info(f"[MutationEngine] Generating {mutation_count} mutations (dry_run={dry_run})")
+        
+        self.generation += 1
+        
+        result = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "dry_run": dry_run,
+            "generation": self.generation,
+            "base_strategy": base_strategy,
+            "mutations": []
+        }
+        
+        mutation_types = [
+            "headline_variation",
+            "cta_optimization",
+            "value_prop_emphasis",
+            "urgency_factor",
+            "social_proof_angle"
+        ]
+        
+        for i in range(mutation_count):
+            mutation = {
+                "id": f"mut_g{self.generation}_{i+1}",
+                "type": random.choice(mutation_types),
+                "confidence": round(random.uniform(0.6, 0.95), 2),
+                "changes": {
+                    "element": f"variation_{i+1}",
+                    "optimization_target": "conversion_rate"
+                },
+                "approval_class": "B",
+                "requires_approval": True
+            }
+            result["mutations"].append(mutation)
+        
+        self.mutations.extend(result["mutations"])
+        
+        logger.info(f"[MutationEngine] Generated {len(result['mutations'])} mutations")
+        return result
+    
+    def evaluate_mutation(self, mutation_id: str, performance_data: dict) -> dict:
+        """Evaluate a mutation based on performance data."""
+        return {
+            "mutation_id": mutation_id,
+            "evaluation": "pending",
+            "recommendation": "continue_testing",
+            "confidence": 0.0
+        }
+    
+    def verify(self) -> dict:
+        """Verify engine is operational."""
+        return {
+            "engine": "MutationEngine",
+            "status": "OK",
+            "generation": self.generation,
+            "total_mutations": len(self.mutations)
+        }
