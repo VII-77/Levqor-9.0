@@ -1,0 +1,17 @@
+{
+  "cycle_time": "2025-11-26T14:10:22.067159",
+  "duration_sec": 18.33,
+  "launch_stage": "post",
+  "scripts_run": 9,
+  "results": {
+    "health_check": "degraded",
+    "guardian_monitor": "ok",
+    "secrets_health": "ok",
+    "cost_guard": "ok",
+    "spike_detector": "ok",
+    "growth_organism_check": "ok",
+    "compliance_audit": "ok",
+    "founder_digest": "ok",
+    "onboarding_ux_audit": "ok"
+  }
+}

@@ -449,6 +449,99 @@ def check_security_tamper():
     except Exception as e:
         log.error(f"Security tamper check error: {e}")
 
+
+def run_guardian_cost_guard():
+    """GUARDIAN AUTOPILOT V10: Cost Guard (every 30 min)"""
+    log.info("Running Guardian Cost Guard...")
+    try:
+        result = subprocess.run(
+            ["python3", "scripts/autopilot/cost/cost_guard.py"],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        if result.returncode == 0:
+            log.info("✅ Guardian Cost Guard complete")
+        else:
+            log.warning(f"Guardian Cost Guard issues: {result.stderr[:200]}")
+    except Exception as e:
+        log.error(f"Guardian Cost Guard error: {e}")
+
+
+def run_guardian_secrets_health():
+    """GUARDIAN AUTOPILOT V10: Secrets Health (every 6 hours)"""
+    log.info("Running Guardian Secrets Health...")
+    try:
+        result = subprocess.run(
+            ["python3", "scripts/autopilot/secrets_health.py"],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        if result.returncode == 0:
+            log.info("✅ Guardian Secrets Health complete")
+        else:
+            log.warning(f"Guardian Secrets Health issues: {result.stderr[:200]}")
+    except Exception as e:
+        log.error(f"Guardian Secrets Health error: {e}")
+
+
+def run_guardian_growth_organism():
+    """GUARDIAN AUTOPILOT V10: Growth Organism (every 2 hours)"""
+    log.info("Running Guardian Growth Organism...")
+    try:
+        result = subprocess.run(
+            ["python3", "scripts/autopilot/growth_organism_check.py"],
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        if result.returncode == 0:
+            log.info("✅ Guardian Growth Organism complete")
+        else:
+            log.warning(f"Guardian Growth Organism issues: {result.stderr[:200]}")
+    except Exception as e:
+        log.error(f"Guardian Growth Organism error: {e}")
+
+
+def run_guardian_compliance_audit():
+    """GUARDIAN AUTOPILOT V10: Compliance Audit (daily)"""
+    log.info("Running Guardian Compliance Audit...")
+    try:
+        result = subprocess.run(
+            ["python3", "scripts/autopilot/compliance_audit.py"],
+            capture_output=True,
+            text=True,
+            timeout=180
+        )
+        if result.returncode == 0:
+            log.info("✅ Guardian Compliance Audit complete")
+        else:
+            log.warning(f"Guardian Compliance Audit issues: {result.stderr[:200]}")
+            from monitors.alert_router import send_alert
+            send_alert("warning", f"Compliance Audit completed with issues: {result.stderr[:300]}")
+    except Exception as e:
+        log.error(f"Guardian Compliance Audit error: {e}")
+
+
+def run_guardian_founder_digest():
+    """GUARDIAN AUTOPILOT V10: Founder Digest (daily)"""
+    log.info("Running Guardian Founder Digest...")
+    try:
+        result = subprocess.run(
+            ["python3", "scripts/autopilot/founder_digest.py"],
+            capture_output=True,
+            text=True,
+            timeout=180
+        )
+        if result.returncode == 0:
+            log.info("✅ Guardian Founder Digest generated")
+        else:
+            log.warning(f"Guardian Founder Digest issues: {result.stderr[:200]}")
+    except Exception as e:
+        log.error(f"Guardian Founder Digest error: {e}")
+
+
 def init_scheduler():
     """Initialize and start APScheduler"""
     try:
@@ -667,8 +760,56 @@ def init_scheduler():
             replace_existing=True
         )
         
+        # GUARDIAN AUTOPILOT V10 - Cost Guard (every 30 min)
+        scheduler.add_job(
+            run_guardian_cost_guard,
+            'interval',
+            minutes=30,
+            id='guardian_cost_guard',
+            name='Guardian Cost Guard',
+            replace_existing=True
+        )
+        
+        # GUARDIAN AUTOPILOT V10 - Secrets Health (every 6 hours)
+        scheduler.add_job(
+            run_guardian_secrets_health,
+            'interval',
+            hours=6,
+            id='guardian_secrets_health',
+            name='Guardian Secrets Health',
+            replace_existing=True
+        )
+        
+        # GUARDIAN AUTOPILOT V10 - Growth Organism (every 2 hours)
+        scheduler.add_job(
+            run_guardian_growth_organism,
+            'interval',
+            hours=2,
+            id='guardian_growth_organism',
+            name='Guardian Growth Organism',
+            replace_existing=True
+        )
+        
+        # GUARDIAN AUTOPILOT V10 - Compliance Audit (daily at 4 AM)
+        scheduler.add_job(
+            run_guardian_compliance_audit,
+            CronTrigger(hour=4, minute=0, timezone='UTC'),
+            id='guardian_compliance_audit',
+            name='Guardian Compliance Audit',
+            replace_existing=True
+        )
+        
+        # GUARDIAN AUTOPILOT V10 - Founder Digest (daily at 8 AM London)
+        scheduler.add_job(
+            run_guardian_founder_digest,
+            CronTrigger(hour=8, minute=0, timezone='Europe/London'),
+            id='guardian_founder_digest',
+            name='Guardian Founder Digest',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        log.info("✅ APScheduler initialized with 24 jobs (including 6 monitoring jobs + 1 security job + 4 omega jobs)")
+        log.info("✅ APScheduler initialized with 29 jobs (including 6 monitoring + 1 security + 4 omega + 5 guardian jobs)")
         return scheduler
         
     except ImportError:

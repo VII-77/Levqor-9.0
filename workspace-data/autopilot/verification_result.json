@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-26T13:59:16.537209+00:00",
+  "timestamp": "2025-11-26T14:12:44.350853+00:00",
   "mode": "development",
   "backend_url": "http://localhost:8000",
   "frontend_url": "http://localhost:5000",
@@ -30,7 +30,7 @@
         "expected_codes": [
           200
         ],
-        "response_time_ms": 7.532,
+        "response_time_ms": 6.691,
         "name": "Health Check"
       },
       {
@@ -40,7 +40,7 @@
         "expected_codes": [
           200
         ],
-        "response_time_ms": 6.116,
+        "response_time_ms": 3.814,
         "name": "Health Summary"
       },
       {
@@ -50,7 +50,7 @@
         "expected_codes": [
           200
         ],
-        "response_time_ms": 5.866,
+        "response_time_ms": 3.72,
         "name": "Launch Readiness"
       },
       {
@@ -61,7 +61,7 @@
           200,
           401
         ],
-        "response_time_ms": 4.5760000000000005,
+        "response_time_ms": 5.708,
         "name": "DSAR Export"
       },
       {
@@ -72,7 +72,7 @@
           200,
           401
         ],
-        "response_time_ms": 7.369,
+        "response_time_ms": 5.093999999999999,
         "name": "DSAR Delete"
       }
     ],
