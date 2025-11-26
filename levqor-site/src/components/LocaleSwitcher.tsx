@@ -1,12 +1,19 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from '@/i18n/routing';
+import { useRouter, usePathname, locales as routingLocales } from '@/i18n/routing';
 import { useTransition } from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { locales, type Locale } from '@/i18n';
-import { LANGUAGES, LANGUAGES_BY_REGION, getRoutedLocale, type LanguageCode } from '@/config/languages';
-import { useLanguageStore, useLanguageChange } from '@/stores/languageStore';
+import { LANGUAGES, LANGUAGES_BY_REGION, type LanguageCode } from '@/config/languages';
+import { useLanguageStore } from '@/stores/languageStore';
+
+function getTargetLocale(languageCode: LanguageCode): Locale {
+  if (routingLocales.includes(languageCode as Locale)) {
+    return languageCode as Locale;
+  }
+  return 'en';
+}
 
 export function LocaleSwitcher() {
   const locale = useLocale() as Locale;
@@ -40,11 +47,11 @@ export function LocaleSwitcher() {
     setLocalSelection(languageCode);
     setDisplayLanguage(languageCode);
     
-    const targetLocale = getRoutedLocale(languageCode);
+    const targetLocale = getTargetLocale(languageCode);
     
     if (targetLocale !== locale) {
       startTransition(() => {
-        router.replace(pathname, { locale: targetLocale as Locale });
+        router.replace(pathname, { locale: targetLocale });
       });
     }
     

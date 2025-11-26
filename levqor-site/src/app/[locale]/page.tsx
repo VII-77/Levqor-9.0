@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import JsonLd from "@/components/JsonLd";
 import Logo from "@/components/Logo";
-import { LevqorBrainCanvas, LevqorBrainProvider, useLevqorBrain, InteractiveHeroCTA } from "@/components/brain";
+import { LevqorBrainCanvas, LevqorBrainProvider, useLevqorBrain, InteractiveHeroCTA, HomepageBrainDemo } from "@/components/brain";
 
 function StatusPill() {
   const t = useTranslations('common');
@@ -128,15 +128,7 @@ export default function LocaleHomePage() {
           </div>
           
           <div className="hidden lg:block animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-            <div className="relative">
-              <ContextAwareBrainCanvas
-                className="w-full h-80 rounded-2xl shadow-2xl"
-              />
-              <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md">
-                <p className="text-sm font-medium text-neutral-700">Powered by the Levqor Brain</p>
-                <p className="text-xs text-neutral-500">AI-native workflow intelligence</p>
-              </div>
-            </div>
+            <HomepageBrainDemo />
           </div>
         </div>
         

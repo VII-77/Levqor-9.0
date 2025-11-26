@@ -5,6 +5,7 @@ export { default as TestBrainButton } from "./TestBrainButton";
 export { default as BrainWorkflowBuilder } from "./BrainWorkflowBuilder";
 export { default as BrainErrorDebugger } from "./BrainErrorDebugger";
 export { default as BrainFixMyWorkflow } from "./BrainFixMyWorkflow";
+export { default as HomepageBrainDemo } from "./HomepageBrainDemo";
 export { useBrainState } from "./useBrainState";
 export { useSoundIntensity } from "./useSoundIntensity";
 export type { BrainState, BrainStateConfig } from "./types";

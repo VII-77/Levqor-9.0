@@ -102,8 +102,8 @@ function SignInContent() {
         </div>
         
         <div className="bg-white rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Sign in to Levqor</h2>
-          <p className="text-gray-600 text-center mb-6">Access your automation dashboard</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">Welcome to Levqor</h2>
+          <p className="text-gray-600 text-center mb-6">Sign in or create your free account to get started</p>
           
           {errorCode && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -162,7 +162,7 @@ function SignInContent() {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-500">Or sign in with credentials</span>
+              <span className="px-3 bg-white text-gray-500">Or continue with email</span>
             </div>
           </div>
 
@@ -208,14 +208,14 @@ function SignInContent() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                   </svg>
-                  Signing in...
+                  Continuing...
                 </>
               ) : (
-                "Sign in"
+                "Continue"
               )}
             </button>
             <p className="text-xs text-gray-500 text-center">
-              Early access: use your admin credentials to sign in.
+              New here? We'll create your account automatically.
             </p>
           </form>
           
