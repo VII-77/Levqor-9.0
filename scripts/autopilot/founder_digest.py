@@ -84,6 +84,16 @@ def get_approval_queue_count() -> int:
     return 0
 
 
+def get_launch_stage_info() -> dict:
+    """Get launch stage configuration."""
+    try:
+        from config.launch_stage import get_stage_config
+        return get_stage_config()
+    except Exception as e:
+        logger.warning(f"Could not get launch stage: {e}")
+        return {"stage": "unknown", "is_live": False}
+
+
 def generate_digest() -> str:
     """Generate the founder digest markdown."""
     timestamp = datetime.now(timezone.utc)
@@ -96,10 +106,15 @@ def generate_digest() -> str:
     health_summary = get_health_summary()
     launch_readiness = get_launch_readiness()
     approval_count = get_approval_queue_count()
+    launch_stage = get_launch_stage_info()
+    
+    stage_display = launch_stage.get("stage", "unknown").upper()
+    stage_mode = "LIVE AUTONOMOUS" if launch_stage.get("is_live") else "DRY-RUN MODE"
     
     digest = f"""# Levqor Founder Digest
 
 **Generated:** {timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}
+**Launch Stage:** {stage_display} ({stage_mode})
 
 ---
 

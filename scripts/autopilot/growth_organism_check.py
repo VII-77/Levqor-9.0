@@ -3,6 +3,7 @@
 Growth Organism Check - Guardian Autopilot Grid
 
 Verifies all Growth Organism modules are operational and running correctly.
+Includes launch stage awareness for pre/post-launch behavior.
 """
 
 import os
@@ -13,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from config.launch_stage import get_launch_stage, get_stage_config
 
 OUTPUT_DIR = Path("/home/runner/workspace/workspace-data/autopilot")
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -120,6 +123,9 @@ def run_growth_organism_check() -> dict:
     """Run full Growth Organism verification."""
     timestamp = datetime.now(timezone.utc).isoformat()
     
+    stage_config = get_stage_config()
+    launch_stage = get_launch_stage()
+    
     modules = [
         "DemandSignatureEngine",
         "MutationEngine",
@@ -130,6 +136,8 @@ def run_growth_organism_check() -> dict:
     
     results = {
         "timestamp": timestamp,
+        "launch_stage": launch_stage,
+        "launch_stage_config": stage_config,
         "summary": {
             "total_modules": len(modules),
             "imports_ok": 0,
@@ -142,6 +150,11 @@ def run_growth_organism_check() -> dict:
     logger.info("=" * 60)
     logger.info("GUARDIAN AUTOPILOT - Growth Organism Check")
     logger.info("=" * 60)
+    logger.info(f"Launch Stage: {launch_stage.upper()}")
+    if launch_stage == "pre":
+        logger.info("  Mode: DRY-RUN (proposals only, no execution)")
+    else:
+        logger.info("  Mode: LIVE (autonomous execution for low/medium risk)")
     
     for module_name in modules:
         logger.info(f"\nChecking {module_name}...")

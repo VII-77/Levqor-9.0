@@ -1,0 +1,80 @@
+LEVQOR — POST-LAUNCH SANITY + FIRST GROWTH CYCLE (STAGE: POST)
+
+Goal:
+Now that LEVQOR_LAUNCH_STAGE="post" is set in Replit and Vercel:
+  - Verify production (api.levqor.ai + levqor.ai) is healthy.
+  - Run the first real Growth Organism cycle in POST mode.
+  - Confirm Guardian Autopilot + Founder Digest reflect the new state.
+
+Hard rules:
+- Do NOT rotate or touch any secrets.
+- Do NOT change pricing or billing.
+- Do NOT weaken security_core, auth, or compliance.
+- Keep all high-risk actions behind approval policies.
+
+==================================================
+PHASE 1 — FULL STACK PROD CHECK
+==================================================
+1) If not already present, ensure we have a stack verification script:
+   - Prefer scripts/postlaunch/verify_full_stack.py
+   - If it doesn’t exist, extend scripts/postlaunch/verify_live.py to also:
+       * Hit BACKEND: https://api.levqor.ai
+           - /api/health/summary
+           - /api/health/launch-readiness or equivalent
+           - /api/me/delete-account (unauthenticated 401 is OK)
+       * Hit FRONTEND: https://levqor.ai
+           - Verify HTML contains expected markers:
+               "Levqor" and some known UI text (builder wording, etc.)
+
+2) Run the full stack verification against production:
+   - python scripts/postlaunch/verify_full_stack.py --api-base https://api.levqor.ai --frontend https://levqor.ai
+
+3) Record:
+   - HTTP status codes
+   - Any failing checks
+   - Confirm 7/7 or equivalent launch checks PASS for production, not localhost.
+
+==================================================
+PHASE 2 — FIRST GROWTH ORGANISM CYCLE IN POST MODE
+==================================================
+1) Confirm in code (not just env) that:
+   - get_launch_stage() or equivalent returns "post" in the backend environment.
+
+2) Run the Growth Organism pipeline once in POST mode:
+   - python scripts/autopilot/growth_organism.py
+   - python scripts/autopilot/apply_site_mutations.py
+
+3) After running:
+   - Confirm:
+       * demand_signature.json updated under /workspace-data/autopilot/organism/
+       * mutation proposals applied or safely skipped (CI must still be green)
+       * Any Git commit output if mutations were safe and applied
+
+4) Ensure high-risk actions (emails to all users, legal text, pricing updates) are STILL only queued and not executed:
+   - Verify approvals queue (pending.jsonl) is used for such actions if any were proposed.
+
+==================================================
+PHASE 3 — AUTOPILOT GRID & FOUNDER DIGEST REFRESH
+==================================================
+1) Re-run the Guardian Autopilot Grid scripts:
+   - python scripts/autopilot/secrets_health.py
+   - python scripts/autopilot/compliance_audit.py
+   - python scripts/autopilot/growth_organism_check.py
+   - python scripts/autopilot/founder_digest.py
+
+2) Confirm:
+   - secrets_health.json: no FAIL entries for critical services.
+   - compliance_audit.json: still 100%.
+   - growth_organism_check.json: HEALTHY.
+   - founder_digest.md: updated with today’s run and POST stage.
+
+==================================================
+PHASE 4 — SUMMARY FOR FOUNDER
+==================================================
+Output a concise summary:
+   - verify_full_stack: prod backend + frontend status (all key endpoints OK or list issues)
+   - Growth Organism: ran in POST, what it did (proposals applied, pages updated, etc.)
+   - Any items queued for approval (high-risk actions)
+   - Confirmation that Autopilot Grid + Founder Digest are in sync with POST launch stage
+
+End of command.
