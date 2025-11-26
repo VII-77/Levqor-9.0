@@ -3,56 +3,43 @@
 import { useLocale } from 'next-intl';
 import { usePathname as useNextPathname } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { locales, type Locale, defaultLocale } from '@/i18n';
-import { LANGUAGES, LANGUAGES_BY_REGION, type LanguageCode } from '@/config/languages';
+import { LANGUAGES, LANGUAGES_BY_REGION, SUPPORTED_LOCALES, DEFAULT_LOCALE, type LanguageCode } from '@/config/languages';
 import { useLanguageStore } from '@/stores/languageStore';
 
 /**
- * Get the target route locale for a language code.
- * All 9 Tier-1 languages have their own routes.
+ * Handle language change with deterministic navigation.
+ * Uses window.location.assign for full page reload to ensure next-intl re-initializes.
  */
-function getTargetLocale(languageCode: LanguageCode): Locale {
-  if (locales.includes(languageCode as Locale)) {
-    return languageCode as Locale;
-  }
-  return defaultLocale;
-}
+function navigateToLocale(nextLocale: LanguageCode, currentPathname: string) {
+  if (typeof window === "undefined") return;
 
-/**
- * Strip the locale prefix from a pathname.
- * E.g., '/de/pricing' -> '/pricing', '/it' -> '/'
- */
-function stripLocaleFromPath(pathname: string): string {
-  const segments = pathname.split('/').filter(Boolean);
-  const firstSegment = segments[0];
-  
-  if (firstSegment && locales.includes(firstSegment as Locale)) {
-    const rest = segments.slice(1).join('/');
-    return rest ? `/${rest}` : '/';
-  }
-  
-  return pathname || '/';
-}
+  const url = new URL(window.location.href);
+  const segments = url.pathname.split("/").filter(Boolean);
+  const first = segments[0];
+  const hasLocalePrefix = SUPPORTED_LOCALES.includes(first as LanguageCode);
 
-/**
- * Build the target URL for a locale switch.
- * - English (default) uses '/' (no prefix with localePrefix: 'as-needed')
- * - Other locales use '/{locale}/...'
- */
-function buildTargetUrl(basePath: string, targetLocale: Locale): string {
-  const cleanPath = basePath === '/' ? '' : basePath;
-  
-  if (targetLocale === defaultLocale) {
-    // English uses root path without prefix
-    return cleanPath || '/';
+  if (nextLocale === DEFAULT_LOCALE) {
+    const pathWithoutLocale = hasLocalePrefix
+      ? "/" + segments.slice(1).join("/")
+      : url.pathname;
+    
+    url.pathname = pathWithoutLocale === "" ? "/" : pathWithoutLocale;
+    window.location.assign(url.toString());
+    return;
   }
-  
-  // Other locales get prefixed
-  return `/${targetLocale}${cleanPath}`;
+
+  if (hasLocalePrefix) {
+    segments[0] = nextLocale;
+  } else {
+    segments.unshift(nextLocale);
+  }
+
+  url.pathname = "/" + segments.join("/");
+  window.location.assign(url.toString());
 }
 
 export function LocaleSwitcher() {
-  const currentLocale = useLocale() as Locale;
+  const currentLocale = useLocale() as LanguageCode;
   const pathname = useNextPathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
@@ -85,21 +72,9 @@ export function LocaleSwitcher() {
     setDisplayLanguage(languageCode);
     setIsOpen(false);
     
-    const targetLocale = getTargetLocale(languageCode);
-    
-    if (targetLocale !== currentLocale) {
-      // Set navigating state to show loading indicator
+    if (languageCode !== currentLocale) {
       setIsNavigating(true);
-      
-      // Get base path without current locale
-      const basePath = stripLocaleFromPath(pathname);
-      
-      // Build the target URL
-      const targetUrl = buildTargetUrl(basePath, targetLocale);
-      
-      // Use window.location.assign for deterministic full page reload
-      // This ensures next-intl properly re-initializes with the new locale
-      window.location.assign(targetUrl);
+      navigateToLocale(languageCode, pathname);
     }
   }, [currentLocale, pathname, setDisplayLanguage]);
 
@@ -133,7 +108,7 @@ export function LocaleSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
+        <div className="absolute right-0 mt-2 w-64 max-h-96 overflow-y-auto bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50">
           <div className="p-2">
             {Object.entries(LANGUAGES_BY_REGION).map(([region, languages]) => (
               <div key={region} className="mb-3 last:mb-0">
@@ -152,12 +127,7 @@ export function LocaleSwitcher() {
                           : 'text-slate-200 hover:bg-slate-700'
                       }`}
                     >
-                      <span className="flex items-center gap-2">
-                        <span className="font-medium">{lang.nativeLabel}</span>
-                        {!lang.hasTranslations && (
-                          <span className="text-xs opacity-60">(English)</span>
-                        )}
-                      </span>
+                      <span className="font-medium">{lang.nativeLabel}</span>
                       {selectedLanguage === lang.code && (
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -168,12 +138,6 @@ export function LocaleSwitcher() {
                 </div>
               </div>
             ))}
-          </div>
-          <div className="border-t border-slate-700 p-3 text-xs text-slate-400">
-            <p>
-              {LANGUAGES.filter(l => l.hasTranslations).length} fully translated languages.
-              Other languages show English content.
-            </p>
           </div>
         </div>
       )}

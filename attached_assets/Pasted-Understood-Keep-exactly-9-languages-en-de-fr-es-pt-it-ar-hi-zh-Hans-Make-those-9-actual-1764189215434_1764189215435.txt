@@ -1,0 +1,304 @@
+Understood:
+
+Keep exactly 9 languages: en, de, fr, es, pt, it, ar, hi, zh-Hans.
+
+Make those 9 actually work end-to-end (header, homepage, Brain).
+
+Remove anything else from the language list.
+
+
+Here’s the updated, focused Agent prompt.
+Just copy–paste this into the Replit Agent and let it run.
+
+
+---
+
+You are working on the REAL Levqor frontend at:
+
+/home/runner/workspace/levqor-site
+
+REQUIREMENTS (DO NOT IGNORE):
+
+1) We have **exactly 9 languages that MUST be fully supported**:
+   - en, de, fr, es, pt, it, ar, hi, zh-Hans
+2) These 9 need to be wired correctly for:
+   - routing
+   - header text
+   - homepage text
+   - Levqor Brain demo
+3) Any other language options (if present anywhere in config/UI) must be removed from the language list.
+4) No more half-working locales. Either a locale is one of these 9 and works, or it is not shown at all.
+
+==================================================
+PHASE 1 – ALIGN LOCALE CONFIG TO EXACTLY 9
+==================================================
+
+1) From levqor-site root:
+
+   - cd /home/runner/workspace/levqor-site
+   - ls messages
+   - Confirm that these files exist:
+     - messages/en.json
+     - messages/de.json
+     - messages/fr.json
+     - messages/es.json
+     - messages/pt.json
+     - messages/it.json
+     - messages/ar.json
+     - messages/hi.json
+     - messages/zh-Hans.json
+
+2) Set the **canonical list** of supported locales to:
+
+   SUPPORTED_LOCALES = ["en", "de", "fr", "es", "pt", "it", "ar", "hi", "zh-Hans"]
+
+3) Update all config to ONLY use these 9:
+
+   - src/i18n/routing.ts (or equivalent):
+     - The `locales` / `routingLocales` export must be exactly SUPPORTED_LOCALES.
+     - Remove any other locales.
+
+   - src/config/languages.ts:
+     - LANGUAGES array and any types must only contain the 9 codes above.
+     - For each entry, ensure:
+       - code: "en" | "de" | "fr" | "es" | "pt" | "it" | "ar" | "hi" | "zh-Hans"
+       - routedLocale: same as code.
+     - Remove any non-Tier-1 language entries.
+
+   - src/stores/languageStore.tsx:
+     - Any store/enums/arrays listing languages must only reference the 9 locales above.
+     - Remove anything else.
+
+No other locales should appear in the UI or config after this.
+
+==================================================
+PHASE 2 – FIX LANGUAGE SWITCHER (INCLUDING BACK TO ENGLISH)
+==================================================
+
+Goal:  
+- Dropdown shows **only those 9 languages**.  
+- Switching between them works.  
+- Switching back to English always lands on `/` (or the correct English route) without needing a manual refresh.
+
+1) Open `src/components/LocaleSwitcher.tsx`:
+
+   - Ensure `"use client"` is at the top.
+   - Import whatever you need (React, useState, etc.).
+   - Implement a `handleChange(nextLocale: string)` that uses **window.location** for deterministic navigation.
+
+   Use this logic (adapt to actual component structure):
+
+   ```ts
+   const SUPPORTED_LOCALES = ["en", "de", "fr", "es", "pt", "it", "ar", "hi", "zh-Hans"];
+   const DEFAULT_LOCALE = "en";
+
+   function handleChange(nextLocale: string) {
+     if (typeof window === "undefined") return;
+
+     const url = new URL(window.location.href);
+     const segments = url.pathname.split("/").filter(Boolean);
+
+     const first = segments[0];
+     const hasLocalePrefix = SUPPORTED_LOCALES.includes(first);
+
+     if (nextLocale === DEFAULT_LOCALE) {
+       // English = default root route (no locale prefix)
+       const pathWithoutLocale = hasLocalePrefix
+         ? "/" + segments.slice(1).join("/")
+         : url.pathname;
+
+       url.pathname = pathWithoutLocale === "/" ? "/" : pathWithoutLocale;
+       window.location.assign(url.toString());
+       return;
+     }
+
+     // Non-English locale
+     if (hasLocalePrefix) {
+       segments[0] = nextLocale;
+     } else {
+       segments.unshift(nextLocale);
+     }
+
+     url.pathname = "/" + segments.join("/");
+     window.location.assign(url.toString());
+   }
+
+Use this handleChange in the dropdown/button onChange.
+
+Remove any old router/pending/isPending logic that fights with this.
+
+Ensure dropdown options are created only from SUPPORTED_LOCALES (via config).
+
+
+2. After this, at runtime:
+
+/ → EN
+
+/de → DE
+
+/fr, /es, /pt, /it, /ar, /hi, /zh-Hans exist and work.
+
+Switching EN → DE → EN works with a full page reload, no 404.
+
+
+
+
+================================================== PHASE 3 – HEADER BUTTON TEXT MUST LOCALIZE
+
+User complaint: top header buttons do not change language.
+
+1. Find header components:
+
+rg "Start free trial" src -n || true
+
+rg "Sign in" src -n || true
+
+Open any matching files (likely under src/components or src/app).
+
+
+
+2. For the header where the nav and CTA buttons live:
+
+Import:
+
+import { useTranslations } from "next-intl";
+
+Inside the header component, add:
+
+const t = useTranslations("header");
+
+Replace hard-coded text:
+
+// BEFORE:
+<Button>Start free trial</Button>
+<Button>Sign in</Button>
+
+// AFTER:
+<Button>{t("cta.startFreeTrial")}</Button>
+<Button>{t("cta.signIn")}</Button>
+
+Make sure all 9 messages files contain these keys:
+
+header.cta.startFreeTrial
+
+header.cta.signIn
+
+
+
+Use existing translations if present; if any are missing, copy English temporarily but DO NOT break.
+
+
+3. Ensure header uses the current locale (through next-intl provider) and does not override locale manually.
+
+
+
+================================================== PHASE 4 – LEVQOR BRAIN: LOCALE-AWARE BUT SIMPLE
+
+Goal: Brain must work in EN and not break in any of the other 8 languages.
+It’s OK if backend logic is mostly English; just don’t let Brain be “dead”.
+
+1. Open src/components/brain/HomepageBrainDemo.tsx:
+
+Confirm it imports both:
+
+import { useTranslations, useLocale } from "next-intl";
+
+At the top of the component:
+
+const t = useTranslations("brain");
+const locale = useLocale();
+
+Confirm API_BASE is defined as:
+
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "");
+
+In the fetch body for the Brain API call (build_workflow):
+
+body: JSON.stringify({
+  goal: goal.trim(),
+  language: locale || "en",
+}),
+
+Make sure error text uses t("emptyError") or similar and that key exists in all 9 messages files at root (messages/*.json).
+
+
+
+2. Check backend brain endpoint (already known to be /api/ai/brain/build_workflow):
+
+Only verify (don’t rewrite backend now) that it accepts language in the JSON body and doesn’t crash if language is one of the 9 codes.
+
+If you see an obvious bug (e.g., it crashes on non-"en"), add graceful fallback:
+
+lang = body.get("language") or "en"
+if lang not in ["en","de","fr","es","pt","it","ar","hi","zh-Hans"]:
+    lang = "en"
+
+Do not overhaul backend prompt logic.
+
+
+
+
+================================================== PHASE 5 – VERIFY & COMMIT
+
+1. From levqor-site root:
+
+npm run build 2>&1 | tail -60
+
+Build must succeed.
+
+
+
+2. If dev server or frontend workflow is running on port 5000, check:
+
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/de
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/fr
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/es
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/pt
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/it
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/ar
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/hi
+curl -sS -o /dev/null -w "%{http_code}\n" http://localhost:5000/zh-Hans
+
+All must return 200.
+
+
+3. Summarize in the logs (for the human):
+
+SUPPORTED_LOCALES list you ended with (must be exactly the 9 above).
+
+Confirm language switcher only shows these 9.
+
+Confirm switching EN → DE → EN works.
+
+Confirm header CTA text updates with locale.
+
+Confirm Brain in EN returns either a result or a clear error (not dead) and does not crash in other locales.
+
+
+
+4. From /home/runner/workspace:
+
+git status
+
+git add levqor-site messages
+
+git commit -m "Align 9 locales, fix language switcher, header i18n, and Brain locale handling"
+
+git push origin main
+
+
+
+
+Do all of this now.
+
+---
+
+After you run that and redeploy Vercel, you should have:
+
+- Only the 9 languages in the list.  
+- Header text changes with language.  
+- You can switch back to English reliably.  
+- Brain isn’t dead and doesn’t break other languages.

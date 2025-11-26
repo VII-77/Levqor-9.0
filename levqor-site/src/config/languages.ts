@@ -1,141 +1,33 @@
 /**
- * Global Language Registry for Levqor X 9.0 — MEGA-PHASE 7 ULTIMATE
+ * Global Language Registry for Levqor X
  * 
- * This registry defines all 40 languages available in the UI switcher.
- * Languages are organized into 3 tiers for staged localization:
- * 
- * **TIER 1** (FULL translation targets - 9 languages):
- *   - All 9 Tier-1 languages have full URL routing: en, de, fr, es, pt, it, hi, ar, zh-Hans
- *   - Strategy: Full translation files for hero, pricing, nav, footer, key CTAs
- * 
- * **TIER 2** (PARTIAL / future full - 17 languages):
- *   - European: nl, sv, no, da, fi, pl, cs, ru
- *   - Asian: ja, ko, vi, id, ms, th, tr
- *   - South Asian: ur, bn
- *   - Strategy: Fallback to English routing, partial translations in future phases
- * 
- * **TIER 3** (EDGE / long-tail - 14 languages):
- *   - European: sk, hu, ro, bg, el, uk
- *   - Middle Eastern: he, fa
- *   - South Asian: ta, te, ml, pa, gu
- *   - East Asian: zh-Hant
- *   - Strategy: English fallback, community-driven translations
- * 
- * Note: Tier-1 languages (9) have full URL routing via next-intl.
- * Tier-2 and Tier-3 languages fall back to English routes.
- * 
- * SAFETY: This is display-only and does NOT affect pricing, trials, SLAs, or backend behavior.
+ * Exactly 9 fully-supported languages with complete translation files.
+ * All languages have dedicated URL routing via next-intl.
  */
 
-export type LanguageCode =
-  // Core routed locales (full translation support)
-  | "en" | "de" | "fr" | "es"
-  // European languages
-  | "pt" | "it" | "nl" | "sv" | "no" | "da"
-  | "fi" | "pl" | "cs" | "sk" | "hu"
-  | "ro" | "bg" | "el" | "ru" | "uk"
-  // Middle Eastern languages
-  | "tr" | "ar" | "he" | "fa" | "ur"
-  // South Asian languages
-  | "hi" | "bn" | "ta" | "te" | "ml"
-  | "pa" | "gu"
-  // East Asian languages
-  | "zh-Hans" | "zh-Hant"
-  | "ja" | "ko"
-  // Southeast Asian languages
-  | "vi" | "id" | "ms" | "th";
+export type LanguageCode = 
+  | "en" | "de" | "fr" | "es" | "pt" | "it" | "ar" | "hi" | "zh-Hans";
 
 export interface LanguageMeta {
   code: LanguageCode;
   label: string;
   nativeLabel: string;
-  region: "Europe" | "Middle East" | "South Asia" | "East Asia" | "Southeast Asia";
-  /** Maps to one of the 9 routed locales for Tier-1, or fallback to 'en' */
-  routedLocale: "en" | "de" | "fr" | "es" | "pt" | "it" | "hi" | "ar" | "zh-Hans";
-  /** Whether this language has full translation files */
-  hasTranslations: boolean;
+  region: "Europe" | "Middle East" | "South Asia" | "East Asia";
 }
 
+export const SUPPORTED_LOCALES: LanguageCode[] = ["en", "de", "fr", "es", "pt", "it", "ar", "hi", "zh-Hans"];
+export const DEFAULT_LOCALE: LanguageCode = "en";
+
 export const LANGUAGES: LanguageMeta[] = [
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 1: FULL TRANSLATION TARGETS (9 languages) - MEGA-PHASE 7
-  // ═══════════════════════════════════════════════════════════════════════════
-  
-  // Core routed locales (existing full support)
-  { code: "en", label: "English", nativeLabel: "English", region: "Europe", routedLocale: "en", hasTranslations: true },
-  { code: "de", label: "German", nativeLabel: "Deutsch", region: "Europe", routedLocale: "de", hasTranslations: true },
-  { code: "fr", label: "French", nativeLabel: "Français", region: "Europe", routedLocale: "fr", hasTranslations: true },
-  { code: "es", label: "Spanish", nativeLabel: "Español", region: "Europe", routedLocale: "es", hasTranslations: true },
-  
-  // TIER 1 new additions (translation files added in MEGA-PHASE 7)
-  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "pt", hasTranslations: true },
-  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "it", hasTranslations: true },
-  
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 2: PARTIAL / FUTURE FULL (17 languages)
-  // ═══════════════════════════════════════════════════════════════════════════
-  
-  // European Tier 2
-  { code: "nl", label: "Dutch", nativeLabel: "Nederlands", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "sv", label: "Swedish", nativeLabel: "Svenska", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "no", label: "Norwegian", nativeLabel: "Norsk", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "da", label: "Danish", nativeLabel: "Dansk", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "fi", label: "Finnish", nativeLabel: "Suomi", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "pl", label: "Polish", nativeLabel: "Polski", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "cs", label: "Czech", nativeLabel: "Čeština", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "ru", label: "Russian", nativeLabel: "Русский", region: "Europe", routedLocale: "en", hasTranslations: false },
-  
-  // Middle Eastern / Turkish Tier 2
-  { code: "tr", label: "Turkish", nativeLabel: "Türkçe", region: "Middle East", routedLocale: "en", hasTranslations: false },
-  
-  // South Asian Tier 2
-  { code: "ur", label: "Urdu", nativeLabel: "اردو", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  { code: "bn", label: "Bengali", nativeLabel: "বাংলা", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  
-  // East Asian Tier 2
-  { code: "ja", label: "Japanese", nativeLabel: "日本語", region: "East Asia", routedLocale: "en", hasTranslations: false },
-  { code: "ko", label: "Korean", nativeLabel: "한국어", region: "East Asia", routedLocale: "en", hasTranslations: false },
-  
-  // Southeast Asian Tier 2
-  { code: "vi", label: "Vietnamese", nativeLabel: "Tiếng Việt", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  { code: "id", label: "Indonesian", nativeLabel: "Bahasa Indonesia", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  { code: "ms", label: "Malay", nativeLabel: "Bahasa Melayu", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  { code: "th", label: "Thai", nativeLabel: "ไทย", region: "Southeast Asia", routedLocale: "en", hasTranslations: false },
-  
-  // ═══════════════════════════════════════════════════════════════════════════
-  // TIER 3: EDGE / LONG-TAIL (14 languages)
-  // ═══════════════════════════════════════════════════════════════════════════
-  
-  // European Tier 3
-  { code: "sk", label: "Slovak", nativeLabel: "Slovenčina", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "hu", label: "Hungarian", nativeLabel: "Magyar", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "ro", label: "Romanian", nativeLabel: "Română", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "bg", label: "Bulgarian", nativeLabel: "Български", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "el", label: "Greek", nativeLabel: "Ελληνικά", region: "Europe", routedLocale: "en", hasTranslations: false },
-  { code: "uk", label: "Ukrainian", nativeLabel: "Українська", region: "Europe", routedLocale: "en", hasTranslations: false },
-  
-  // Middle Eastern Tier 3
-  { code: "he", label: "Hebrew", nativeLabel: "עברית", region: "Middle East", routedLocale: "en", hasTranslations: false },
-  { code: "fa", label: "Persian (Farsi)", nativeLabel: "فارسی", region: "Middle East", routedLocale: "en", hasTranslations: false },
-  
-  // TIER 1 South Asian (translations added in MEGA-PHASE 7)
-  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "hi", hasTranslations: true },
-  
-  // South Asian Tier 3
-  { code: "ta", label: "Tamil", nativeLabel: "தமிழ்", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  { code: "te", label: "Telugu", nativeLabel: "తెలుగు", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  { code: "ml", label: "Malayalam", nativeLabel: "മലയാളം", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  { code: "pa", label: "Punjabi", nativeLabel: "ਪੰਜਾਬੀ", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  { code: "gu", label: "Gujarati", nativeLabel: "ગુજરાતી", region: "South Asia", routedLocale: "en", hasTranslations: false },
-  
-  // TIER 1 Middle Eastern (translation added in MEGA-PHASE 7)
-  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "ar", hasTranslations: true },
-  
-  // TIER 1 East Asian (translation added in MEGA-PHASE 7)
-  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "zh-Hans", hasTranslations: true },
-  
-  // East Asian Tier 3
-  { code: "zh-Hant", label: "Chinese (Traditional)", nativeLabel: "繁體中文", region: "East Asia", routedLocale: "en", hasTranslations: false },
+  { code: "en", label: "English", nativeLabel: "English", region: "Europe" },
+  { code: "de", label: "German", nativeLabel: "Deutsch", region: "Europe" },
+  { code: "fr", label: "French", nativeLabel: "Français", region: "Europe" },
+  { code: "es", label: "Spanish", nativeLabel: "Español", region: "Europe" },
+  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe" },
+  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe" },
+  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East" },
+  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia" },
+  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia" },
 ];
 
 /**
@@ -157,30 +49,11 @@ export const LANGUAGES_BY_REGION = LANGUAGES.reduce((acc, lang) => {
   return acc;
 }, {} as Record<string, LanguageMeta[]>);
 
-/** The 9 routed Tier-1 locales */
-export type RoutedLocale = "en" | "de" | "fr" | "es" | "pt" | "it" | "hi" | "ar" | "zh-Hans";
-
-/**
- * Get the routed locale for a given language code
- * This maps display languages to actual routed locales
- */
-export function getRoutedLocale(code: LanguageCode): RoutedLocale {
-  return LANGUAGE_MAP[code]?.routedLocale || "en";
-}
-
-/**
- * Check if a language code has full translation support
- */
-export function hasFullTranslations(code: LanguageCode): boolean {
-  return LANGUAGE_MAP[code]?.hasTranslations || false;
-}
-
 /**
  * Get the current language code from localStorage or fallback to English
  * Safe for both client and server environments
  */
 export function getCurrentLanguageCode(): LanguageCode {
-  // Server-side safety: return default
   if (typeof window === 'undefined') {
     return 'en';
   }
@@ -191,9 +64,15 @@ export function getCurrentLanguageCode(): LanguageCode {
       return storedLang as LanguageCode;
     }
   } catch (error) {
-    // Fail safely if localStorage is unavailable
     console.warn('Could not access localStorage for language preference');
   }
   
   return 'en';
+}
+
+/**
+ * Check if a code is a valid supported locale
+ */
+export function isValidLocale(code: string): code is LanguageCode {
+  return SUPPORTED_LOCALES.includes(code as LanguageCode);
 }
