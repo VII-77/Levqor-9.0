@@ -10,50 +10,19 @@
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/((?!api|_next|_vercel|.*\\..*).*))(.json)?[\\/#\\?]?$",
-          "originalSource": "/((?!api|_next|_vercel|.*\\..*).*)"
+          "regexp": "^/.*$",
+          "originalSource": "/:path*"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "cWll3x2_Q42mbGPJS0vwn",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "TfZbGbJAu/AJLPT2o1xiq1Se5o96S4JKCMqkT8eqDqU=",
-        "__NEXT_PREVIEW_MODE_ID": "a09bde5353a02214aee20f1ef87df687",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "65b615b3ddf2a048e845a3b8fbb0350394cad6546082bd590b6adc7e7ac14204",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "0bcae308d97cef5d671ad175c7cf316609d7110968a9db10f3f2634350cad7f3"
+        "__NEXT_BUILD_ID": "development",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "iTeh6pn0m4TVam5YFN26eoE2GUfOjECpCbUbgj3I47o="
       }
     }
   },
-  "functions": {
-    "/api/stripe/webhook/route": {
-      "files": [
-        "server/middleware-build-manifest.js",
-        "server/middleware-react-loadable-manifest.js",
-        "server/next-font-manifest.js",
-        "server/interception-route-rewrite-manifest.js",
-        "server/edge-runtime-webpack.js",
-        "server/app/api/stripe/webhook/route.js"
-      ],
-      "name": "app/api/stripe/webhook/route",
-      "page": "/api/stripe/webhook/route",
-      "matchers": [
-        {
-          "regexp": "^/api/stripe/webhook$",
-          "originalSource": "/api/stripe/webhook"
-        }
-      ],
-      "wasm": [],
-      "assets": [],
-      "env": {
-        "__NEXT_BUILD_ID": "cWll3x2_Q42mbGPJS0vwn",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "TfZbGbJAu/AJLPT2o1xiq1Se5o96S4JKCMqkT8eqDqU=",
-        "__NEXT_PREVIEW_MODE_ID": "a09bde5353a02214aee20f1ef87df687",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "65b615b3ddf2a048e845a3b8fbb0350394cad6546082bd590b6adc7e7ac14204",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "0bcae308d97cef5d671ad175c7cf316609d7110968a9db10f3f2634350cad7f3"
-      }
-    }
-  },
+  "functions": {},
   "sortedMiddleware": [
     "/"
   ]
