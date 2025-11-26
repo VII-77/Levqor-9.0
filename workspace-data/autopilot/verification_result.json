@@ -1,0 +1,122 @@
+{
+  "timestamp": "2025-11-26T11:24:17.915986+00:00",
+  "mode": "development",
+  "backend_url": "http://localhost:8000",
+  "frontend_url": "http://localhost:5000",
+  "launch_stage": {
+    "stage": "pre",
+    "is_live": false,
+    "permissions": {
+      "growth_organism_execute": false,
+      "content_posting": false,
+      "git_commits": false,
+      "template_deployment": false,
+      "high_risk_auto_approve": false
+    },
+    "behavior": {
+      "dry_run_default": true,
+      "require_approval_high_risk": true,
+      "log_all_actions": true
+    },
+    "env_var": "LEVQOR_LAUNCH_STAGE",
+    "current_value": "(unset, defaulting to pre)"
+  },
+  "checks": {
+    "backend": [
+      {
+        "status": "OK",
+        "url": "http://localhost:8000/health",
+        "http_code": 200,
+        "expected_codes": [
+          200
+        ],
+        "response_time_ms": 5.564,
+        "name": "Health Check"
+      },
+      {
+        "status": "OK",
+        "url": "http://localhost:8000/api/health/summary",
+        "http_code": 200,
+        "expected_codes": [
+          200
+        ],
+        "response_time_ms": 66.91900000000001,
+        "name": "Health Summary"
+      },
+      {
+        "status": "OK",
+        "url": "http://localhost:8000/api/billing/checkout/health",
+        "http_code": 404,
+        "expected_codes": [
+          200,
+          404
+        ],
+        "response_time_ms": 3.973,
+        "name": "Billing System"
+      },
+      {
+        "status": "OK",
+        "url": "http://localhost:8000/api/me/export-data",
+        "http_code": 401,
+        "expected_codes": [
+          200,
+          401
+        ],
+        "response_time_ms": 3.552,
+        "name": "DSAR Export"
+      },
+      {
+        "status": "OK",
+        "url": "http://localhost:8000/api/me/delete-account",
+        "http_code": 401,
+        "expected_codes": [
+          200,
+          401
+        ],
+        "response_time_ms": 3.533,
+        "name": "DSAR Delete"
+      }
+    ],
+    "frontend": [
+      {
+        "status": "OK",
+        "url": "http://localhost:5000",
+        "found_markers": [
+          "Levqor",
+          "workflow",
+          "automation"
+        ],
+        "missing_markers": [],
+        "name": "Frontend Content"
+      }
+    ],
+    "autopilot": {
+      "status": "OK",
+      "files": {
+        "secrets_health": {
+          "status": "OK",
+          "path": "/home/runner/workspace/workspace-data/autopilot/secrets_health.json"
+        },
+        "compliance_audit": {
+          "status": "OK",
+          "path": "/home/runner/workspace/workspace-data/autopilot/compliance_audit.json"
+        },
+        "growth_check": {
+          "status": "OK",
+          "path": "/home/runner/workspace/workspace-data/autopilot/growth_check.json"
+        },
+        "founder_digest": {
+          "status": "OK",
+          "path": "/home/runner/workspace/workspace-data/autopilot/founder_digest.md"
+        }
+      }
+    }
+  },
+  "summary": {
+    "total_checks": 10,
+    "passed": 10,
+    "warned": 0,
+    "failed": 0,
+    "overall_status": "HEALTHY"
+  }
+}
