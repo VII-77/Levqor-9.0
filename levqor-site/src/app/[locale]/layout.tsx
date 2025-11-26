@@ -2,6 +2,7 @@ import { hasLocale } from 'next-intl'
 import { setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
+import { LanguageProvider } from '@/stores/languageStore'
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }))
@@ -21,5 +22,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   setRequestLocale(locale)
 
-  return children
+  return (
+    <LanguageProvider initialLocale={locale}>
+      {children}
+    </LanguageProvider>
+  )
 }

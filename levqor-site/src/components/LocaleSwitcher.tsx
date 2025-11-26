@@ -3,9 +3,10 @@
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/routing';
 import { useTransition } from 'react';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { locales, type Locale } from '@/i18n';
 import { LANGUAGES, LANGUAGES_BY_REGION, getRoutedLocale, type LanguageCode } from '@/config/languages';
+import { useLanguageStore, useLanguageChange } from '@/stores/languageStore';
 
 export function LocaleSwitcher() {
   const locale = useLocale() as Locale;
@@ -13,8 +14,16 @@ export function LocaleSwitcher() {
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(locale as LanguageCode);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  const { displayLanguage, isHydrated, setDisplayLanguage } = useLanguageStore();
+  const [localSelection, setLocalSelection] = useState<LanguageCode>(displayLanguage);
+
+  useEffect(() => {
+    if (isHydrated) {
+      setLocalSelection(displayLanguage);
+    }
+  }, [displayLanguage, isHydrated]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -27,18 +36,9 @@ export function LocaleSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const storedLang = localStorage.getItem('levqor-display-language');
-    if (storedLang) {
-      setSelectedLanguage(storedLang as LanguageCode);
-    } else {
-      setSelectedLanguage(locale as LanguageCode);
-    }
-  }, [locale]);
-
-  const handleLanguageChange = (languageCode: LanguageCode) => {
-    localStorage.setItem('levqor-display-language', languageCode);
-    setSelectedLanguage(languageCode);
+  const handleLanguageChange = useCallback((languageCode: LanguageCode) => {
+    setLocalSelection(languageCode);
+    setDisplayLanguage(languageCode);
     
     const targetLocale = getRoutedLocale(languageCode);
     
@@ -49,8 +49,9 @@ export function LocaleSwitcher() {
     }
     
     setIsOpen(false);
-  };
+  }, [locale, pathname, router, setDisplayLanguage]);
 
+  const selectedLanguage = isHydrated ? displayLanguage : localSelection;
   const currentLanguage = LANGUAGES.find(lang => lang.code === selectedLanguage) || LANGUAGES[0];
 
   return (
