@@ -482,3 +482,257 @@ def get_autopilot_status():
     except Exception as e:
         log.exception("Autopilot status error")
         return jsonify({"error": "internal_error", "message": str(e)}), 500
+
+
+SYSTEM_TOGGLES_FILE = Path("/home/runner/workspace-data/autopilot/config/system_toggles.json")
+
+
+def _load_toggles() -> dict:
+    """Load system toggles from file"""
+    try:
+        if SYSTEM_TOGGLES_FILE.exists():
+            import json
+            return json.loads(SYSTEM_TOGGLES_FILE.read_text())
+    except:
+        pass
+    return {
+        "low_cost_mode": False,
+        "growth_paused": False,
+        "maintenance_mode": False,
+        "ai_enabled": True,
+        "marketing_autopilot": False
+    }
+
+
+def _save_toggles(toggles: dict):
+    """Save system toggles to file"""
+    try:
+        import json
+        SYSTEM_TOGGLES_FILE.parent.mkdir(parents=True, exist_ok=True)
+        SYSTEM_TOGGLES_FILE.write_text(json.dumps(toggles, indent=2))
+    except Exception as e:
+        log.error(f"Failed to save toggles: {e}")
+
+
+@bp.get("/system-toggles")
+def get_system_toggles():
+    """
+    GET /api/admin/system-toggles
+    Returns current system toggle states for Power Panel
+    """
+    auth_error = _require_admin("/api/admin/system-toggles")
+    if auth_error:
+        return auth_error
+    
+    try:
+        toggles = _load_toggles()
+        return jsonify({
+            "toggles": toggles,
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        log.exception("System toggles error")
+        return jsonify({"error": "internal_error", "message": str(e)}), 500
+
+
+@bp.post("/toggle")
+def set_system_toggle():
+    """
+    POST /api/admin/toggle
+    Set a system toggle value
+    Body: { key, value }
+    """
+    auth_error = _require_admin("/api/admin/toggle")
+    if auth_error:
+        return auth_error
+    
+    try:
+        data = request.get_json() or {}
+        key = data.get("key")
+        value = data.get("value")
+        
+        valid_keys = ["low_cost_mode", "growth_paused", "maintenance_mode", "ai_enabled", "marketing_autopilot"]
+        if key not in valid_keys:
+            return jsonify({"error": "invalid_key"}), 400
+        
+        toggles = _load_toggles()
+        toggles[key] = bool(value)
+        _save_toggles(toggles)
+        
+        log.info(f"System toggle changed: {key} = {value}")
+        
+        return jsonify({
+            "success": True,
+            "key": key,
+            "value": toggles[key],
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        log.exception("Toggle set error")
+        return jsonify({"error": "internal_error", "message": str(e)}), 500
+
+
+@bp.get("/cost-metrics")
+def get_cost_metrics():
+    """
+    GET /api/admin/cost-metrics
+    Returns cost monitoring data for Power Panel
+    """
+    auth_error = _require_admin("/api/admin/cost-metrics")
+    if auth_error:
+        return auth_error
+    
+    try:
+        cost_log = Path("/home/runner/workspace-data/autopilot/cost/daily_costs.json")
+        
+        costs = {
+            "today": 0.0,
+            "yesterday": 0.0,
+            "mtd": 0.0,
+            "budget": 100.0,
+            "spike_detected": False
+        }
+        
+        if cost_log.exists():
+            try:
+                import json
+                cost_data = json.loads(cost_log.read_text())
+                costs["today"] = cost_data.get("today", 0)
+                costs["yesterday"] = cost_data.get("yesterday", 0)
+                costs["mtd"] = cost_data.get("mtd", 0)
+                costs["budget"] = cost_data.get("budget", 100)
+                
+                if costs["yesterday"] > 0 and costs["today"] > costs["yesterday"] * 1.5:
+                    costs["spike_detected"] = True
+            except:
+                pass
+        
+        return jsonify({
+            "costs": costs,
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        log.exception("Cost metrics error")
+        return jsonify({"error": "internal_error", "message": str(e)}), 500
+
+
+@bp.get("/pending-approvals")
+def get_pending_approvals():
+    """
+    GET /api/admin/pending-approvals
+    Returns list of pending approvals for Power Panel
+    """
+    auth_error = _require_admin("/api/admin/pending-approvals")
+    if auth_error:
+        return auth_error
+    
+    try:
+        approvals = []
+        
+        try:
+            import requests
+            resp = requests.get("http://localhost:8000/api/approvals?status=pending", timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                for item in data.get("approvals", [])[:10]:
+                    approvals.append({
+                        "id": item.get("id"),
+                        "type": item.get("action_type", "unknown"),
+                        "title": item.get("reason", "Pending action")[:100],
+                        "impact": item.get("impact_level", "B"),
+                        "timestamp": item.get("created_at")
+                    })
+        except:
+            pass
+        
+        return jsonify({
+            "approvals": approvals,
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        log.exception("Pending approvals error")
+        return jsonify({"error": "internal_error", "message": str(e)}), 500
+
+
+@bp.post("/approval/<approval_id>/<action>")
+def process_approval(approval_id, action):
+    """
+    POST /api/admin/approval/<id>/<approve|reject>
+    Process a pending approval
+    """
+    auth_error = _require_admin(f"/api/admin/approval/{approval_id}/{action}")
+    if auth_error:
+        return auth_error
+    
+    if action not in ["approve", "reject"]:
+        return jsonify({"error": "invalid_action"}), 400
+    
+    try:
+        import requests
+        resp = requests.post(
+            f"http://localhost:8000/api/approvals/{approval_id}/{action}",
+            timeout=10
+        )
+        
+        if resp.status_code in [200, 201]:
+            log.info(f"Approval {approval_id} {action}ed")
+            return jsonify({"success": True, "action": action})
+        else:
+            return jsonify({"error": "approval_failed"}), resp.status_code
+            
+    except Exception as e:
+        log.exception("Approval process error")
+        return jsonify({"error": "internal_error", "message": str(e)}), 500
+
+
+@bp.get("/recent-logs")
+def get_recent_logs():
+    """
+    GET /api/admin/recent-logs
+    Returns recent system logs for Power Panel
+    """
+    auth_error = _require_admin("/api/admin/recent-logs")
+    if auth_error:
+        return auth_error
+    
+    try:
+        logs = []
+        
+        log_files = [
+            Path("/home/runner/workspace-data/autopilot/logs/guardian_health.log"),
+            Path("/home/runner/workspace-data/autopilot/logs/autopilot_growth.log"),
+            Path("/home/runner/workspace-data/autopilot/logs/autopilot_compliance.log"),
+            Path("logs/admin_api.log")
+        ]
+        
+        for log_file in log_files:
+            if log_file.exists():
+                try:
+                    lines = log_file.read_text().strip().split("\n")[-10:]
+                    source = log_file.stem
+                    for line in lines:
+                        if line.strip():
+                            level = "info"
+                            if "ERROR" in line or "FAIL" in line:
+                                level = "error"
+                            elif "WARN" in line or "WARNING" in line:
+                                level = "warn"
+                            
+                            logs.append({
+                                "level": level,
+                                "message": line.strip()[:200],
+                                "timestamp": datetime.now().isoformat(),
+                                "source": source
+                            })
+                except:
+                    pass
+        
+        logs = sorted(logs, key=lambda x: x["timestamp"], reverse=True)[:30]
+        
+        return jsonify({
+            "logs": logs,
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        log.exception("Recent logs error")
+        return jsonify({"error": "internal_error", "message": str(e)}), 500
