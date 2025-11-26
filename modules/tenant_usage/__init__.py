@@ -1,6 +1,7 @@
 """
 Tenant Usage Metering Module - V10 Completion
 Track runs, credits, API calls, and errors per tenant.
+Integrates with tenant_lifecycle to respect suspend/soft-delete status.
 """
 import time
 import logging
@@ -9,6 +10,14 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 
 log = logging.getLogger("levqor.tenant_usage")
+
+def _is_tenant_operational(tenant_id: str) -> bool:
+    """Check if tenant is operational via lifecycle module (lazy import to avoid circular deps)."""
+    try:
+        from modules.tenant_lifecycle import is_tenant_operational
+        return is_tenant_operational(tenant_id)
+    except ImportError:
+        return True
 
 
 @dataclass
@@ -39,6 +48,9 @@ def get_or_create_tenant(tenant_id: str) -> TenantUsage:
 
 
 def record_workflow_run(tenant_id: str) -> Dict[str, Any]:
+    if not _is_tenant_operational(tenant_id):
+        return {"success": False, "error": "Tenant is suspended or deleted", "code": "TENANT_NOT_OPERATIONAL"}
+    
     usage = get_or_create_tenant(tenant_id)
     
     if usage.is_blocked:
@@ -57,6 +69,9 @@ def record_workflow_run(tenant_id: str) -> Dict[str, Any]:
 
 
 def record_api_call(tenant_id: str) -> Dict[str, Any]:
+    if not _is_tenant_operational(tenant_id):
+        return {"success": False, "error": "Tenant is suspended or deleted", "code": "TENANT_NOT_OPERATIONAL"}
+    
     usage = get_or_create_tenant(tenant_id)
     
     if usage.is_blocked:
@@ -75,6 +90,9 @@ def record_api_call(tenant_id: str) -> Dict[str, Any]:
 
 
 def record_ai_credits(tenant_id: str, credits: float) -> Dict[str, Any]:
+    if not _is_tenant_operational(tenant_id):
+        return {"success": False, "error": "Tenant is suspended or deleted", "code": "TENANT_NOT_OPERATIONAL"}
+    
     usage = get_or_create_tenant(tenant_id)
     
     if usage.is_blocked:
