@@ -1,0 +1,20 @@
+{
+  "id": "seo_12962_en",
+  "keyword": "enterprise data protection",
+  "type": "landing_page",
+  "language": "en",
+  "title": "Enterprise Data Protection | Levqor - Automate Your Enterprise",
+  "meta_description": "Discover how Levqor's enterprise data protection solution helps businesses automate business processes and save time. Start your free trial today.",
+  "h1": "Enterprise Data Protection",
+  "sections": [
+    "hero",
+    "benefits",
+    "features",
+    "testimonials",
+    "cta"
+  ],
+  "slug": "/enterprise-data-protection",
+  "status": "draft",
+  "generated_at": "2025-11-26T12:32:59.896271+00:00",
+  "auto_publish": false
+}

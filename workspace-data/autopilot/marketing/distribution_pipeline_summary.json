@@ -1,0 +1,18 @@
+{
+  "timestamp": "2025-11-26T12:32:58.907628+00:00",
+  "status": "PASS",
+  "dry_run": true,
+  "ready_content_count": 0,
+  "jobs_created": 0,
+  "pending_jobs": 0,
+  "approval_queue": 0,
+  "executed": 0,
+  "auto_posting": false,
+  "channels_configured": [
+    "email",
+    "blog",
+    "social",
+    "linkedin",
+    "twitter"
+  ]
+}

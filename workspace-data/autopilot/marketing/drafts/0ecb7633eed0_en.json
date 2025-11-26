@@ -1,0 +1,22 @@
+{
+  "id": "0ecb7633eed0",
+  "type": "feature_spotlight",
+  "language": "en",
+  "title": "Feature Spotlight: Real-time Analytics",
+  "body": "Discover the power of Real-time Analytics!\n\nTrack your workflow performance with live dashboards.\n\nUse cases:\n- Monitor execution times\n- Track success rates\n- Identify bottlenecks\n\nLearn more at levqor.ai/features/analytics\n",
+  "channels": [
+    "blog",
+    "social",
+    "email"
+  ],
+  "params": {
+    "feature": "Real-time Analytics",
+    "overview": "Track your workflow performance with live dashboards.",
+    "use_cases": "- Monitor execution times\n- Track success rates\n- Identify bottlenecks",
+    "feature_slug": "analytics"
+  },
+  "generated_at": "2025-11-26T12:32:57.918838+00:00",
+  "status": "draft",
+  "approved": false,
+  "auto_post": false
+}

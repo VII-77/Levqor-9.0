@@ -1,0 +1,110 @@
+{
+  "researched": [
+    {
+      "keyword": "data backup automation",
+      "expansions": [
+        "automated data backup software",
+        "cloud data backup automation",
+        "enterprise backup automation",
+        "real-time data backup"
+      ],
+      "estimated_volume": 8394,
+      "difficulty": 74,
+      "intent": "navigational",
+      "priority": "low",
+      "researched_at": "2025-11-26T12:32:59.893935+00:00"
+    },
+    {
+      "keyword": "workflow automation platform",
+      "expansions": [
+        "best workflow automation tools",
+        "workflow automation for small business",
+        "AI workflow automation",
+        "workflow automation examples"
+      ],
+      "estimated_volume": 1038,
+      "difficulty": 68,
+      "intent": "navigational",
+      "priority": "low",
+      "researched_at": "2025-11-26T12:32:59.893953+00:00"
+    },
+    {
+      "keyword": "business process automation",
+      "expansions": [
+        "BPA software",
+        "business automation solutions",
+        "process automation tools",
+        "automate business workflows"
+      ],
+      "estimated_volume": 1569,
+      "difficulty": 49,
+      "intent": "navigational",
+      "priority": "low",
+      "researched_at": "2025-11-26T12:32:59.893961+00:00"
+    },
+    {
+      "keyword": "data retention management",
+      "expansions": [],
+      "estimated_volume": 8081,
+      "difficulty": 61,
+      "intent": "navigational",
+      "priority": "medium",
+      "researched_at": "2025-11-26T12:32:59.893968+00:00"
+    },
+    {
+      "keyword": "automated backup solution",
+      "expansions": [],
+      "estimated_volume": 4649,
+      "difficulty": 79,
+      "intent": "navigational",
+      "priority": "low",
+      "researched_at": "2025-11-26T12:32:59.893975+00:00"
+    },
+    {
+      "keyword": "SaaS automation tool",
+      "expansions": [],
+      "estimated_volume": 9194,
+      "difficulty": 74,
+      "intent": "navigational",
+      "priority": "low",
+      "researched_at": "2025-11-26T12:32:59.893982+00:00"
+    },
+    {
+      "keyword": "no-code workflow builder",
+      "expansions": [],
+      "estimated_volume": 8062,
+      "difficulty": 42,
+      "intent": "navigational",
+      "priority": "medium",
+      "researched_at": "2025-11-26T12:32:59.893988+00:00"
+    },
+    {
+      "keyword": "enterprise data protection",
+      "expansions": [],
+      "estimated_volume": 8962,
+      "difficulty": 42,
+      "intent": "navigational",
+      "priority": "high",
+      "researched_at": "2025-11-26T12:32:59.893997+00:00"
+    },
+    {
+      "keyword": "cloud backup automation",
+      "expansions": [],
+      "estimated_volume": 6461,
+      "difficulty": 41,
+      "intent": "navigational",
+      "priority": "medium",
+      "researched_at": "2025-11-26T12:32:59.894004+00:00"
+    },
+    {
+      "keyword": "compliance automation",
+      "expansions": [],
+      "estimated_volume": 6686,
+      "difficulty": 66,
+      "intent": "navigational",
+      "priority": "low",
+      "researched_at": "2025-11-26T12:32:59.894012+00:00"
+    }
+  ],
+  "targeted": []
+}

@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "id": "5a83522c1771",
+      "type": "product_update",
+      "language": "en",
+      "file": "/home/runner/workspace/workspace-data/autopilot/marketing/drafts/5a83522c1771_en.json",
+      "generated_at": "2025-11-26T12:32:57.915593+00:00"
+    },
+    {
+      "id": "1df0d18b5099",
+      "type": "tip_of_the_week",
+      "language": "en",
+      "file": "/home/runner/workspace/workspace-data/autopilot/marketing/drafts/1df0d18b5099_en.json",
+      "generated_at": "2025-11-26T12:32:57.917245+00:00"
+    },
+    {
+      "id": "0ecb7633eed0",
+      "type": "feature_spotlight",
+      "language": "en",
+      "file": "/home/runner/workspace/workspace-data/autopilot/marketing/drafts/0ecb7633eed0_en.json",
+      "generated_at": "2025-11-26T12:32:57.918838+00:00"
+    }
+  ]
+}

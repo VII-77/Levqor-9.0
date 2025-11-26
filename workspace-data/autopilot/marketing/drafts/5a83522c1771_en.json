@@ -1,0 +1,21 @@
+{
+  "id": "5a83522c1771",
+  "type": "product_update",
+  "language": "en",
+  "title": "Levqor AI Workflow Builder Now Available",
+  "body": "We're excited to announce AI Workflow Builder is now live!\n\nCreate powerful automation workflows with our new AI-assisted builder.\n\nKey benefits:\n- Natural language workflow creation\n- Smart step suggestions\n- Error prevention\n\nGet started today at levqor.ai\n",
+  "channels": [
+    "email",
+    "blog",
+    "social"
+  ],
+  "params": {
+    "feature": "AI Workflow Builder",
+    "description": "Create powerful automation workflows with our new AI-assisted builder.",
+    "benefits": "- Natural language workflow creation\n- Smart step suggestions\n- Error prevention"
+  },
+  "generated_at": "2025-11-26T12:32:57.915593+00:00",
+  "status": "draft",
+  "approved": false,
+  "auto_post": false
+}

@@ -1,0 +1,20 @@
+{
+  "id": "1df0d18b5099",
+  "type": "tip_of_the_week",
+  "language": "en",
+  "title": "Pro Tip: Workflow Templates",
+  "body": "Did you know you can use pre-built templates to jumpstart your automation in Levqor?\n\nHere's how:\n1. Go to Templates\n2. Browse categories\n3. Click \"Use Template\"\n4. Customize as needed\n\nTry it now and boost your productivity!\n",
+  "channels": [
+    "email",
+    "social"
+  ],
+  "params": {
+    "topic": "Workflow Templates",
+    "action": "use pre-built templates to jumpstart your automation",
+    "steps": "1. Go to Templates\n2. Browse categories\n3. Click \"Use Template\"\n4. Customize as needed"
+  },
+  "generated_at": "2025-11-26T12:32:57.917245+00:00",
+  "status": "draft",
+  "approved": false,
+  "auto_post": false
+}
