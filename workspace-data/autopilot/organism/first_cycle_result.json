@@ -1,0 +1,220 @@
+{
+  "timestamp": "2025-11-26T11:37:43.327962+00:00",
+  "launch_stage": "post",
+  "engines": {
+    "demand_signature": {
+      "timestamp": "2025-11-26T11:37:43.328089+00:00",
+      "dry_run": false,
+      "detected_signals": [
+        {
+          "type": "keyword_trend",
+          "signal": "workflow automation",
+          "strength": 0.85,
+          "source": "internal_analytics"
+        },
+        {
+          "type": "user_intent",
+          "signal": "no-code integration",
+          "strength": 0.72,
+          "source": "search_queries"
+        },
+        {
+          "type": "competitive_gap",
+          "signal": "enterprise API features",
+          "strength": 0.68,
+          "source": "market_analysis"
+        }
+      ],
+      "recommendations": [
+        {
+          "action": "content_creation",
+          "topic": "Workflow Automation Best Practices",
+          "priority": "high",
+          "approval_class": "C"
+        },
+        {
+          "action": "feature_highlight",
+          "topic": "No-Code Integration Capabilities",
+          "priority": "medium",
+          "approval_class": "B"
+        }
+      ],
+      "launch_stage_enforced": false
+    },
+    "mutation": {
+      "timestamp": "2025-11-26T11:37:43.328248+00:00",
+      "dry_run": false,
+      "generation": 1,
+      "base_strategy": {
+        "type": "growth",
+        "target": "conversion"
+      },
+      "mutations": [
+        {
+          "id": "mut_g1_1",
+          "type": "urgency_factor",
+          "confidence": 0.86,
+          "changes": {
+            "element": "variation_1",
+            "optimization_target": "conversion_rate"
+          },
+          "approval_class": "B",
+          "requires_approval": true
+        },
+        {
+          "id": "mut_g1_2",
+          "type": "headline_variation",
+          "confidence": 0.68,
+          "changes": {
+            "element": "variation_2",
+            "optimization_target": "conversion_rate"
+          },
+          "approval_class": "B",
+          "requires_approval": true
+        },
+        {
+          "id": "mut_g1_3",
+          "type": "social_proof_angle",
+          "confidence": 0.66,
+          "changes": {
+            "element": "variation_3",
+            "optimization_target": "conversion_rate"
+          },
+          "approval_class": "B",
+          "requires_approval": true
+        }
+      ],
+      "launch_stage_enforced": false
+    },
+    "distribution": {
+      "timestamp": "2025-11-26T11:37:43.328428+00:00",
+      "dry_run": false,
+      "content": {
+        "title": "First Post-Launch Campaign",
+        "type": "growth"
+      },
+      "distribution_plan": [
+        {
+          "channel": "email",
+          "channel_name": "Email Marketing",
+          "scheduled_for": null,
+          "status": "draft",
+          "reach_estimate": {
+            "low": 500,
+            "high": 2000
+          }
+        },
+        {
+          "channel": "social",
+          "channel_name": "Social Media",
+          "scheduled_for": null,
+          "status": "draft",
+          "reach_estimate": {
+            "low": 1000,
+            "high": 5000
+          }
+        },
+        {
+          "channel": "seo",
+          "channel_name": "SEO Content",
+          "scheduled_for": null,
+          "status": "draft",
+          "reach_estimate": {
+            "low": 200,
+            "high": 10000
+          }
+        }
+      ],
+      "approval_class": "C",
+      "status": "pending_approval",
+      "launch_stage_enforced": false
+    },
+    "gravity": {
+      "timestamp": "2025-11-26T11:37:43.328611+00:00",
+      "dry_run": false,
+      "gravity_score": 0.66,
+      "components": [
+        {
+          "factor": "onboarding_completion",
+          "value": 0.9,
+          "weighted": 0.225
+        },
+        {
+          "factor": "feature_adoption",
+          "value": 0.7,
+          "weighted": 0.14
+        },
+        {
+          "factor": "workflow_creation",
+          "value": 0.6,
+          "weighted": 0.12
+        },
+        {
+          "factor": "return_frequency",
+          "value": 0.5,
+          "weighted": 0.075
+        },
+        {
+          "factor": "support_interactions",
+          "value": 0.5,
+          "weighted": 0.05
+        },
+        {
+          "factor": "referral_activity",
+          "value": 0.5,
+          "weighted": 0.05
+        }
+      ],
+      "risk_level": "medium",
+      "recommendations": [],
+      "launch_stage_enforced": false
+    },
+    "evolution": {
+      "timestamp": "2025-11-26T11:37:43.328793+00:00",
+      "dry_run": false,
+      "generation": 1,
+      "input_performance": {
+        "conversion_rate": 0.04,
+        "retention_rate": 0.78,
+        "engagement_score": 0.65
+      },
+      "evolved_parameters": {
+        "demand": {
+          "learning_rate": 0.1,
+          "exploration_factor": 0.45,
+          "optimization_target": "conversion_rate"
+        },
+        "mutation": {
+          "learning_rate": 0.1,
+          "exploration_factor": 0.45,
+          "optimization_target": "conversion_rate"
+        },
+        "distribution": {
+          "learning_rate": 0.1,
+          "exploration_factor": 0.45,
+          "optimization_target": "conversion_rate"
+        },
+        "gravity": {
+          "learning_rate": 0.1,
+          "exploration_factor": 0.45,
+          "optimization_target": "conversion_rate"
+        }
+      },
+      "fitness_improvement": 0.0,
+      "next_actions": [
+        {
+          "action": "demand_rescan",
+          "priority": "medium",
+          "rationale": "Refresh market signals for next generation"
+        },
+        {
+          "action": "mutation_generation",
+          "priority": "high",
+          "rationale": "Generate new strategy variants"
+        }
+      ],
+      "launch_stage_enforced": false,
+      "current_fitness": 0.484
+    }
+  }
+}
