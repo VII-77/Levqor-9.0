@@ -29,7 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 FRONTEND_URL = os.environ.get("NEXT_PUBLIC_APP_URL", "http://localhost:5000")
-BACKEND_URL = os.environ.get("NEXT_PUBLIC_API_URL", "http://localhost:8000")
+BACKEND_URL = os.environ.get("COMPLIANCE_AUDIT_BACKEND_URL", "http://localhost:8000")
 
 LEGAL_PAGES = [
     {"path": "/terms", "name": "Terms of Service", "required": True},

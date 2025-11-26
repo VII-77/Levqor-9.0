@@ -240,6 +240,7 @@ def api_cancel_deletion():
             )
         
         log.info(f"Deletion cancelled for user {user_id[:8]}***")
+        _log_dsar_event(user_id, "cancel_deletion", "success")
         
         return jsonify({
             "status": "cancelled",
@@ -250,4 +251,100 @@ def api_cancel_deletion():
         log.error(f"Cancel deletion error: {e}")
         return jsonify({
             "error": "Failed to cancel deletion"
+        }), 500
+
+
+def _log_dsar_event(user_id: str, action: str, result: str, details: str = ""):
+    """Log DSAR events to dedicated audit file."""
+    import os
+    from datetime import datetime
+    log_path = os.path.join(os.path.dirname(__file__), "../../logs/dsar_delete.log")
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    timestamp = datetime.utcnow().isoformat()
+    user_hash = user_id[:8] + "***" if user_id else "unknown"
+    entry = f"{timestamp} | user={user_hash} | action={action} | result={result}"
+    if details:
+        entry += f" | details={details}"
+    entry += "\n"
+    try:
+        with open(log_path, "a") as f:
+            f.write(entry)
+    except Exception as e:
+        log.warning(f"Could not write DSAR log: {e}")
+
+
+@me_bp.route('/delete-account', methods=['POST'])
+def api_delete_account():
+    """
+    POST /api/me/delete-account
+    
+    Request complete account deletion (GDPR/CCPA right to erasure).
+    This endpoint is required for compliance audit.
+    
+    Behavior:
+    - Authenticated users: schedules account for deletion with 30-day grace period
+    - Unauthenticated: returns 401
+    - Soft-delete approach: anonymizes PII, preserves minimal audit records
+    
+    Request body (optional):
+    {
+        "confirm": true,  // Required for actual deletion
+        "reason": "string"  // Optional reason for leaving
+    }
+    """
+    user_id = _get_current_user()
+    if not user_id:
+        _log_dsar_event("anonymous", "delete_account_attempt", "rejected", "no_auth")
+        return jsonify({
+            "error": "Authentication required",
+            "message": "Please sign in to delete your account."
+        }), 401
+    
+    tenant_id = _get_tenant_id()
+    
+    try:
+        body = request.get_json() or {}
+    except Exception:
+        body = {}
+    
+    if not body.get("confirm"):
+        return jsonify({
+            "status": "confirmation_required",
+            "message": "Please set 'confirm': true in the request body to proceed.",
+            "warning": "Account deletion is permanent. Your data will be anonymized and you will lose access to your account.",
+            "grace_period_days": 30
+        }), 200
+    
+    reason = body.get("reason", "User-initiated deletion")
+    
+    try:
+        result = schedule_deletion(
+            user_id=user_id,
+            tenant_id=tenant_id,
+            grace_period_days=30
+        )
+        
+        if result.get("status") == "scheduled":
+            _log_dsar_event(user_id, "delete_account", "scheduled", f"action_id={result.get('action_id')}")
+            log.info(f"Account deletion scheduled for user {user_id[:8]}***")
+            return jsonify({
+                "status": "ok",
+                "action_id": result.get("action_id"),
+                "grace_period_days": 30,
+                "message": "Your account has been scheduled for deletion. You have 30 days to cancel this request before your data is permanently removed.",
+                "cancel_url": "/api/me/delete-data/cancel"
+            }), 200
+        else:
+            _log_dsar_event(user_id, "delete_account", "failed", result.get("message", "unknown"))
+            return jsonify({
+                "status": "error",
+                "message": result.get("message", "Failed to schedule deletion.")
+            }), 500
+            
+    except Exception as e:
+        _log_dsar_event(user_id, "delete_account", "error", str(e)[:100])
+        log.error(f"Delete account error for user {user_id[:8]}***: {e}")
+        return jsonify({
+            "error": "Deletion request failed",
+            "message": "Unable to process deletion request. Please contact support."
         }), 500

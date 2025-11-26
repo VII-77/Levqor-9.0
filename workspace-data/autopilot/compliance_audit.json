@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-11-26T10:32:34.503936+00:00",
+  "timestamp": "2025-11-26T10:53:52.419520+00:00",
   "summary": {
     "total_checks": 18,
-    "passed": 17,
+    "passed": 18,
     "warnings": 0,
-    "failed": 1,
+    "failed": 0,
     "skipped": 0,
-    "compliance_score": 94.4
+    "compliance_score": 100.0
   },
   "legal_pages": [
     {
@@ -79,9 +79,9 @@
       "name": "Account Deletion",
       "path": "/api/me/delete-account",
       "method": "POST",
-      "status": "FAIL",
-      "http_code": 404,
-      "detail": "Endpoint not found"
+      "status": "OK",
+      "http_code": 401,
+      "detail": "Endpoint exists"
     }
   ],
   "security_checks": [
