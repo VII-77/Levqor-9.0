@@ -87,13 +87,57 @@ def check_html_content(url: str, expected_markers: list) -> dict:
         return {"status": "FAIL", "url": url, "error": str(e)[:100]}
 
 
+def check_onboarding_ux() -> dict:
+    """Check onboarding UX audit results."""
+    from datetime import date
+    
+    onboarding_dir = Path("/home/runner/workspace-data/autopilot/onboarding")
+    today_report = onboarding_dir / f"audit_{date.today().isoformat()}.json"
+    
+    result = {"status": "UNKNOWN", "score": 0, "details": {}}
+    
+    if today_report.exists():
+        try:
+            with open(today_report) as f:
+                data = json.load(f)
+            
+            score = data.get("score", 0)
+            result["score"] = score
+            result["summary"] = data.get("summary", {})
+            
+            if score >= 90:
+                result["status"] = "OK"
+            elif score >= 70:
+                result["status"] = "WARN"
+            else:
+                result["status"] = "FAIL"
+        except Exception as e:
+            result["status"] = "FAIL"
+            result["error"] = str(e)
+    else:
+        try:
+            sys.path.insert(0, str(Path(__file__).parent.parent))
+            from autopilot.onboarding_ux_audit import run_audit
+            data = run_audit()
+            score = data.get("score", 0)
+            result["score"] = score
+            result["summary"] = data.get("summary", {})
+            result["status"] = "OK" if score >= 90 else ("WARN" if score >= 70 else "FAIL")
+        except Exception as e:
+            result["status"] = "SKIP"
+            result["error"] = f"Audit not run: {str(e)[:50]}"
+    
+    return result
+
+
 def check_autopilot_files() -> dict:
     """Check that Guardian Autopilot files exist and are healthy."""
     files = {
         "secrets_health": OUTPUT_DIR / "secrets_health.json",
         "compliance_audit": OUTPUT_DIR / "compliance_audit.json",
         "growth_check": OUTPUT_DIR / "growth_check.json",
-        "founder_digest": OUTPUT_DIR / "founder_digest.md"
+        "founder_digest": OUTPUT_DIR / "founder_digest.md",
+        "onboarding_ux": Path("/home/runner/workspace-data/autopilot/onboarding") / f"audit_{datetime.now().strftime('%Y-%m-%d')}.json"
     }
     
     results = {"status": "OK", "files": {}}

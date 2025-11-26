@@ -102,6 +102,7 @@ def generate_digest() -> str:
     compliance_audit = load_json_file(OUTPUT_DIR / "compliance_audit.json")
     growth_check = load_json_file(OUTPUT_DIR / "growth_check.json")
     integrations_map = load_json_file(OUTPUT_DIR / "integrations_map.json")
+    onboarding_ux = load_json_file(Path("/home/runner/workspace-data/autopilot/onboarding") / f"audit_{datetime.now().strftime('%Y-%m-%d')}.json")
     
     health_summary = get_health_summary()
     launch_readiness = get_launch_readiness()
@@ -252,6 +253,24 @@ def generate_digest() -> str:
     else:
         digest += "*No growth organism data available. Run growth_organism_check.py first.*\n\n"
     
+    onboarding_summary = onboarding_ux.get("summary", {})
+    digest += """---
+
+## Onboarding UX
+
+"""
+    if onboarding_summary:
+        ux_score = onboarding_summary.get('overall_score', 0)
+        ux_emoji = "OK" if ux_score >= 90 else ("WARN" if ux_score >= 70 else "FAIL")
+        digest += f"**Onboarding Score:** [{ux_emoji}] {ux_score}%\n\n"
+        digest += f"| Check | Status |\n|-------|--------|\n"
+        digest += f"| Locales Covered | {onboarding_summary.get('passed_locales', 0)}/{onboarding_summary.get('total_locales', 9)} |\n"
+        digest += f"| Signup Route | {'OK' if onboarding_summary.get('signup_route_ok') else 'FAIL'} |\n"
+        digest += f"| Header CTA | {'OK' if onboarding_summary.get('header_cta_ok') else 'FAIL'} |\n"
+        digest += f"| Homepage Onboarding | {'OK' if onboarding_summary.get('homepage_onboarding_ok') else 'FAIL'} |\n\n"
+    else:
+        digest += "*No onboarding UX audit data available. Run onboarding_ux_audit.py first.*\n\n"
+    
     digest += """---
 
 ## Recommended Actions
@@ -271,6 +290,9 @@ def generate_digest() -> str:
     if growth_summary.get("organism_status") != "HEALTHY":
         actions.append("4. **HIGH:** Investigate Growth Organism module failures")
     
+    if onboarding_summary.get("overall_score", 100) < 90:
+        actions.append("5. **MEDIUM:** Review onboarding UX - missing i18n keys or routing issues")
+    
     if not actions:
         actions.append("No urgent actions required. System is healthy.")
     
@@ -287,6 +309,7 @@ def generate_digest() -> str:
 - Compliance Audit: `workspace-data/autopilot/compliance_audit.json`
 - Growth Check: `workspace-data/autopilot/growth_check.json`
 - Integrations Map: `workspace-data/autopilot/integrations_map.json`
+- Onboarding UX: `workspace-data/autopilot/onboarding/audit_YYYY-MM-DD.json`
 
 ---
 
