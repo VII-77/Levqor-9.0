@@ -62,7 +62,7 @@ export default function HomepageBrainDemo() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           goal: goal.trim(),
-          language: locale || "en",
+          language: locale || 'en',
         }),
       });
 
