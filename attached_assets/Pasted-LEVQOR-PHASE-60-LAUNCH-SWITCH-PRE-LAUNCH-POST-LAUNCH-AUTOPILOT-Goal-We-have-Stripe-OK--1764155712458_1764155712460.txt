@@ -1,0 +1,143 @@
+LEVQOR — PHASE 60 LAUNCH SWITCH (PRE-LAUNCH → POST-LAUNCH AUTOPILOT)
+
+Goal:
+We have:
+  - Stripe: OK
+  - Compliance: 100% (18/18)
+  - Growth Organism: HEALTHY
+  - Secrets Health: All critical services OK
+  - Guardian Autopilot Grid: Installed and running
+Now:
+  - Switch Levqor from pre-launch “dry-run” mode into live post-launch autopilot mode.
+  - Confirm production (api.levqor.ai + levqor.ai) is healthy.
+  - Ensure growth organism + Guardian jobs run in full mode when LEVQOR_LAUNCH_STAGE="post".
+  - Leave legal/pricing/compliance actions behind approval gates.
+
+Hard Rules:
+- DO NOT rotate or create new secrets.
+- DO NOT change pricing logic or plans.
+- DO NOT weaken security_core, auth, or compliance.
+- DO NOT disable approval policies for high-risk actions.
+- Only enable already-designed autonomous behavior for growth, marketing, templates, content, and reporting.
+
+==================================================
+PHASE 1 — VERIFY LAUNCH STAGE CONFIG
+==================================================
+1) Search the codebase for usage of LEVQOR_LAUNCH_STAGE:
+   - config/
+   - scripts/autopilot/*
+   - modules/growth_organism/*
+   - Guardian / blueprint scheduler.
+
+2) Confirm the current default behavior:
+   - "pre" should enforce:
+       * dry-run / “no external write” for high-risk operations
+       * no production posting
+   - "post" should allow:
+       * low-risk autonomous actions (site content updates, templates, safe social/blog posts)
+       * continued queuing of high-risk actions for approval
+
+3) If the variable is not centralized, create a small helper module, e.g.:
+   config/launch_stage.py with:
+     get_launch_stage() -> "pre" | "post"
+   that reads from env and defaults to "pre".
+
+4) Ensure:
+   - scripts/autopilot/growth_organism.py
+   - scripts/autopilot/apply_site_mutations.py
+   - scripts/autopilot/blueprint_scheduler.py
+   - scripts/autopilot/distribution jobs (if any)
+   all call get_launch_stage() to decide behavior.
+
+==================================================
+PHASE 2 — ENABLE POST-LAUNCH BEHAVIOR LOGICALLY
+==================================================
+1) Make sure that when get_launch_stage() == "post":
+   - Growth Organism:
+       * can actually write mutations that pass CI and Git commit.
+       * can queue & publish low-risk content to allowed channels (only if API keys exist).
+   - Blueprint scheduler:
+       * can mark phases as “ready” and trigger non–high-risk jobs automatically.
+   - Site mutations:
+       * run full CI and only push to Git when green (no changes here, just confirm).
+   - High-risk actions:
+       * STILL require approval_policies and approvals queue (no change).
+
+2) When get_launch_stage() == "pre":
+   - Previously implemented behavior should remain:
+       * generate proposals, logs, dry-runs only.
+       * no external posting or Git pushes for growth organism.
+   - Ensure this is clearly distinguished from "post".
+
+3) Do NOT hardcode “post” anywhere. Behavior must always be driven by LEVQOR_LAUNCH_STAGE / get_launch_stage().
+
+==================================================
+PHASE 3 — ENVIRONMENT SWITCH INSTRUCTIONS
+==================================================
+We will NOT modify external env vars automatically, but we MUST:
+
+1) Detect current LEVQOR_LAUNCH_STAGE:
+   - Print what is currently seen in the backend environment.
+   - If unset, note that it defaults to "pre".
+
+2) At the end of the run, output clear instructions for the Founder:
+   - In Replit (backend):
+       * Set LEVQOR_LAUNCH_STAGE="post"
+   - In Vercel (frontend):
+       * Set LEVQOR_LAUNCH_STAGE="post" in the project environment variables
+       * Trigger a new production deploy
+
+You must NOT attempt to change Replit or Vercel env vars directly; only print explicit instructions.
+
+==================================================
+PHASE 4 — PRODUCTION VERIFICATION (AFTER SWITCH)
+==================================================
+Assume that the Founder will set LEVQOR_LAUNCH_STAGE="post" and redeploy frontend shortly after this.
+
+Implement a verification function that can be run now AND reused later:
+
+1) Create scripts/postlaunch/verify_full_stack.py (or extend existing verify_live.py) to:
+
+   - Check backend (production):
+       * Use BASE_API = https://api.levqor.ai
+       * Verify:
+           - /health or readiness endpoint
+           - /api/health/summary
+           - key billing endpoint
+           - DSAR endpoints (/api/me/delete-account, export)
+   - Check frontend (production):
+       * Curl https://www.levqor.ai (or https://levqor.ai)
+       * Confirm HTML contains expected markers (e.g. “Levqor”, “AI workflow builder”, language switcher).
+
+   - Check Guardian & organism:
+       * Confirm:
+           - secrets_health.json exists and has no FAIL entries.
+           - compliance_audit.json exists and is 100% or equivalent.
+           - growth_organism_check.json status is HEALTHY.
+           - founder_digest.md exists and updated today.
+
+2) Run locally NOW against:
+   - BACKEND: http://localhost:8000
+   - FRONTEND: if a local dev server is running, check that too; if not, just hit backend.
+
+3) After the Founder flips LEVQOR_LAUNCH_STAGE to "post" and redeploys:
+   - This script can be rerun (manually triggered) to verify production.
+
+==================================================
+PHASE 5 — FINAL SUMMARY (PHASE 60 LAUNCH READY)
+==================================================
+At the end, output a concise summary:
+
+- Confirm:
+   * Where LEVQOR_LAUNCH_STAGE is read from.
+   * What happens in "pre" vs "post".
+   * That growth organism & site mutations respect launch stage.
+   * That high-risk actions still pass through approval_policies and approvals queue.
+
+- Print explicit steps for the Founder:
+   1) In Replit backend: set LEVQOR_LAUNCH_STAGE="post".
+   2) In Vercel frontend: set LEVQOR_LAUNCH_STAGE="post" and redeploy.
+   3) Run the new verify_full_stack.py against production.
+   4) Check /admin and founder_digest to confirm all green.
+
+End of command.
