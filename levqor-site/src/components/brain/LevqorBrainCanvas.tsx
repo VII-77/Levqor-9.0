@@ -52,6 +52,7 @@ const FRAGMENT_SHADER = `
   uniform vec3 u_color3;
   uniform float u_state;
   uniform float u_sound;
+  uniform float u_reducedMotion;
 
   float noise(vec2 p) {
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
@@ -70,22 +71,25 @@ const FRAGMENT_SHADER = `
 
   void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
-    float soundMod = 1.0 + u_sound * 0.4;
-    float t = u_time * 0.8 * soundMod;
+    float soundMod = 1.0 + u_sound * 0.5;
+    float t = u_time * 1.5 * soundMod;
     
-    // Enhanced base waves with more visible motion
-    float wave1 = sin(uv.x * 4.0 + t * 1.2) * 0.5 + 0.5;
-    float wave2 = sin(uv.y * 3.0 - t * 0.9) * 0.5 + 0.5;
-    float wave3 = sin((uv.x + uv.y) * 5.0 + t * 1.5) * 0.5 + 0.5;
-    float wave4 = sin((uv.x - uv.y) * 3.0 + t * 0.7) * 0.5 + 0.5;
-    float baseBlend = (wave1 + wave2 + wave3 + wave4) / 4.0;
+    // For reduced motion: use static values
+    float motionScale = 1.0 - u_reducedMotion;
     
-    // Flowing organic noise
-    float flowNoise = smoothNoise(uv * 3.0 + vec2(t * 0.3, t * 0.2)) * 0.3;
+    // Base waves - scaled by motion preference
+    float wave1 = sin(uv.x * 6.0 + t * 2.0 * motionScale) * 0.5 + 0.5;
+    float wave2 = sin(uv.y * 5.0 - t * 1.5 * motionScale) * 0.5 + 0.5;
+    float wave3 = sin((uv.x + uv.y) * 8.0 + t * 2.5 * motionScale) * 0.5 + 0.5;
+    float wave4 = sin((uv.x - uv.y) * 4.0 + t * 1.2 * motionScale) * 0.5 + 0.5;
+    float wave5 = sin(uv.x * 12.0 - t * 3.0 * motionScale) * 0.3 + 0.5;
+    float baseBlend = (wave1 + wave2 + wave3 + wave4 + wave5) / 5.0;
+    
+    // Flowing organic noise - reduced for accessibility
+    float flowNoise = smoothNoise(uv * 4.0 + vec2(t * 0.5, t * 0.4) * motionScale) * 0.4 * motionScale;
+    float flowNoise2 = smoothNoise(uv * 8.0 - vec2(t * 0.3, t * 0.6) * motionScale) * 0.25 * motionScale;
     
     // State-specific effects
-    // u_state: 0=organic, 0.25=neural, 0.5=quantum, 0.75=success, 1.0=error
-    
     float effectStrength = 0.0;
     float pulseEffect = 0.0;
     float noiseEffect = 0.0;
@@ -93,65 +97,73 @@ const FRAGMENT_SHADER = `
     float flashOverlay = 0.0;
     vec3 flashColor = vec3(0.0);
     
-    // ORGANIC (u_state ~0): Enhanced breathing with visible flow
+    // ORGANIC (u_state ~0): Breathing with visible flow
     if (u_state < 0.125) {
-      float breathe = sin(t * 0.5) * 0.5 + 0.5;
-      float pulse = sin(t * 1.5 + uv.x * 8.0) * 0.15;
-      float flow = sin(uv.y * 6.0 + t * 0.8) * 0.1;
-      effectStrength = 0.55 + breathe * 0.2;
-      pulseEffect = pulse + flow;
-      noiseEffect = flowNoise;
+      float breathe = sin(t * 0.8 * motionScale) * 0.5 + 0.5;
+      float pulse = sin(t * 2.5 * motionScale + uv.x * 12.0) * 0.25 * motionScale;
+      float flow = sin(uv.y * 10.0 + t * 1.5 * motionScale) * 0.2 * motionScale;
+      float ripple = sin(length(uv - 0.5) * 20.0 - t * 3.0 * motionScale) * 0.15 * motionScale;
+      effectStrength = 0.65 + breathe * 0.25 * motionScale;
+      pulseEffect = pulse + flow + ripple;
+      noiseEffect = flowNoise + flowNoise2;
     }
     // NEURAL (u_state ~0.25): Pulse lines, node flickers
     else if (u_state < 0.375) {
-      float pulse = sin(t * 2.5 + uv.y * 25.0) * 0.5 + 0.5;
-      float grid = step(0.92, fract(uv.x * 12.0 + t * 0.6)) + step(0.92, fract(uv.y * 12.0 - t * 0.4));
-      pulseEffect = pulse * 0.2;
-      gridEffect = grid * 0.12;
-      effectStrength = 0.6;
-      noiseEffect = flowNoise * 0.5;
+      float pulse = sin(t * 4.0 * motionScale + uv.y * 30.0) * 0.5 + 0.5;
+      float grid = step(0.88, fract(uv.x * 15.0 + t * 1.0 * motionScale)) + step(0.88, fract(uv.y * 15.0 - t * 0.8 * motionScale));
+      float spark = noise(uv * 100.0 + t * 8.0 * motionScale) * step(0.92, noise(uv * 50.0 + t * 5.0 * motionScale)) * motionScale;
+      pulseEffect = pulse * 0.3 * motionScale;
+      gridEffect = grid * 0.2 * motionScale + spark * 0.3;
+      effectStrength = 0.7;
+      noiseEffect = flowNoise * 0.6;
     }
     // QUANTUM (u_state ~0.5): Shimmer, noise distortion
     else if (u_state < 0.625) {
-      float shimmer = noise(uv * 60.0 + t * 4.0) * 0.25;
-      float interference = sin(uv.x * 50.0 + t * 6.0) * sin(uv.y * 50.0 - t * 4.0) * 0.15;
-      noiseEffect = shimmer + interference + flowNoise;
-      effectStrength = 0.7;
+      float shimmer = noise(uv * 80.0 + t * 8.0 * motionScale) * 0.35 * motionScale;
+      float interference = sin(uv.x * 60.0 + t * 10.0 * motionScale) * sin(uv.y * 60.0 - t * 7.0 * motionScale) * 0.25 * motionScale;
+      float glitch = step(0.97, noise(vec2(floor(uv.y * 30.0), t * 2.0 * motionScale))) * 0.4 * motionScale;
+      noiseEffect = shimmer + interference + flowNoise + glitch;
+      effectStrength = 0.8;
     }
-    // SUCCESS (u_state ~0.75): Green tint pulse
+    // SUCCESS (u_state ~0.75): Green tint - NO FLASH for reduced motion
     else if (u_state < 0.875) {
-      float successPulse = sin(t * 5.0) * 0.5 + 0.5;
-      flashOverlay = 0.25 * successPulse;
-      flashColor = vec3(0.13, 0.77, 0.37);
-      effectStrength = 0.6;
-      noiseEffect = flowNoise * 0.3;
+      float successPulse = sin(t * 6.0 * motionScale) * 0.5 + 0.5;
+      float ring = sin(length(uv - 0.5) * 25.0 - t * 5.0 * motionScale) * 0.2 * motionScale;
+      // Static tint for reduced motion, animated pulse otherwise
+      flashOverlay = u_reducedMotion > 0.5 ? 0.15 : 0.35 * successPulse;
+      flashColor = vec3(0.13, 0.85, 0.40);
+      effectStrength = 0.7;
+      noiseEffect = flowNoise * 0.4 + ring;
     }
-    // ERROR (u_state ~1.0): Red warning flash
+    // ERROR (u_state ~1.0): Red warning - NO FLASH for reduced motion
     else {
-      float errorFlash = abs(sin(t * 7.0));
-      flashOverlay = 0.3 * errorFlash;
-      flashColor = vec3(0.94, 0.27, 0.27);
-      effectStrength = 0.6;
-      noiseEffect = flowNoise * 0.3;
+      float errorFlash = abs(sin(t * 10.0 * motionScale));
+      float shake = sin(uv.x * 100.0 + t * 30.0 * motionScale) * 0.05 * motionScale;
+      // Static tint for reduced motion, animated flash otherwise
+      flashOverlay = u_reducedMotion > 0.5 ? 0.2 : 0.4 * errorFlash;
+      flashColor = vec3(0.98, 0.25, 0.25);
+      effectStrength = 0.7;
+      noiseEffect = flowNoise * 0.4 + shake;
     }
     
     // Apply base blend with effect strength
-    float blend = baseBlend * effectStrength + (1.0 - effectStrength) * 0.5;
+    float blend = baseBlend * effectStrength + (1.0 - effectStrength) * 0.4;
     blend += pulseEffect + noiseEffect + gridEffect;
     blend = clamp(blend, 0.0, 1.0);
     
-    // Enhanced color mixing with more dynamic range
+    // Color mixing with dynamic range
     vec3 color = mix(u_color1, u_color2, blend);
-    color = mix(color, u_color3, wave3 * 0.4 + wave4 * 0.15 + u_sound * 0.15);
+    color = mix(color, u_color3, wave3 * 0.5 + wave4 * 0.25 + wave5 * 0.15 + u_sound * 0.2);
     
-    // Apply flash overlay for success/error
+    // Apply flash overlay for success/error (already reduced for accessibility)
     color = mix(color, flashColor, flashOverlay);
     
-    // Enhanced gradient with subtle brightness variation
-    float gradient = 1.0 - uv.y * 0.25;
-    float brightnessWave = 1.0 + sin(t * 0.6 + uv.x * 2.0) * 0.08;
-    color *= gradient * brightnessWave;
-    color = color * (1.0 + u_sound * 0.15);
+    // Gradient with brightness variation (reduced for accessibility)
+    float gradient = 1.0 - uv.y * 0.2;
+    float brightnessWave = 1.0 + sin(t * 1.0 * motionScale + uv.x * 4.0) * 0.15 * motionScale;
+    float brightnessWave2 = 1.0 + sin(t * 0.7 * motionScale - uv.y * 3.0) * 0.1 * motionScale;
+    color *= gradient * brightnessWave * brightnessWave2;
+    color = color * (1.0 + u_sound * 0.2);
     
     gl_FragColor = vec4(color, 1.0);
   }
@@ -301,8 +313,9 @@ function WebGLRenderer({
       const color3Location = gl.getUniformLocation(program, "u_color3");
       const stateLocation = gl.getUniformLocation(program, "u_state");
       const soundLocation = gl.getUniformLocation(program, "u_sound");
+      const reducedMotionLocation = gl.getUniformLocation(program, "u_reducedMotion");
 
-      const elapsed = reducedMotion ? 0 : (Date.now() - startTimeRef.current) / 1000;
+      const elapsed = (Date.now() - startTimeRef.current) / 1000;
 
       gl.uniform1f(timeLocation, elapsed);
       gl.uniform2f(resolutionLocation, width, height);
@@ -311,6 +324,7 @@ function WebGLRenderer({
       gl.uniform3f(color3Location, color3[0], color3[1], color3[2]);
       gl.uniform1f(stateLocation, stateValue / 4);
       gl.uniform1f(soundLocation, soundIntensityRef.current);
+      gl.uniform1f(reducedMotionLocation, reducedMotion ? 1.0 : 0.0);
 
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       

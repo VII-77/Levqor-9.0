@@ -34,7 +34,7 @@ export default async function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
       <body className="antialiased tracking-tight">
-        <NextIntlClientProvider locale={locale} messages={messages}>
+        <NextIntlClientProvider key={locale} locale={locale} messages={messages}>
           <Header />
           <Providers>
             {children}

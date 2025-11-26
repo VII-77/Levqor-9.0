@@ -1,7 +1,8 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/routing';
+import { useTransition } from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { locales, type Locale } from '@/i18n';
 import { LANGUAGES, LANGUAGES_BY_REGION, getRoutedLocale, type LanguageCode } from '@/config/languages';
@@ -10,11 +11,11 @@ export function LocaleSwitcher() {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
+  const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>(locale as LanguageCode);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -26,7 +27,6 @@ export function LocaleSwitcher() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Sync selected language with current locale on mount
   useEffect(() => {
     const storedLang = localStorage.getItem('levqor-display-language');
     if (storedLang) {
@@ -37,21 +37,15 @@ export function LocaleSwitcher() {
   }, [locale]);
 
   const handleLanguageChange = (languageCode: LanguageCode) => {
-    // Store display language preference
     localStorage.setItem('levqor-display-language', languageCode);
     setSelectedLanguage(languageCode);
     
-    // Map to actual routed locale (en, de, fr, es)
     const targetLocale = getRoutedLocale(languageCode);
     
-    // Only change route if the routed locale is different
     if (targetLocale !== locale) {
-      const currentPathWithoutLocale = pathname.replace(/^\/(en|de|fr|es)/, '');
-      const newPath = targetLocale === 'en' 
-        ? currentPathWithoutLocale || '/'
-        : `/${targetLocale}${currentPathWithoutLocale || '/'}`;
-      
-      router.push(newPath);
+      startTransition(() => {
+        router.replace(pathname, { locale: targetLocale as Locale });
+      });
     }
     
     setIsOpen(false);
