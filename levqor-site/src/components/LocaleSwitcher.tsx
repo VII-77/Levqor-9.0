@@ -1,16 +1,14 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { usePathname as useNextPathname } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { LANGUAGES, LANGUAGES_BY_REGION, SUPPORTED_LOCALES, DEFAULT_LOCALE, type LanguageCode } from '@/config/languages';
-import { useLanguageStore } from '@/stores/languageStore';
 
 /**
  * Handle language change with deterministic navigation.
  * Uses window.location.assign for full page reload to ensure next-intl re-initializes.
  */
-function navigateToLocale(nextLocale: LanguageCode, currentPathname: string) {
+function navigateToLocale(nextLocale: LanguageCode) {
   if (typeof window === "undefined") return;
 
   const url = new URL(window.location.href);
@@ -40,19 +38,9 @@ function navigateToLocale(nextLocale: LanguageCode, currentPathname: string) {
 
 export function LocaleSwitcher() {
   const currentLocale = useLocale() as LanguageCode;
-  const pathname = useNextPathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const { displayLanguage, isHydrated, setDisplayLanguage } = useLanguageStore();
-  const [localSelection, setLocalSelection] = useState<LanguageCode>(displayLanguage);
-
-  useEffect(() => {
-    if (isHydrated) {
-      setLocalSelection(displayLanguage);
-    }
-  }, [displayLanguage, isHydrated]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,18 +56,15 @@ export function LocaleSwitcher() {
   const handleLanguageChange = useCallback((languageCode: LanguageCode) => {
     if (typeof window === "undefined") return;
     
-    setLocalSelection(languageCode);
-    setDisplayLanguage(languageCode);
     setIsOpen(false);
     
     if (languageCode !== currentLocale) {
       setIsNavigating(true);
-      navigateToLocale(languageCode, pathname);
+      navigateToLocale(languageCode);
     }
-  }, [currentLocale, pathname, setDisplayLanguage]);
+  }, [currentLocale]);
 
-  const selectedLanguage = isHydrated ? displayLanguage : localSelection;
-  const currentLanguage = LANGUAGES.find(lang => lang.code === selectedLanguage) || LANGUAGES[0];
+  const currentLanguage = LANGUAGES.find(lang => lang.code === currentLocale) || LANGUAGES[0];
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -122,13 +107,13 @@ export function LocaleSwitcher() {
                       onClick={() => handleLanguageChange(lang.code)}
                       disabled={isNavigating}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors disabled:opacity-50 ${
-                        selectedLanguage === lang.code
+                        currentLocale === lang.code
                           ? 'bg-blue-600 text-white'
                           : 'text-slate-200 hover:bg-slate-700'
                       }`}
                     >
                       <span className="font-medium">{lang.nativeLabel}</span>
-                      {selectedLanguage === lang.code && (
+                      {currentLocale === lang.code && (
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
