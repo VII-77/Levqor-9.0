@@ -11,6 +11,11 @@
       "trust_global": "Confiado por equipes em mais de 12 países",
       "stats": "Mais de 150+ fluxos de trabalho automatizados este mês."
     },
+    "onboarding": {
+      "newUserHint": "Novo no Levqor? Isso criará sua conta e iniciará seu teste grátis.",
+      "existingUserHint": "Já tem uma conta? Entrar",
+      "noAccountHint": "Não tem conta? Clique em 'Iniciar teste grátis' para criar uma."
+    },
     "features": {
       "title": "Por que as equipes escolhem Levqor",
       "self_healing": {
@@ -45,18 +50,28 @@
       },
       "billing": {
         "title": "Faturamento Stripe",
-        "item1": "Preços baseados em uso",
+        "item1": "Preço baseado em uso",
         "item2": "Testes e códigos de cupom",
         "item3": "Faturas de IVA exportáveis"
       }
     },
     "cta": {
       "title": "Pronto para automatizar seu fluxo de trabalho?",
-      "description": "Junte-se a centenas de equipes entregando mais rápido com Levqor. Inicie seu teste gratuito de 7 dias hoje."
+      "description": "Junte-se a centenas de equipes que entregam mais rápido com Levqor. Comece seu teste gratuito de 7 dias hoje."
     }
   },
+  "header": {
+    "home": "Início",
+    "aiBuilder": "Construtor IA",
+    "workflows": "Workflows",
+    "pricing": "Preços",
+    "docs": "Documentação",
+    "support": "Suporte",
+    "signIn": "Entrar",
+    "startTrial": "Iniciar teste grátis"
+  },
   "pricing": {
-    "currency": "GBP"
+    "currency": "EUR"
   },
   "common": {
     "loading": "Carregando...",

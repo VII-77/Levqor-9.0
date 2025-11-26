@@ -11,6 +11,11 @@
       "trust_global": "Approuvé par des équipes dans plus de 12 pays",
       "stats": "Plus de 150+ workflows automatisés ce mois-ci."
     },
+    "onboarding": {
+      "newUserHint": "Nouveau sur Levqor ? Cela créera votre compte et démarrera votre essai gratuit.",
+      "existingUserHint": "Vous avez déjà un compte ? Connexion",
+      "noAccountHint": "Pas encore de compte ? Cliquez sur 'Essai gratuit' pour en créer un."
+    },
     "features": {
       "title": "Pourquoi les équipes choisissent Levqor",
       "self_healing": {
@@ -54,6 +59,16 @@
       "title": "Prêt à automatiser votre workflow?",
       "description": "Rejoignez des centaines d'équipes qui livrent plus vite avec Levqor. Commencez votre essai gratuit de 7 jours aujourd'hui."
     }
+  },
+  "header": {
+    "home": "Accueil",
+    "aiBuilder": "Constructeur IA",
+    "workflows": "Workflows",
+    "pricing": "Tarifs",
+    "docs": "Documentation",
+    "support": "Support",
+    "signIn": "Connexion",
+    "startTrial": "Essai gratuit"
   },
   "pricing": {
     "currency": "EUR"

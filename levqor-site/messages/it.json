@@ -11,6 +11,11 @@
       "trust_global": "Di fiducia per team in oltre 12 paesi",
       "stats": "Oltre 150+ flussi di lavoro automatizzati questo mese."
     },
+    "onboarding": {
+      "newUserHint": "Nuovo su Levqor? Questo creerà il tuo account e inizierà la tua prova gratuita.",
+      "existingUserHint": "Hai già un account? Accedi",
+      "noAccountHint": "Non hai un account? Clicca su 'Inizia la prova gratuita' per crearne uno."
+    },
     "features": {
       "title": "Perché i team scelgono Levqor",
       "self_healing": {
@@ -45,23 +50,33 @@
       },
       "billing": {
         "title": "Fatturazione Stripe",
-        "item1": "Prezzi basati sull'utilizzo",
+        "item1": "Prezzo basato sull'utilizzo",
         "item2": "Prove e codici coupon",
         "item3": "Fatture IVA esportabili"
       }
     },
     "cta": {
       "title": "Pronto ad automatizzare il tuo flusso di lavoro?",
-      "description": "Unisciti a centinaia di team che consegnano più velocemente con Levqor. Inizia la tua prova gratuita di 7 giorni oggi."
+      "description": "Unisciti a centinaia di team che consegnano più velocemente con Levqor. Inizia oggi la tua prova gratuita di 7 giorni."
     }
   },
+  "header": {
+    "home": "Home",
+    "aiBuilder": "Builder IA",
+    "workflows": "Workflow",
+    "pricing": "Prezzi",
+    "docs": "Documentazione",
+    "support": "Supporto",
+    "signIn": "Accedi",
+    "startTrial": "Inizia la prova gratuita"
+  },
   "pricing": {
-    "currency": "GBP"
+    "currency": "EUR"
   },
   "common": {
     "loading": "Caricamento...",
     "error": "Si è verificato un errore",
     "status_operational": "Tutti i sistemi operativi",
-    "status_checking": "Controllo dello stato..."
+    "status_checking": "Verifica stato..."
   }
 }

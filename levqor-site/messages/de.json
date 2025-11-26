@@ -11,6 +11,11 @@
       "trust_global": "Vertrauenswürdig in über 12 Ländern",
       "stats": "Über 150+ Workflows in diesem Monat automatisiert."
     },
+    "onboarding": {
+      "newUserHint": "Neu bei Levqor? Dies erstellt Ihr Konto und startet Ihre kostenlose Testversion.",
+      "existingUserHint": "Haben Sie bereits ein Konto? Anmelden",
+      "noAccountHint": "Noch kein Konto? Klicken Sie auf 'Kostenlos testen', um eines zu erstellen."
+    },
     "features": {
       "title": "Warum Teams Levqor wählen",
       "self_healing": {
@@ -54,6 +59,16 @@
       "title": "Bereit, Ihren Workflow zu automatisieren?",
       "description": "Schließen Sie sich Hunderten von Teams an, die mit Levqor schneller versenden. Starten Sie heute Ihre 7-tägige kostenlose Testversion."
     }
+  },
+  "header": {
+    "home": "Startseite",
+    "aiBuilder": "KI-Builder",
+    "workflows": "Workflows",
+    "pricing": "Preise",
+    "docs": "Dokumentation",
+    "support": "Support",
+    "signIn": "Anmelden",
+    "startTrial": "Kostenlos testen"
   },
   "pricing": {
     "currency": "EUR"

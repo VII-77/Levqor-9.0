@@ -11,6 +11,11 @@
       "trust_global": "Confiado por equipos en más de 12 países",
       "stats": "Más de 150+ flujos de trabajo automatizados este mes."
     },
+    "onboarding": {
+      "newUserHint": "¿Nuevo en Levqor? Esto creará tu cuenta e iniciará tu prueba gratuita.",
+      "existingUserHint": "¿Ya tienes una cuenta? Iniciar sesión",
+      "noAccountHint": "¿No tienes cuenta? Haz clic en 'Prueba gratis' para crear una."
+    },
     "features": {
       "title": "Por qué los equipos eligen Levqor",
       "self_healing": {
@@ -54,6 +59,16 @@
       "title": "¿Listo para automatizar su flujo de trabajo?",
       "description": "Únase a cientos de equipos que envían más rápido con Levqor. Comience su prueba gratuita de 7 días hoy."
     }
+  },
+  "header": {
+    "home": "Inicio",
+    "aiBuilder": "Constructor IA",
+    "workflows": "Workflows",
+    "pricing": "Precios",
+    "docs": "Documentación",
+    "support": "Soporte",
+    "signIn": "Iniciar sesión",
+    "startTrial": "Prueba gratis"
   },
   "pricing": {
     "currency": "EUR"

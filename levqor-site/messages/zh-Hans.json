@@ -11,6 +11,11 @@
       "trust_global": "受到12个以上国家团队的信任",
       "stats": "本月已自动化超过150个工作流程。"
     },
+    "onboarding": {
+      "newUserHint": "初次使用Levqor？这将创建您的账户并开始免费试用。",
+      "existingUserHint": "已有账户？登录",
+      "noAccountHint": "还没有账户？点击'开始免费试用'创建一个。"
+    },
     "features": {
       "title": "为什么团队选择Levqor",
       "self_healing": {
@@ -46,8 +51,8 @@
       "billing": {
         "title": "Stripe计费",
         "item1": "基于使用量的定价",
-        "item2": "试用和优惠券代码",
-        "item3": "可导出的VAT发票"
+        "item2": "试用和优惠码",
+        "item3": "可导出的增值税发票"
       }
     },
     "cta": {
@@ -55,8 +60,18 @@
       "description": "加入数百个使用Levqor更快交付的团队。立即开始您的7天免费试用。"
     }
   },
+  "header": {
+    "home": "首页",
+    "aiBuilder": "AI构建器",
+    "workflows": "工作流程",
+    "pricing": "价格",
+    "docs": "文档",
+    "support": "支持",
+    "signIn": "登录",
+    "startTrial": "开始免费试用"
+  },
   "pricing": {
-    "currency": "GBP"
+    "currency": "CNY"
   },
   "common": {
     "loading": "加载中...",

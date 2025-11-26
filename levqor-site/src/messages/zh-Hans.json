@@ -24,7 +24,7 @@
     "onboarding": {
       "newUserHint": "初次使用Levqor？这将创建您的账户并开始免费试用。",
       "existingUserHint": "已有账户？登录",
-      "noAccountHint": "还没有账户？点击"开始免费试用"创建一个。"
+      "noAccountHint": "还没有账户？点击'开始免费试用'创建一个。"
     },
     "features": {
       "title": "企业级功能",
@@ -73,7 +73,7 @@
   "onboarding": {
     "newUserHint": "初次使用Levqor？这将创建您的账户并开始免费试用。",
     "existingUserHint": "已有账户？登录",
-    "noAccountHint": "还没有账户？点击"开始免费试用"创建一个。"
+    "noAccountHint": "还没有账户？点击'开始免费试用'创建一个。"
   },
   "header": {
     "home": "首页",

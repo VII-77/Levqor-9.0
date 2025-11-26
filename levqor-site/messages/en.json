@@ -11,6 +11,11 @@
       "trust_global": "Trusted by teams in 12+ countries",
       "stats": "Over 150+ workflows automated this month."
     },
+    "onboarding": {
+      "newUserHint": "New to Levqor? This will create your account and start your free trial.",
+      "existingUserHint": "Already have an account? Sign in",
+      "noAccountHint": "No account yet? Click 'Start free trial' to create one."
+    },
     "features": {
       "title": "Why teams choose Levqor",
       "self_healing": {
@@ -54,6 +59,16 @@
       "title": "Ready to automate your workflow?",
       "description": "Join hundreds of teams shipping faster with Levqor. Start your 7-day free trial today."
     }
+  },
+  "header": {
+    "home": "Home",
+    "aiBuilder": "AI Builder",
+    "workflows": "Workflows",
+    "pricing": "Pricing",
+    "docs": "Docs",
+    "support": "Support",
+    "signIn": "Sign in",
+    "startTrial": "Start free trial"
   },
   "pricing": {
     "currency": "GBP"
