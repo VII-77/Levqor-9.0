@@ -1,11 +1,18 @@
 """
 Smart alert router - sends alerts to Slack, Telegram, and/or Email
+
+Feature flags:
+- ALERT_EMAIL_ENABLED: Set to "true" to enable alert emails (default: disabled to prevent quota exhaustion)
+- Telegram: Uses TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+- Slack: Uses SLACK_WEBHOOK_URL
 """
 import os
 import requests
 import logging
 
 logger = logging.getLogger("levqor.alerts")
+
+ALERT_EMAIL_ENABLED = os.getenv("ALERT_EMAIL_ENABLED", "").lower() == "true"
 
 
 def send_alert(level, message):
@@ -55,31 +62,36 @@ def send_alert(level, message):
             logger.error(f"Telegram alert failed: {e}")
             results["telegram"] = "failed"
     
-    # Email via Resend (using centralized email service)
-    resend_key = os.getenv("RESEND_API_KEY")
-    from_email = os.getenv("AUTH_FROM_EMAIL", "notifications@levqor.ai")
-    founder_email = os.getenv("FOUNDER_EMAIL") or os.getenv("AUTH_FROM_EMAIL")
-    
-    if resend_key and founder_email:
-        try:
-            response = requests.post(
-                "https://api.resend.com/emails",
-                headers={
-                    "Authorization": f"Bearer {resend_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "from": from_email,
-                    "to": founder_email,
-                    "subject": f"[{level.upper()}] Levqor Alert",
-                    "text": message
-                },
-                timeout=10
-            )
-            results["email"] = "sent" if response.status_code == 200 else "failed"
-        except Exception as e:
-            logger.error(f"Email alert failed: {e}")
-            results["email"] = "failed"
+    # Email via Resend - ONLY if ALERT_EMAIL_ENABLED is true
+    # This is disabled by default to prevent quota exhaustion
+    if ALERT_EMAIL_ENABLED:
+        resend_key = os.getenv("RESEND_API_KEY")
+        from_email = os.getenv("AUTH_FROM_EMAIL", "notifications@levqor.ai")
+        founder_email = os.getenv("FOUNDER_EMAIL") or os.getenv("AUTH_FROM_EMAIL")
+        
+        if resend_key and founder_email:
+            try:
+                response = requests.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {resend_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "from": from_email,
+                        "to": founder_email,
+                        "subject": f"[{level.upper()}] Levqor Alert",
+                        "text": message
+                    },
+                    timeout=10
+                )
+                results["email"] = "sent" if response.status_code == 200 else "failed"
+            except Exception as e:
+                logger.error(f"Email alert failed: {e}")
+                results["email"] = "failed"
+    else:
+        results["email"] = "disabled"
+        logger.debug("Alert email disabled (ALERT_EMAIL_ENABLED != 'true')")
     
     logger.info(f"Alert sent ({level}): {message} - Results: {results}")
     
