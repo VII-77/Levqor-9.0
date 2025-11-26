@@ -1,8 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation';
-import { useTransition } from 'react';
+import { usePathname as useNextPathname } from 'next/navigation';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { locales, type Locale, defaultLocale } from '@/i18n';
 import { LANGUAGES, LANGUAGES_BY_REGION, type LanguageCode } from '@/config/languages';
@@ -54,10 +53,9 @@ function buildTargetUrl(basePath: string, targetLocale: Locale): string {
 
 export function LocaleSwitcher() {
   const currentLocale = useLocale() as Locale;
-  const router = useNextRouter();
   const pathname = useNextPathname();
-  const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
   const { displayLanguage, isHydrated, setDisplayLanguage } = useLanguageStore();
@@ -81,6 +79,8 @@ export function LocaleSwitcher() {
   }, []);
 
   const handleLanguageChange = useCallback((languageCode: LanguageCode) => {
+    if (typeof window === "undefined") return;
+    
     setLocalSelection(languageCode);
     setDisplayLanguage(languageCode);
     setIsOpen(false);
@@ -88,17 +88,20 @@ export function LocaleSwitcher() {
     const targetLocale = getTargetLocale(languageCode);
     
     if (targetLocale !== currentLocale) {
+      // Set navigating state to show loading indicator
+      setIsNavigating(true);
+      
       // Get base path without current locale
       const basePath = stripLocaleFromPath(pathname);
       
       // Build the target URL
       const targetUrl = buildTargetUrl(basePath, targetLocale);
       
-      startTransition(() => {
-        router.push(targetUrl);
-      });
+      // Use window.location.assign for deterministic full page reload
+      // This ensures next-intl properly re-initializes with the new locale
+      window.location.assign(targetUrl);
     }
-  }, [currentLocale, pathname, router, setDisplayLanguage]);
+  }, [currentLocale, pathname, setDisplayLanguage]);
 
   const selectedLanguage = isHydrated ? displayLanguage : localSelection;
   const currentLanguage = LANGUAGES.find(lang => lang.code === selectedLanguage) || LANGUAGES[0];
@@ -107,7 +110,7 @@ export function LocaleSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        disabled={isPending}
+        disabled={isNavigating}
         className="flex items-center gap-2 bg-slate-800 text-white border border-slate-700 rounded-md px-3 py-2 text-sm hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         aria-label="Select language"
         aria-expanded={isOpen}
@@ -117,7 +120,7 @@ export function LocaleSwitcher() {
         </svg>
         <span className="hidden sm:inline">{currentLanguage.nativeLabel}</span>
         <span className="sm:hidden">{currentLanguage.code.toUpperCase()}</span>
-        {isPending ? (
+        {isNavigating ? (
           <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -142,7 +145,7 @@ export function LocaleSwitcher() {
                     <button
                       key={lang.code}
                       onClick={() => handleLanguageChange(lang.code)}
-                      disabled={isPending}
+                      disabled={isNavigating}
                       className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors disabled:opacity-50 ${
                         selectedLanguage === lang.code
                           ? 'bg-blue-600 text-white'

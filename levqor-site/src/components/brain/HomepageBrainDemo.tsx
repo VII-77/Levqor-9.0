@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
 
 interface WorkflowStep {
@@ -26,11 +26,14 @@ interface BuilderResponse {
   requires_approval: boolean;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  (typeof window !== "undefined" ? window.location.origin : "");
 
 export default function HomepageBrainDemo() {
   const brain = useLevqorBrainOptional();
   const t = useTranslations('brain');
+  const locale = useLocale();
   const [goal, setGoal] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +47,7 @@ export default function HomepageBrainDemo() {
 
   const handleBuild = useCallback(async () => {
     if (!goal.trim()) {
-      setError("Please describe what you want to automate");
+      setError(t('emptyError') || "Please describe what you want to automate");
       return;
     }
 
@@ -59,7 +62,7 @@ export default function HomepageBrainDemo() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           goal: goal.trim(),
-          language: "en",
+          language: locale || "en",
         }),
       });
 
@@ -76,7 +79,7 @@ export default function HomepageBrainDemo() {
     } finally {
       setLoading(false);
     }
-  }, [goal, brain]);
+  }, [goal, brain, locale, t]);
 
   const handleExampleClick = (example: string) => {
     setGoal(example);

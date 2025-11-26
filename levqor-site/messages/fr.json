@@ -90,6 +90,7 @@
     "tryAnother": "Essayer un autre",
     "example1": "Envoyer un message Slack quand un nouveau lead arrive",
     "example2": "M'envoyer un résumé hebdomadaire des ventes par email",
-    "example3": "Synchroniser les nouveaux clients avec ma feuille de calcul"
+    "example3": "Synchroniser les nouveaux clients avec ma feuille de calcul",
+    "emptyError": "Veuillez décrire ce que vous souhaitez automatiser"
   }
 }
