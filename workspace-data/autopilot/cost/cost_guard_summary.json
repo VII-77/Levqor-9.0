@@ -1,0 +1,60 @@
+{
+  "timestamp": "2025-11-26T12:28:46.058985+00:00",
+  "status": "PASS",
+  "metrics": {
+    "timestamp": "2025-11-26T12:28:45.911428+00:00",
+    "openai": {
+      "tokens_today": 0,
+      "tokens_hour": 0,
+      "requests_today": 0,
+      "cost_today": 0.0
+    },
+    "api": {
+      "requests_today": 0,
+      "requests_hour": 0,
+      "errors_today": 0,
+      "avg_latency_ms": 0
+    },
+    "stripe": {
+      "transactions_today": 0,
+      "volume_today_usd": 0.0,
+      "fees_today_usd": 0.0
+    },
+    "compute": {
+      "cpu_percent": 52.6,
+      "memory_percent": 37.0,
+      "memory_used_mb": 23779.9140625
+    },
+    "estimated_cost_today": 0.0,
+    "estimated_cost_month": 0.0
+  },
+  "forecast": {
+    "predicted_cost_usd": 25.0,
+    "confidence": "low",
+    "trend": "stable",
+    "factors": [
+      "insufficient_data"
+    ],
+    "timestamp": "2025-11-26T12:28:46.056919+00:00",
+    "budget_remaining": 25.0,
+    "budget_percent_used": 50.0
+  },
+  "spike_detected": false,
+  "alerts": [],
+  "throttled_modules": [],
+  "paused_mutations": [],
+  "low_cost_mode": false,
+  "approval_queue": [],
+  "thresholds": {
+    "openai_tokens_daily": 100000,
+    "openai_tokens_hourly": 10000,
+    "api_requests_daily": 50000,
+    "api_requests_hourly": 5000,
+    "stripe_transactions_daily": 1000,
+    "cpu_usage_percent": 80,
+    "memory_usage_percent": 85,
+    "cost_spike_percent": 150,
+    "daily_budget_usd": 50.0,
+    "monthly_budget_usd": 500.0
+  }
+}
