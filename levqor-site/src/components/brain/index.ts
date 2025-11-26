@@ -3,6 +3,8 @@ export { default as DashboardBrainCanvas } from "./DashboardBrainCanvas";
 export { default as InteractiveHeroCTA } from "./InteractiveHeroCTA";
 export { default as TestBrainButton } from "./TestBrainButton";
 export { default as BrainWorkflowBuilder } from "./BrainWorkflowBuilder";
+export { default as BrainErrorDebugger } from "./BrainErrorDebugger";
+export { default as BrainFixMyWorkflow } from "./BrainFixMyWorkflow";
 export { useBrainState } from "./useBrainState";
 export { useSoundIntensity } from "./useSoundIntensity";
 export type { BrainState, BrainStateConfig } from "./types";
