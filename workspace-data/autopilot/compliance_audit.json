@@ -1,0 +1,140 @@
+{
+  "timestamp": "2025-11-26T10:32:34.503936+00:00",
+  "summary": {
+    "total_checks": 18,
+    "passed": 17,
+    "warnings": 0,
+    "failed": 1,
+    "skipped": 0,
+    "compliance_score": 94.4
+  },
+  "legal_pages": [
+    {
+      "name": "Terms of Service",
+      "path": "/terms",
+      "required": true,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    },
+    {
+      "name": "Privacy Policy",
+      "path": "/privacy",
+      "required": true,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    },
+    {
+      "name": "Cookie Policy",
+      "path": "/cookies",
+      "required": true,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    },
+    {
+      "name": "GDPR Information",
+      "path": "/gdpr",
+      "required": true,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    },
+    {
+      "name": "Service Level Agreement",
+      "path": "/sla",
+      "required": false,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    },
+    {
+      "name": "Data Processing Agreement",
+      "path": "/dpa",
+      "required": false,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    },
+    {
+      "name": "Acceptable Use Policy",
+      "path": "/acceptable-use",
+      "required": false,
+      "status": "OK",
+      "http_code": 200,
+      "detail": "Page accessible"
+    }
+  ],
+  "gdpr_endpoints": [
+    {
+      "name": "Data Export (DSAR)",
+      "path": "/api/me/export-data",
+      "method": "GET",
+      "status": "OK",
+      "http_code": 401,
+      "detail": "Endpoint exists"
+    },
+    {
+      "name": "Account Deletion",
+      "path": "/api/me/delete-account",
+      "method": "POST",
+      "status": "FAIL",
+      "http_code": 404,
+      "detail": "Endpoint not found"
+    }
+  ],
+  "security_checks": [
+    {
+      "name": "HTTPS Redirect",
+      "status": "OK",
+      "detail": "HTTPS configured"
+    },
+    {
+      "name": "Stripe Webhook Secret",
+      "status": "OK",
+      "detail": "Webhook secret configured"
+    },
+    {
+      "name": "CORS Configuration",
+      "status": "OK",
+      "detail": "CORS handled by Flask (check manually)"
+    },
+    {
+      "name": "Rate Limiting",
+      "status": "OK",
+      "detail": "Rate limit: 20 requests/burst"
+    },
+    {
+      "name": "JWT Secret Set",
+      "status": "OK",
+      "detail": "JWT secret configured"
+    }
+  ],
+  "file_checks": [
+    {
+      "name": "Compliance Documentation",
+      "path": "docs/compliance.md",
+      "status": "OK",
+      "detail": "File exists"
+    },
+    {
+      "name": "Compliance Module",
+      "path": "modules/compliance/__init__.py",
+      "status": "OK",
+      "detail": "File exists"
+    },
+    {
+      "name": "Data Export Utils",
+      "path": "modules/compliance/export_utils.py",
+      "status": "OK",
+      "detail": "File exists"
+    },
+    {
+      "name": "Data Delete Utils",
+      "path": "modules/compliance/delete_utils.py",
+      "status": "OK",
+      "detail": "File exists"
+    }
+  ]
+}
