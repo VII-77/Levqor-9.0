@@ -1,14 +1,14 @@
 {
   "pages": {
-    "/[locale]/page": [
+    "/not-found": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/page.js"
+      "static/chunks/app/not-found.js"
     ],
-    "/[locale]/layout": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/layout.js"
+      "static/chunks/app/_not-found/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -26,10 +26,45 @@
       "static/chunks/main-app.js",
       "static/chunks/app/loading.js"
     ],
-    "/not-found": [
+    "/[locale]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/[locale]/page.js"
+    ],
+    "/[locale]/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/layout.js"
+    ],
+    "/[locale]/(auth)/signin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/page.js"
+    ],
+    "/[locale]/(auth)/signin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/layout.js"
+    ],
+    "/[locale]/(auth)/signin/error": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/error.js"
+    ],
+    "/[locale]/(auth)/signin/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/loading.js"
+    ],
+    "/[locale]/(public)/pricing/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public)/pricing/page.js"
+    ],
+    "/[locale]/(public)/pricing/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public)/pricing/layout.js"
     ]
   }
 }

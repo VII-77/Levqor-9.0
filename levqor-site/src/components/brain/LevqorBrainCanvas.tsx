@@ -57,20 +57,31 @@ const FRAGMENT_SHADER = `
     return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
   }
 
-  float hash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+  float smoothNoise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = noise(i);
+    float b = noise(i + vec2(1.0, 0.0));
+    float c = noise(i + vec2(0.0, 1.0));
+    float d = noise(i + vec2(1.0, 1.0));
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
   }
 
   void main() {
     vec2 uv = gl_FragCoord.xy / u_resolution;
-    float soundMod = 1.0 + u_sound * 0.3;
-    float t = u_time * 0.5 * soundMod;
+    float soundMod = 1.0 + u_sound * 0.4;
+    float t = u_time * 0.8 * soundMod;
     
-    // Base waves (shared across all states)
-    float wave1 = sin(uv.x * 3.0 + t) * 0.5 + 0.5;
-    float wave2 = sin(uv.y * 2.0 - t * 0.7) * 0.5 + 0.5;
-    float wave3 = sin((uv.x + uv.y) * 4.0 + t * 1.3) * 0.5 + 0.5;
-    float baseBlend = (wave1 + wave2 + wave3) / 3.0;
+    // Enhanced base waves with more visible motion
+    float wave1 = sin(uv.x * 4.0 + t * 1.2) * 0.5 + 0.5;
+    float wave2 = sin(uv.y * 3.0 - t * 0.9) * 0.5 + 0.5;
+    float wave3 = sin((uv.x + uv.y) * 5.0 + t * 1.5) * 0.5 + 0.5;
+    float wave4 = sin((uv.x - uv.y) * 3.0 + t * 0.7) * 0.5 + 0.5;
+    float baseBlend = (wave1 + wave2 + wave3 + wave4) / 4.0;
+    
+    // Flowing organic noise
+    float flowNoise = smoothNoise(uv * 3.0 + vec2(t * 0.3, t * 0.2)) * 0.3;
     
     // State-specific effects
     // u_state: 0=organic, 0.25=neural, 0.5=quantum, 0.75=success, 1.0=error
@@ -82,39 +93,46 @@ const FRAGMENT_SHADER = `
     float flashOverlay = 0.0;
     vec3 flashColor = vec3(0.0);
     
-    // ORGANIC (u_state ~0): Soft breathing, slow motion
+    // ORGANIC (u_state ~0): Enhanced breathing with visible flow
     if (u_state < 0.125) {
-      float breathe = sin(t * 0.3) * 0.5 + 0.5;
-      effectStrength = 0.3 + breathe * 0.1;
+      float breathe = sin(t * 0.5) * 0.5 + 0.5;
+      float pulse = sin(t * 1.5 + uv.x * 8.0) * 0.15;
+      float flow = sin(uv.y * 6.0 + t * 0.8) * 0.1;
+      effectStrength = 0.55 + breathe * 0.2;
+      pulseEffect = pulse + flow;
+      noiseEffect = flowNoise;
     }
     // NEURAL (u_state ~0.25): Pulse lines, node flickers
     else if (u_state < 0.375) {
-      float pulse = sin(t * 2.0 + uv.y * 20.0) * 0.5 + 0.5;
-      float grid = step(0.95, fract(uv.x * 10.0 + t * 0.5)) + step(0.95, fract(uv.y * 10.0 - t * 0.3));
-      pulseEffect = pulse * 0.15;
-      gridEffect = grid * 0.08;
-      effectStrength = 0.5;
+      float pulse = sin(t * 2.5 + uv.y * 25.0) * 0.5 + 0.5;
+      float grid = step(0.92, fract(uv.x * 12.0 + t * 0.6)) + step(0.92, fract(uv.y * 12.0 - t * 0.4));
+      pulseEffect = pulse * 0.2;
+      gridEffect = grid * 0.12;
+      effectStrength = 0.6;
+      noiseEffect = flowNoise * 0.5;
     }
     // QUANTUM (u_state ~0.5): Shimmer, noise distortion
     else if (u_state < 0.625) {
-      float shimmer = noise(uv * 50.0 + t * 3.0) * 0.2;
-      float interference = sin(uv.x * 40.0 + t * 5.0) * sin(uv.y * 40.0 - t * 3.0) * 0.1;
-      noiseEffect = shimmer + interference;
-      effectStrength = 0.6;
+      float shimmer = noise(uv * 60.0 + t * 4.0) * 0.25;
+      float interference = sin(uv.x * 50.0 + t * 6.0) * sin(uv.y * 50.0 - t * 4.0) * 0.15;
+      noiseEffect = shimmer + interference + flowNoise;
+      effectStrength = 0.7;
     }
     // SUCCESS (u_state ~0.75): Green tint pulse
     else if (u_state < 0.875) {
-      float successPulse = sin(t * 4.0) * 0.5 + 0.5;
-      flashOverlay = 0.2 * successPulse;
+      float successPulse = sin(t * 5.0) * 0.5 + 0.5;
+      flashOverlay = 0.25 * successPulse;
       flashColor = vec3(0.13, 0.77, 0.37);
-      effectStrength = 0.5;
+      effectStrength = 0.6;
+      noiseEffect = flowNoise * 0.3;
     }
     // ERROR (u_state ~1.0): Red warning flash
     else {
-      float errorFlash = abs(sin(t * 6.0));
-      flashOverlay = 0.25 * errorFlash;
+      float errorFlash = abs(sin(t * 7.0));
+      flashOverlay = 0.3 * errorFlash;
       flashColor = vec3(0.94, 0.27, 0.27);
-      effectStrength = 0.5;
+      effectStrength = 0.6;
+      noiseEffect = flowNoise * 0.3;
     }
     
     // Apply base blend with effect strength
@@ -122,17 +140,18 @@ const FRAGMENT_SHADER = `
     blend += pulseEffect + noiseEffect + gridEffect;
     blend = clamp(blend, 0.0, 1.0);
     
-    // Color mixing
+    // Enhanced color mixing with more dynamic range
     vec3 color = mix(u_color1, u_color2, blend);
-    color = mix(color, u_color3, wave3 * 0.3 + u_sound * 0.1);
+    color = mix(color, u_color3, wave3 * 0.4 + wave4 * 0.15 + u_sound * 0.15);
     
     // Apply flash overlay for success/error
     color = mix(color, flashColor, flashOverlay);
     
-    // Gradient and sound modulation
-    float gradient = 1.0 - uv.y * 0.3;
-    color *= gradient;
-    color = color * (1.0 + u_sound * 0.1);
+    // Enhanced gradient with subtle brightness variation
+    float gradient = 1.0 - uv.y * 0.25;
+    float brightnessWave = 1.0 + sin(t * 0.6 + uv.x * 2.0) * 0.08;
+    color *= gradient * brightnessWave;
+    color = color * (1.0 + u_sound * 0.15);
     
     gl_FragColor = vec4(color, 1.0);
   }
@@ -357,11 +376,16 @@ function Canvas2DFallback({
 
       const elapsed = reducedMotion ? 0 : (Date.now() - startTimeRef.current) / 1000;
 
-      const gradient = ctx.createLinearGradient(0, 0, width, height);
+      const gradient = ctx.createLinearGradient(
+        Math.sin(elapsed * 0.3) * width * 0.2,
+        Math.cos(elapsed * 0.2) * height * 0.1,
+        width + Math.sin(elapsed * 0.4) * width * 0.15,
+        height + Math.cos(elapsed * 0.35) * height * 0.1
+      );
       
-      const offset1 = reducedMotion ? 0 : (Math.sin(elapsed * 0.5) * 0.1 + 0.1);
-      const offset2 = reducedMotion ? 0.5 : (Math.sin(elapsed * 0.3 + 1) * 0.1 + 0.5);
-      const offset3 = reducedMotion ? 1 : (Math.sin(elapsed * 0.4 + 2) * 0.1 + 0.9);
+      const offset1 = reducedMotion ? 0 : (Math.sin(elapsed * 0.8) * 0.15 + 0.1);
+      const offset2 = reducedMotion ? 0.5 : (Math.sin(elapsed * 0.5 + 1) * 0.15 + 0.5);
+      const offset3 = reducedMotion ? 1 : (Math.sin(elapsed * 0.6 + 2) * 0.15 + 0.85);
 
       gradient.addColorStop(Math.max(0, offset1), config.colors.primary);
       gradient.addColorStop(Math.max(0, Math.min(1, offset2)), config.colors.secondary);
@@ -370,11 +394,29 @@ function Canvas2DFallback({
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
+      if (brainState === "organic" && !reducedMotion) {
+        const waveCount = 4;
+        for (let i = 0; i < waveCount; i++) {
+          const waveAlpha = 0.06 + Math.sin(elapsed * 0.8 + i) * 0.03;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${waveAlpha})`;
+          ctx.lineWidth = 2 * dpr;
+          ctx.beginPath();
+          for (let x = 0; x <= width; x += 5) {
+            const y = height * 0.2 + (height * 0.6 / waveCount) * i + 
+                      Math.sin(x / 80 + elapsed * 1.2 + i * 0.5) * 15 * dpr +
+                      Math.sin(x / 40 + elapsed * 0.8) * 8 * dpr;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+      }
+
       if (brainState === "neural" && !reducedMotion) {
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 5; i++) {
-          const y = (height / 5) * i + Math.sin(elapsed * 2 + i) * 10;
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+        ctx.lineWidth = 1.5 * dpr;
+        for (let i = 0; i < 6; i++) {
+          const y = (height / 6) * i + Math.sin(elapsed * 2.5 + i) * 15 * dpr;
           ctx.beginPath();
           ctx.moveTo(0, y);
           ctx.lineTo(width, y);
@@ -383,25 +425,25 @@ function Canvas2DFallback({
       }
 
       if (brainState === "quantum" && !reducedMotion) {
-        const shimmerIntensity = Math.sin(elapsed * 5) * 0.1 + 0.1;
+        const shimmerIntensity = Math.sin(elapsed * 6) * 0.12 + 0.12;
         ctx.fillStyle = `rgba(255, 255, 255, ${shimmerIntensity})`;
-        for (let i = 0; i < 20; i++) {
-          const x = (Math.sin(elapsed + i * 0.5) * 0.5 + 0.5) * width;
-          const y = (Math.cos(elapsed * 0.7 + i * 0.3) * 0.5 + 0.5) * height;
+        for (let i = 0; i < 25; i++) {
+          const x = (Math.sin(elapsed * 1.2 + i * 0.5) * 0.5 + 0.5) * width;
+          const y = (Math.cos(elapsed * 0.9 + i * 0.3) * 0.5 + 0.5) * height;
           ctx.beginPath();
-          ctx.arc(x, y, 2 * dpr, 0, Math.PI * 2);
+          ctx.arc(x, y, 3 * dpr, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
       if (brainState === "success" && !reducedMotion) {
-        const pulse = Math.sin(elapsed * 4) * 0.1 + 0.1;
+        const pulse = Math.sin(elapsed * 5) * 0.12 + 0.12;
         ctx.fillStyle = `rgba(34, 197, 94, ${pulse})`;
         ctx.fillRect(0, 0, width, height);
       }
 
       if (brainState === "error" && !reducedMotion) {
-        const flash = Math.abs(Math.sin(elapsed * 6)) * 0.15;
+        const flash = Math.abs(Math.sin(elapsed * 7)) * 0.18;
         ctx.fillStyle = `rgba(239, 68, 68, ${flash})`;
         ctx.fillRect(0, 0, width, height);
       }

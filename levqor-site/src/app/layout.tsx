@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages, getLocale } from 'next-intl/server'
+import { getLocale, getMessages } from 'next-intl/server'
 import { Providers } from '@/components/providers'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
