@@ -1,0 +1,22 @@
+"use strict";
+/*
+ * ATTENTION: An "eval-source-map" devtool has been used.
+ * This devtool is neither made for production nor for readable output files.
+ * It uses "eval()" calls to create a separate source file with attached SourceMaps in the browser devtools.
+ * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
+ * or disable the default devtool with "devtool: false".
+ * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
+ */
+(self["webpackChunk_N_E"] = self["webpackChunk_N_E"] || []).push([["_app-pages-browser_messages_fr_json"],{
+
+/***/ "(app-pages-browser)/./messages/fr.json":
+/*!**************************!*\
+  !*** ./messages/fr.json ***!
+  \**************************/
+/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
+
+module.exports = /*#__PURE__*/JSON.parse('{"home":{"hero":{"title":"Automatisez le travail. Livrez plus vite.","subtitle":"Payez uniquement pour les résultats.","description":"Levqor exécute vos workflows, surveille les échecs et s\'auto-répare. E-mail, Feuilles, Slack, CRM, et plus encore.","cta_trial":"Commencer l\'essai gratuit","cta_pricing":"Voir les tarifs","trust_uptime":"99,97% de disponibilité","trust_encryption":"Chiffrement de niveau entreprise","trust_global":"Approuvé par des équipes dans plus de 12 pays","stats":"Plus de 150+ workflows automatisés ce mois-ci."},"onboarding":{"newUserHint":"Nouveau sur Levqor ? Cela créera votre compte et démarrera votre essai gratuit.","existingUserHint":"Vous avez déjà un compte ? Connexion","noAccountHint":"Pas encore de compte ? Cliquez sur \'Essai gratuit\' pour en créer un."},"features":{"title":"Pourquoi les équipes choisissent Levqor","self_healing":{"title":"Exécutions auto-réparatrices","item1":"Nouvelle tentative automatique avec backoff exponentiel","item2":"Diff intelligent pour isoler les échecs","item3":"Journal d\'audit pour chaque correction"},"visual_builder":{"title":"Constructeur visuel","item1":"Étapes de workflow par glisser-déposer","item2":"Invites IA en ligne","item3":"Blueprints versionnés"},"sso":{"title":"SSO d\'entreprise","item1":"Support SAML/OIDC","item2":"Contrôle d\'accès basé sur les rôles","item3":"Journal d\'audit de l\'organisation"},"sla":{"title":"SLA 99,9%","item1":"Réseau edge global","item2":"Démarrages à chaud","item3":"Voies de support prioritaires"},"audit":{"title":"Audit et alertes","item1":"Journaux d\'exécution structurés","item2":"Webhooks PagerDuty/Slack","item3":"Rédaction de journaux sensible aux DCP"},"billing":{"title":"Facturation Stripe","item1":"Tarification basée sur l\'utilisation","item2":"Essais et codes promo","item3":"Factures TVA exportables"}},"cta":{"title":"Prêt à automatiser votre workflow?","description":"Rejoignez des centaines d\'équipes qui livrent plus vite avec Levqor. Commencez votre essai gratuit de 7 jours aujourd\'hui."}},"header":{"home":"Accueil","aiBuilder":"Constructeur IA","workflows":"Workflows","pricing":"Tarifs","docs":"Documentation","support":"Support","signIn":"Connexion","startTrial":"Essai gratuit"},"pricing":{"currency":"EUR"},"common":{"loading":"Chargement...","error":"Une erreur s\'est produite","status_operational":"Tous les systèmes opérationnels","status_checking":"Vérification du statut..."},"brain":{"title":"Essayer Levqor Brain","subtitle":"Décrivez ce que vous voulez automatiser","placeholder":"ex. Envoyez-moi une notification Slack quand je reçois un nouvel email...","generate":"Générer le Workflow","thinking":"Brain réfléchit...","success":"Workflow Généré!","signupCta":"Inscrivez-vous pour utiliser ce workflow","tryAnother":"Essayer un autre","example1":"Envoyer un message Slack quand un nouveau lead arrive","example2":"M\'envoyer un résumé hebdomadaire des ventes par email","example3":"Synchroniser les nouveaux clients avec ma feuille de calcul"}}');
+
+/***/ })
+
+}]);

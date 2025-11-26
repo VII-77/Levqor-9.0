@@ -1,24 +1,61 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname, locales as routingLocales } from '@/i18n/routing';
+import { useRouter as useNextRouter, usePathname as useNextPathname } from 'next/navigation';
 import { useTransition } from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { locales, type Locale } from '@/i18n';
+import { locales, type Locale, defaultLocale } from '@/i18n';
 import { LANGUAGES, LANGUAGES_BY_REGION, type LanguageCode } from '@/config/languages';
 import { useLanguageStore } from '@/stores/languageStore';
 
+/**
+ * Get the target route locale for a language code.
+ * All 9 Tier-1 languages have their own routes.
+ */
 function getTargetLocale(languageCode: LanguageCode): Locale {
-  if (routingLocales.includes(languageCode as Locale)) {
+  if (locales.includes(languageCode as Locale)) {
     return languageCode as Locale;
   }
-  return 'en';
+  return defaultLocale;
+}
+
+/**
+ * Strip the locale prefix from a pathname.
+ * E.g., '/de/pricing' -> '/pricing', '/it' -> '/'
+ */
+function stripLocaleFromPath(pathname: string): string {
+  const segments = pathname.split('/').filter(Boolean);
+  const firstSegment = segments[0];
+  
+  if (firstSegment && locales.includes(firstSegment as Locale)) {
+    const rest = segments.slice(1).join('/');
+    return rest ? `/${rest}` : '/';
+  }
+  
+  return pathname || '/';
+}
+
+/**
+ * Build the target URL for a locale switch.
+ * - English (default) uses '/' (no prefix with localePrefix: 'as-needed')
+ * - Other locales use '/{locale}/...'
+ */
+function buildTargetUrl(basePath: string, targetLocale: Locale): string {
+  const cleanPath = basePath === '/' ? '' : basePath;
+  
+  if (targetLocale === defaultLocale) {
+    // English uses root path without prefix
+    return cleanPath || '/';
+  }
+  
+  // Other locales get prefixed
+  return `/${targetLocale}${cleanPath}`;
 }
 
 export function LocaleSwitcher() {
-  const locale = useLocale() as Locale;
-  const router = useRouter();
-  const pathname = usePathname();
+  const currentLocale = useLocale() as Locale;
+  const router = useNextRouter();
+  const pathname = useNextPathname();
   const [isPending, startTransition] = useTransition();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -46,17 +83,22 @@ export function LocaleSwitcher() {
   const handleLanguageChange = useCallback((languageCode: LanguageCode) => {
     setLocalSelection(languageCode);
     setDisplayLanguage(languageCode);
+    setIsOpen(false);
     
     const targetLocale = getTargetLocale(languageCode);
     
-    if (targetLocale !== locale) {
+    if (targetLocale !== currentLocale) {
+      // Get base path without current locale
+      const basePath = stripLocaleFromPath(pathname);
+      
+      // Build the target URL
+      const targetUrl = buildTargetUrl(basePath, targetLocale);
+      
       startTransition(() => {
-        router.replace(pathname, { locale: targetLocale });
+        router.push(targetUrl);
       });
     }
-    
-    setIsOpen(false);
-  }, [locale, pathname, router, setDisplayLanguage]);
+  }, [currentLocale, pathname, router, setDisplayLanguage]);
 
   const selectedLanguage = isHydrated ? displayLanguage : localSelection;
   const currentLanguage = LANGUAGES.find(lang => lang.code === selectedLanguage) || LANGUAGES[0];
@@ -65,7 +107,8 @@ export function LocaleSwitcher() {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-slate-800 text-white border border-slate-700 rounded-md px-3 py-2 text-sm hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+        disabled={isPending}
+        className="flex items-center gap-2 bg-slate-800 text-white border border-slate-700 rounded-md px-3 py-2 text-sm hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         aria-label="Select language"
         aria-expanded={isOpen}
       >
@@ -74,9 +117,16 @@ export function LocaleSwitcher() {
         </svg>
         <span className="hidden sm:inline">{currentLanguage.nativeLabel}</span>
         <span className="sm:hidden">{currentLanguage.code.toUpperCase()}</span>
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+        {isPending ? (
+          <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        ) : (
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        )}
       </button>
 
       {isOpen && (
@@ -92,7 +142,8 @@ export function LocaleSwitcher() {
                     <button
                       key={lang.code}
                       onClick={() => handleLanguageChange(lang.code)}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors ${
+                      disabled={isPending}
+                      className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors disabled:opacity-50 ${
                         selectedLanguage === lang.code
                           ? 'bg-blue-600 text-white'
                           : 'text-slate-200 hover:bg-slate-700'

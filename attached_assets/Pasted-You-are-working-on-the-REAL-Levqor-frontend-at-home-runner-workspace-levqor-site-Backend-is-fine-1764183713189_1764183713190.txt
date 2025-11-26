@@ -1,0 +1,188 @@
+You are working on the REAL Levqor frontend at:
+
+/home/runner/workspace/levqor-site
+
+Backend is fine. The problems are:
+
+1) Language switching:
+   - Header language dropdown changes, but many locales return 404.
+   - Only Italian and Portuguese load correctly.
+   - Switching BACK to English does NOT work unless the page is refreshed.
+   - When it does work, only the hero text changes; not all visible text.
+
+2) Brain:
+   - Brain hero exists, but behaviour across locales is inconsistent and may be hitting 404 because of the routing issues.
+
+Your job: **fix the locale routing + default English behaviour + ensure translations apply to the hero and Brain components**, without touching backend code or pricing/auth logic.
+
+====================================================================
+0. ORIENTATION – READ CURRENT I18N AND ROUTING
+====================================================================
+
+Work only in levqor-site.
+
+Run:
+
+- pwd
+- ls
+- find src -maxdepth 3 -type f | sort | sed -n '1,200p'
+
+Then open and READ:
+
+- next.config.js and/or next.config.mjs
+- src/i18n.ts
+- src/i18n/routing.ts (or equivalent routing helper)
+- src/config/languages.ts
+- src/components/LocaleSwitcher.tsx
+- src/app/[locale]/layout.tsx
+- src/app/[locale]/page.tsx
+- src/components/brain/HomepageBrainDemo.tsx
+
+Understand:
+
+- Which locales are officially supported.
+- Which one is the **default locale** (English).
+- How the `[locale]` segment is used in routes.
+- How the LocaleSwitcher currently builds URLs.
+
+DO NOT CHANGE ANYTHING until you clearly see why `/de`, `/fr`, `/es` etc can 404 and why `/en` is broken for switching back.
+
+====================================================================
+1. FIX LOCALE ROUTING & DEFAULT ENGLISH
+====================================================================
+
+Goal: 
+- Every configured locale should map to a valid route.
+- English should work both as the default (`/`) and when selected again from any locale.
+- No 404s when switching language from the header.
+
+Steps:
+
+1) Confirm the config:
+
+   - In next.config and i18n/routing, confirm the list of locales:
+     en, de, fr, es, pt, it, ar, hi, zh-Hans (or whatever is actually present in src/messages).
+
+   - Confirm the **default locale**. If it is "en", assume:
+     - English homepage = `/`
+     - Other languages use `/[locale]/...`.
+
+2) Fix the LocaleSwitcher logic in src/components/LocaleSwitcher.tsx:
+
+   - Mark it as `"use client"` if it isn’t already.
+   - Use `usePathname()` from `next/navigation` to get the current path.
+   - Write a helper that strips the leading locale from the current pathname:
+
+     Example idea (adapt to actual code):
+
+       const LOCALES = ["en","de","fr","es","pt","it","ar","hi","zh-Hans"];
+       const defaultLocale = "en";
+
+       function stripLocale(pathname: string) {
+         const segments = pathname.split("/");
+         const first = segments[1];
+         if (LOCALES.includes(first)) {
+           // remove the locale segment
+           return "/" + segments.slice(2).join("/");
+         }
+         return pathname || "/";
+       }
+
+   - When user selects `targetLocale`:
+
+     - Compute `basePathWithoutLocale = stripLocale(pathname)`.
+
+     - If `targetLocale === defaultLocale` ("en"):
+         - Navigate to just `basePathWithoutLocale` (e.g. `/` or `/pricing`).
+     - Else:
+         - Navigate to `"/" + targetLocale + basePathWithoutLocale`
+           (ensure you avoid double slashes).
+
+   - Do NOT hard-code `/en` as a route if the actual default is `/`.
+
+3) Make sure the locale list used in the switcher matches the routing locales and the messages. No locale in the dropdown should be missing from routing or messages.
+
+4) Run a local quick test (dev or via curl if possible) that these URLs resolve:
+
+   - `/`
+   - `/en` (if it’s supposed to exist; if not, make sure the switcher never sends users there)
+   - `/de`
+   - `/fr`
+   - `/es`
+   - `/pt`
+   - `/it`
+   - `/ar`
+   - `/hi`
+   - `/zh-Hans`
+
+If some of these should not exist by design, remove them from the language switcher so users never see them.
+
+====================================================================
+2. ENSURE HERO + BRAIN USE TRANSLATIONS, NOT HARD-CODED ENGLISH
+====================================================================
+
+Problem: header text is localized, but the main page and Brain text are only partially localized.
+
+1) Inspect:
+
+   - src/app/[locale]/page.tsx
+   - src/components/brain/HomepageBrainDemo.tsx
+   - any hero components it uses.
+
+2) For all user-facing strings in the hero and Brain sections:
+
+   - Replace hard-coded English text with translation lookups using the existing i18n hooks or components.
+   - Use the same namespace and pattern already used in the header (e.g. `useTranslations("landing")` or similar).
+   - Add any missing keys for these strings into ALL message JSON files in src/messages.
+
+   If you don’t have translations for some languages, you may temporarily duplicate the English text in those JSON files, but the keys MUST exist so Next/i18n doesn’t fall back incorrectly or crash.
+
+3) Make sure the Brain demo **does not** try to use any server-only components or router from src/i18n/routing that is incompatible with `"use client"`. For navigation inside the Brain component, use either:
+
+   - `<a href="...">` for simple links, OR
+   - `next/link` from `"next/link"` if safe.
+
+====================================================================
+3. VERIFICATION – BUILD AND RUNTIME CHECKS
+====================================================================
+
+After implementing the fixes:
+
+1) Run:
+
+   cd /home/runner/workspace/levqor-site
+   npm run build
+
+   Fix any TypeScript / build errors you introduced.
+
+2) When the build passes, restart the frontend workflow if needed and verify LOGS show no routing errors.
+
+3) Summarize the actual runtime checks you did, including:
+
+   - Visiting `/` and confirming English works.
+   - Visiting at least `/de`, `/fr`, `/es`, `/pt`, `/it`:
+     - No 404.
+     - Header + hero + Brain text visible and in that language (or at least not crashing).
+   - Switching back to English via the language switcher from `/pt` and `/it`:
+     - Should go back to `/` (or the correct English route) with NO 404 and no refresh required.
+
+====================================================================
+4. REPORT BACK
+====================================================================
+
+When you’re done, report in this exact structure:
+
+- Locale routing:
+  - List of locales and which route each uses (/, /de, /fr, etc.)
+  - Confirmation that switching language via the dropdown no longer produces 404.
+  - Confirmation that switching back to English works without reload.
+
+- Translations:
+  - Which components now read from i18n (hero, Brain, etc.)
+  - Any keys added to the messages files.
+
+- Brain behaviour:
+  - Confirmation that the Brain demo works on at least English, Italian, Portuguese, and one other locale.
+  - Note any remaining limitations.
+
+Do NOT claim success until npm run build passes and you’ve verified at least English + two non-English locales with no 404s via the switcher.

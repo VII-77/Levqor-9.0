@@ -148,5 +148,18 @@
     "terms": "服务条款",
     "cookies": "Cookie政策",
     "contact": "联系我们"
+  },
+  "brain": {
+    "title": "试用Levqor Brain",
+    "subtitle": "描述您想自动化的内容",
+    "placeholder": "例如：当我收到新邮件时发送Slack通知...",
+    "generate": "生成工作流程",
+    "thinking": "Brain正在思考...",
+    "success": "工作流程已生成！",
+    "signupCta": "注册以使用此工作流程",
+    "tryAnother": "试试另一个",
+    "example1": "当新线索到达时发送Slack消息",
+    "example2": "每周通过邮件发送销售摘要",
+    "example3": "将新客户同步到我的电子表格"
   }
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
-import type { LanguageCode, LanguageMeta } from '@/config/languages';
+import type { LanguageCode, LanguageMeta, RoutedLocale } from '@/config/languages';
 import { LANGUAGE_MAP, LANGUAGES, getRoutedLocale, hasFullTranslations } from '@/config/languages';
 
 const STORAGE_KEY = 'levqor-display-language';
@@ -11,7 +11,7 @@ interface LanguageContextValue {
   isHydrated: boolean;
   setDisplayLanguage: (code: LanguageCode) => void;
   languageMeta: LanguageMeta | undefined;
-  routedLocale: 'en' | 'de' | 'fr' | 'es';
+  routedLocale: RoutedLocale;
   hasTranslations: boolean;
 }
 

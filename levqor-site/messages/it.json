@@ -78,5 +78,18 @@
     "error": "Si è verificato un errore",
     "status_operational": "Tutti i sistemi operativi",
     "status_checking": "Verifica stato..."
+  },
+  "brain": {
+    "title": "Prova Levqor Brain",
+    "subtitle": "Descrivi cosa vuoi automatizzare",
+    "placeholder": "es. Inviami una notifica Slack quando ricevo una nuova email...",
+    "generate": "Genera Workflow",
+    "thinking": "Brain sta pensando...",
+    "success": "Workflow Generato!",
+    "signupCta": "Registrati per usare questo workflow",
+    "tryAnother": "Prova un altro",
+    "example1": "Invia un messaggio Slack quando arriva un nuovo lead",
+    "example2": "Inviami un riepilogo settimanale delle vendite via email",
+    "example3": "Sincronizza i nuovi clienti con il mio foglio di calcolo"
   }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
 
 interface WorkflowStep {
@@ -27,18 +28,19 @@ interface BuilderResponse {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
-const EXAMPLE_PROMPTS = [
-  "Send a Slack message when a new lead comes in",
-  "Email me a weekly summary of sales",
-  "Sync new customers to my spreadsheet",
-];
-
 export default function HomepageBrainDemo() {
   const brain = useLevqorBrainOptional();
+  const t = useTranslations('brain');
   const [goal, setGoal] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<BuilderResponse | null>(null);
+  
+  const examplePrompts = [
+    t('example1'),
+    t('example2'),
+    t('example3'),
+  ];
 
   const handleBuild = useCallback(async () => {
     if (!goal.trim()) {
@@ -98,8 +100,8 @@ export default function HomepageBrainDemo() {
           </svg>
         </div>
         <div>
-          <h3 className="font-semibold text-neutral-900">Try Levqor Brain</h3>
-          <p className="text-sm text-neutral-500">Describe what you want to automate</p>
+          <h3 className="font-semibold text-neutral-900">{t('title')}</h3>
+          <p className="text-sm text-neutral-500">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -115,7 +117,7 @@ export default function HomepageBrainDemo() {
                   handleBuild();
                 }
               }}
-              placeholder="e.g., Send me a Slack notification when I get a new email..."
+              placeholder={t('placeholder')}
               className="w-full px-4 py-3 border border-neutral-200 rounded-xl text-neutral-800 placeholder-neutral-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-100 resize-none transition-all"
               rows={2}
               disabled={loading}
@@ -123,7 +125,7 @@ export default function HomepageBrainDemo() {
           </div>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            {EXAMPLE_PROMPTS.map((example) => (
+            {examplePrompts.map((example) => (
               <button
                 key={example}
                 onClick={() => handleExampleClick(example)}
@@ -146,14 +148,14 @@ export default function HomepageBrainDemo() {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                <span>Brain is thinking...</span>
+                <span>{t('thinking')}</span>
               </>
             ) : (
               <>
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                <span>Generate Workflow</span>
+                <span>{t('generate')}</span>
               </>
             )}
           </button>
@@ -165,7 +167,7 @@ export default function HomepageBrainDemo() {
               <svg className="w-5 h-5 text-success-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="font-medium text-success-700">Workflow Generated!</span>
+              <span className="font-medium text-success-700">{t('success')}</span>
             </div>
             <h4 className="font-semibold text-neutral-900 mb-1">{result.proposed_workflow.name}</h4>
             <p className="text-sm text-neutral-600 mb-3">{result.proposed_workflow.description}</p>
@@ -191,13 +193,13 @@ export default function HomepageBrainDemo() {
               href="/signin"
               className="flex-1 py-3 px-4 bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 text-white font-medium rounded-xl transition-all text-center shadow-lg"
             >
-              Sign up to use this workflow
+              {t('signupCta')}
             </a>
             <button
               onClick={handleReset}
               className="px-4 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium rounded-xl transition-all"
             >
-              Try another
+              {t('tryAnother')}
             </button>
           </div>
         </div>

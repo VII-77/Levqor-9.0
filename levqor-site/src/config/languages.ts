@@ -5,8 +5,7 @@
  * Languages are organized into 3 tiers for staged localization:
  * 
  * **TIER 1** (FULL translation targets - 9 languages):
- *   - Core: en, de, fr, es (existing full support + routing)
- *   - New: pt, it, hi, ar, zh-Hans (MEGA-PHASE 7 additions)
+ *   - All 9 Tier-1 languages have full URL routing: en, de, fr, es, pt, it, hi, ar, zh-Hans
  *   - Strategy: Full translation files for hero, pricing, nav, footer, key CTAs
  * 
  * **TIER 2** (PARTIAL / future full - 17 languages):
@@ -22,8 +21,8 @@
  *   - East Asian: zh-Hant
  *   - Strategy: English fallback, community-driven translations
  * 
- * Note: Only routed locales (en, de, fr, es) have full URL routing.
- * Other languages map to English routes but use display-language for UI and AI.
+ * Note: Tier-1 languages (9) have full URL routing via next-intl.
+ * Tier-2 and Tier-3 languages fall back to English routes.
  * 
  * SAFETY: This is display-only and does NOT affect pricing, trials, SLAs, or backend behavior.
  */
@@ -51,8 +50,8 @@ export interface LanguageMeta {
   label: string;
   nativeLabel: string;
   region: "Europe" | "Middle East" | "South Asia" | "East Asia" | "Southeast Asia";
-  /** Maps to one of the 4 routed locales (en, de, fr, es) for actual content */
-  routedLocale: "en" | "de" | "fr" | "es";
+  /** Maps to one of the 9 routed locales for Tier-1, or fallback to 'en' */
+  routedLocale: "en" | "de" | "fr" | "es" | "pt" | "it" | "hi" | "ar" | "zh-Hans";
   /** Whether this language has full translation files */
   hasTranslations: boolean;
 }
@@ -69,8 +68,8 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "es", label: "Spanish", nativeLabel: "Español", region: "Europe", routedLocale: "es", hasTranslations: true },
   
   // TIER 1 new additions (translation files added in MEGA-PHASE 7)
-  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "en", hasTranslations: true },
-  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "en", hasTranslations: true },
+  { code: "pt", label: "Portuguese", nativeLabel: "Português", region: "Europe", routedLocale: "pt", hasTranslations: true },
+  { code: "it", label: "Italian", nativeLabel: "Italiano", region: "Europe", routedLocale: "it", hasTranslations: true },
   
   // ═══════════════════════════════════════════════════════════════════════════
   // TIER 2: PARTIAL / FUTURE FULL (17 languages)
@@ -120,7 +119,7 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "fa", label: "Persian (Farsi)", nativeLabel: "فارسی", region: "Middle East", routedLocale: "en", hasTranslations: false },
   
   // TIER 1 South Asian (translations added in MEGA-PHASE 7)
-  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "en", hasTranslations: true },
+  { code: "hi", label: "Hindi", nativeLabel: "हिन्दी", region: "South Asia", routedLocale: "hi", hasTranslations: true },
   
   // South Asian Tier 3
   { code: "ta", label: "Tamil", nativeLabel: "தமிழ்", region: "South Asia", routedLocale: "en", hasTranslations: false },
@@ -130,10 +129,10 @@ export const LANGUAGES: LanguageMeta[] = [
   { code: "gu", label: "Gujarati", nativeLabel: "ગુજરાતી", region: "South Asia", routedLocale: "en", hasTranslations: false },
   
   // TIER 1 Middle Eastern (translation added in MEGA-PHASE 7)
-  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "en", hasTranslations: true },
+  { code: "ar", label: "Arabic", nativeLabel: "العربية", region: "Middle East", routedLocale: "ar", hasTranslations: true },
   
   // TIER 1 East Asian (translation added in MEGA-PHASE 7)
-  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "en", hasTranslations: true },
+  { code: "zh-Hans", label: "Chinese (Simplified)", nativeLabel: "简体中文", region: "East Asia", routedLocale: "zh-Hans", hasTranslations: true },
   
   // East Asian Tier 3
   { code: "zh-Hant", label: "Chinese (Traditional)", nativeLabel: "繁體中文", region: "East Asia", routedLocale: "en", hasTranslations: false },
@@ -158,11 +157,14 @@ export const LANGUAGES_BY_REGION = LANGUAGES.reduce((acc, lang) => {
   return acc;
 }, {} as Record<string, LanguageMeta[]>);
 
+/** The 9 routed Tier-1 locales */
+export type RoutedLocale = "en" | "de" | "fr" | "es" | "pt" | "it" | "hi" | "ar" | "zh-Hans";
+
 /**
  * Get the routed locale for a given language code
- * This maps display languages to actual routed locales (en, de, fr, es)
+ * This maps display languages to actual routed locales
  */
-export function getRoutedLocale(code: LanguageCode): "en" | "de" | "fr" | "es" {
+export function getRoutedLocale(code: LanguageCode): RoutedLocale {
   return LANGUAGE_MAP[code]?.routedLocale || "en";
 }
 

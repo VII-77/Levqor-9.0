@@ -148,5 +148,18 @@
     "terms": "Termos de serviço",
     "cookies": "Política de cookies",
     "contact": "Contato"
+  },
+  "brain": {
+    "title": "Experimente o Levqor Brain",
+    "subtitle": "Descreva o que você quer automatizar",
+    "placeholder": "ex. Envie-me uma notificação no Slack quando receber um novo email...",
+    "generate": "Gerar Workflow",
+    "thinking": "Brain está pensando...",
+    "success": "Workflow Gerado!",
+    "signupCta": "Cadastre-se para usar este workflow",
+    "tryAnother": "Tentar outro",
+    "example1": "Enviar mensagem no Slack quando um novo lead chegar",
+    "example2": "Enviar resumo semanal de vendas por email",
+    "example3": "Sincronizar novos clientes com minha planilha"
   }
 }

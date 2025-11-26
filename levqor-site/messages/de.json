@@ -78,5 +78,18 @@
     "error": "Ein Fehler ist aufgetreten",
     "status_operational": "Alle Systeme betriebsbereit",
     "status_checking": "Status wird überprüft..."
+  },
+  "brain": {
+    "title": "Levqor Brain testen",
+    "subtitle": "Beschreiben Sie, was Sie automatisieren möchten",
+    "placeholder": "z.B. Senden Sie mir eine Slack-Benachrichtigung, wenn ich eine neue E-Mail erhalte...",
+    "generate": "Workflow generieren",
+    "thinking": "Brain denkt nach...",
+    "success": "Workflow generiert!",
+    "signupCta": "Registrieren Sie sich, um diesen Workflow zu nutzen",
+    "tryAnother": "Anderen versuchen",
+    "example1": "Senden Sie eine Slack-Nachricht, wenn ein neuer Lead kommt",
+    "example2": "Schicken Sie mir eine wöchentliche Verkaufszusammenfassung per E-Mail",
+    "example3": "Synchronisieren Sie neue Kunden mit meiner Tabelle"
   }
 }
