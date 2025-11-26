@@ -1,6 +1,6 @@
 # Levqor Founder Digest
 
-**Generated:** 2025-11-26 10:47:58 UTC
+**Generated:** 2025-11-26 10:56:12 UTC
 
 ---
 
@@ -17,7 +17,7 @@
 
 | Metric | Status |
 |--------|--------|
-| Backend | HEALTHY |
+| Backend | DEGRADED |
 | Launch Readiness | 0/7 checks |
 | Pending Approvals | 0 |
 
@@ -55,11 +55,11 @@
 
 ## Compliance Audit
 
-**Compliance Score:** [OK] 94.4%
+**Compliance Score:** [OK] 100.0%
 
 | Check Type | Passed | Total |
 |------------|--------|-------|
-| Overall | 17 | 18 |
+| Overall | 18 | 18 |
 
 ---
 
