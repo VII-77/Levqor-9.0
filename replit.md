@@ -98,6 +98,27 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
     - `sections.telemetry`: total_logs, error_count, error_rate, slow_count, warning_count (60-min window)
     - `sections.upgrade_plans`: total_plans, open_plans, high_priority_open, top 3 open plans
   - All data is READ-ONLY. No auto-fixes. No behavior changes. `safe_mode: true` always.
+- **Revenue Autopilot Layer (Wave 5 - Layer L5a)**: Passive data capture and pipeline system for sales leads and DFY requests.
+  - Database: `sales_leads` table (id, email, name, source, plan_intent, stage, notes, metadata, created_at) with 4 indexes
+  - Database: `dfy_requests` table (id, lead_id, email, name, use_case, detail, status, metadata, created_at) with 3 indexes
+  - `POST /api/revenue/leads`: Creates sales lead from any source (pricing, homepage, dashboard, brain)
+  - `GET /api/revenue/leads`: Lists leads with optional stage filter and limit
+  - `GET /api/revenue/leads/summary`: Aggregated lead stats (by_source, by_stage, by_plan_intent)
+  - `POST /api/revenue/dfy-request`: Creates DFY service request, auto-links to lead record
+  - `GET /api/revenue/dfy/summary`: Aggregated DFY stats (by_status, by_use_case)
+  - `GET /api/guardian/revenue/summary`: Guardian revenue dashboard (7-day/30-day aggregates)
+  - Frontend integration: `captureLead()` and `captureDFYRequest()` fire-and-forget functions in telemetry.ts
+  - All endpoints return `safe_mode: true`. No Stripe changes, no auto-charges.
+- **AI CEO Engine (Autopilot Wave 5 - Layer L5b - Advisory Mode)**: Single CEO brain layer providing strategic insights.
+  - `GET /api/guardian/ceo-summary`: Returns comprehensive CEO-level insights aggregating all Guardian and Revenue data
+  - Reads from: telemetry_logs, upgrade_plans, sales_leads, dfy_requests, executive_summary, revenue_summary
+  - `overall`: health_score (0-100) and status (healthy/warning/critical)
+  - `revenue_snapshot`: leads_7d, leads_30d, dfy_7d, dfy_30d, conversion_signals (lead_trend, dfy_trend as up/flat/down)
+  - `strategy`: Deterministic rule-based actions in 3 categories (revenue_actions, reliability_actions, ux_actions)
+  - `predictions`: next_7d expected leads/DFY with confidence (0.3-0.8 based on volume)
+  - `priority_matrix`: Actions ranked as critical/high/moderate/low with impact scores
+  - `inputs`: Reference slices from executive_summary and guardian_revenue_summary
+  - 100% PASSIVE: No auto-fixes, no auto-charges, no config changes. `safe_mode: true` always.
 - **Enterprise Support**: Tier-aware support routing and SLA mapping.
 - **Governance**: Hardening checklist, automated health checks, and a comprehensive CI/CD safety harness for safe deployments. Includes preflight testing with user journey personas and launch readiness checks.
 - **Legal & Compliance**: Backend privacy API, 4 legal pages, cookie consent UX, automated file integrity monitoring, and log hygiene (e.g., email truncation).
