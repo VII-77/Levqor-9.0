@@ -2,7 +2,6 @@
 import { useState } from "react";
 import LeadCaptureInline from "@/components/LeadCaptureInline";
 import PageViewTracker from "@/components/PageViewTracker";
-import LanguageSwitcher from "@/components/LanguageSwitcher";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
 import ExitIntentModal from "@/components/ExitIntentModal";
 import ReferralInvite from "@/components/referrals/ReferralInvite";
@@ -318,10 +317,9 @@ export default function PricingPage() {
       <ExitIntentModal />
       <PageViewTracker page="/pricing" />
       
-      {/* Display Preferences (Language & Currency) */}
+      {/* Currency Preference */}
       <div className="mb-6 flex items-center justify-end gap-3">
-        <span className="text-xs text-gray-500 hidden sm:inline">Display preferences:</span>
-        <LanguageSwitcher />
+        <span className="text-xs text-gray-500 hidden sm:inline">Currency:</span>
         <CurrencySwitcher />
       </div>
       
