@@ -20,7 +20,38 @@ async function sendAuditEvent(event: string, email: string, userAgent?: string, 
       })
     }).catch(() => {});
   } catch (err) {
-    // Fire-and-forget
+  }
+}
+
+async function logAuthError(provider: string, errorType: string, errorMessage: string, context?: Record<string, unknown>) {
+  const safeContext = context ? { ...context } : {};
+  delete safeContext.token;
+  delete safeContext.secret;
+  delete safeContext.accessToken;
+  delete safeContext.refreshToken;
+  delete safeContext.idToken;
+  
+  console.error(`[NextAuth Error] Provider: ${provider}, Type: ${errorType}, Message: ${errorMessage}`, 
+    JSON.stringify(safeContext, null, 2));
+  
+  try {
+    await fetch('https://api.levqor.ai/api/guardian/telemetry/ingest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'nextauth',
+        level: 'error',
+        event_type: 'oauth_error',
+        message: `OAuth ${errorType}: ${errorMessage}`,
+        meta: {
+          provider,
+          error_type: errorType,
+          timestamp: new Date().toISOString(),
+          nextauth_url: process.env.NEXTAUTH_URL || 'not_set'
+        }
+      })
+    }).catch(() => {});
+  } catch (err) {
   }
 }
 
@@ -64,6 +95,8 @@ function buildProviders(): Provider[] {
         allowDangerousEmailAccountLinking: true,
       })
     );
+  } else {
+    console.warn('[NextAuth] Google provider not configured: GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing');
   }
 
   if (process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET) {
@@ -74,15 +107,19 @@ function buildProviders(): Provider[] {
         allowDangerousEmailAccountLinking: true,
       })
     );
+  } else {
+    console.warn('[NextAuth] Microsoft provider not configured: MICROSOFT_CLIENT_ID or MICROSOFT_CLIENT_SECRET missing');
   }
 
   return providers;
 }
 
 export const authOptions: NextAuthConfig = {
+  debug: process.env.NODE_ENV === 'development',
   providers: buildProviders(),
   pages: {
     signIn: '/signin',
+    error: '/signin',
   },
   session: { 
     strategy: "jwt",
@@ -94,10 +131,16 @@ export const authOptions: NextAuthConfig = {
       const domain = email.split('@')[1];
       
       if (DENYLIST.includes(domain)) {
+        await logAuthError(account?.provider || 'unknown', 'denied_domain', `Email domain ${domain} is blocked`);
         return false;
       }
       
       return true;
+    },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith('/')) return `${baseUrl}${url}`;
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
     },
   },
   events: {
@@ -108,6 +151,24 @@ export const authOptions: NextAuthConfig = {
     async signOut(message) {
       const email = (message as any).token?.email || 'unknown';
       await sendAuditEvent('sign_out', email, undefined, undefined);
+    },
+  },
+  logger: {
+    error(code: Error, ...message: unknown[]) {
+      const codeStr = code.message || 'unknown_error';
+      const errorMsg = message.map(m => 
+        typeof m === 'object' ? JSON.stringify(m) : String(m)
+      ).join(' ');
+      console.error(`[NextAuth][error][${codeStr}]`, errorMsg);
+      logAuthError('system', codeStr, errorMsg);
+    },
+    warn(code: string) {
+      console.warn(`[NextAuth][warn][${code}]`);
+    },
+    debug(code: string, ...message: unknown[]) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[NextAuth][debug][${code}]`, ...message);
+      }
     },
   },
 };
