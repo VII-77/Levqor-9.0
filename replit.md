@@ -68,6 +68,12 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
 - **Reliability & Resiliency**: Database connection retry logic and backend keep-alive monitoring.
 - **Observability & Monitoring**: Structured JSON logging, error monitoring, frontend client logger, real-time health tiles, and performance metrics (e.g., BrainCanvas frame time).
 - **Autopilot Telemetry System**: Full-stack telemetry collecting errors, events, and performance data. Backend module (`api/telemetry/`) with `log_event`, `log_error`, `log_performance` helpers. Rotating JSONL log at `logs/telemetry.log`. Frontend telemetry utility (`src/lib/telemetry.ts`) batches events to backend ingestion endpoint. Guardian feed endpoint (`/api/guardian/summary`) aggregates metrics with anomaly detection (high error rates, slow endpoints).
+- **System Heartbeat + Safe Auto-Heal Layer (Autopilot Wave 1)**: Continuous health monitoring with dry-run healing suggestions for AI agents and dashboards.
+  - `GET /api/system/heartbeat`: Returns `db_ok`, `stripe_ok`, `brain_ok`, `error_count_recent`, `status`, `uptime_seconds`, `version`
+  - `GET /api/system/pulse`: Minimal alive check (`alive: true/false`)
+  - `GET /api/guardian/healing-plan`: 6 health checks (db, Stripe, Brain, error rate, slow endpoints, repeated errors) with suggested actions
+  - Scheduler job runs every 60 seconds, logs heartbeat telemetry events
+  - Safe Mode enforced: all healing actions are dry-run only (`auto_applicable: false`), no destructive operations
 - **Enterprise Support**: Tier-aware support routing and SLA mapping.
 - **Governance**: Hardening checklist, automated health checks, and a comprehensive CI/CD safety harness for safe deployments. Includes preflight testing with user journey personas and launch readiness checks.
 - **Legal & Compliance**: Backend privacy API, 4 legal pages, cookie consent UX, automated file integrity monitoring, and log hygiene (e.g., email truncation).
