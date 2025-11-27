@@ -6,6 +6,7 @@ import CurrencySwitcher from "@/components/CurrencySwitcher";
 import ExitIntentModal from "@/components/ExitIntentModal";
 import ReferralInvite from "@/components/referrals/ReferralInvite";
 import { CURRENCY_RATES, type Currency, formatPrice } from "@/config/currency";
+import { captureLead, captureDFYRequest, logPricingClick } from "@/lib/telemetry";
 
 type Term = "monthly" | "yearly";
 type Tier = "starter" | "launch" | "growth" | "agency";
@@ -82,6 +83,14 @@ function DFYCard({
 }: { pack: string; title: string; price: number; features: string[]; badge?: string; currency: DisplayCurrency }) {
   
   const handleClick = async () => {
+    captureDFYRequest({
+      email: null,
+      useCase: title,
+      detail: `${title} - ${features.join(", ")}`,
+      source: "pricing_dfy",
+      planIntent: pack,
+    }).catch(() => {});
+    
     try {
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
@@ -185,6 +194,14 @@ function Card({
 }: { tier: Tier; title: string; price: number; per: string; features: string[]; badge?: string; trial?: boolean; term: Term; currency: DisplayCurrency }) {
   
   const handleClick = async () => {
+    logPricingClick(tier, term, currency);
+    captureLead({
+      email: null,
+      source: "pricing",
+      planIntent: tier,
+      metadata: { term, currency, trial },
+    }).catch(() => {});
+    
     try {
       const response = await fetch("/api/billing/checkout", {
         method: "POST",

@@ -1,0 +1,662 @@
+Here’s the next step. No choices, no questions.
+
+We go straight into:
+
+Wave 6 – Founder Briefing & Alerts Autopilot
+Goal: You don’t log in. Levqor pings you with: “Here’s what happened, here’s what to do next.”
+
+Below is your single, full Replit Agent prompt. Copy–paste and run it.
+
+
+---
+
+You are the Levqor Autopilot Engineer.
+
+GOAL
+- Implement **Autopilot Wave 6: Founder Briefing & Alerts Autopilot**.
+- Objective: Make Levqor PROACTIVELY tell the founder what’s happening and what to do next,
+  using the existing Guardian + Revenue + CEO stack.
+- This is a **backend-only, passive + notification layer**, with NO auto-code changes or auto-charges.
+
+WHAT WAVE 6 MUST DELIVER
+1) Backend endpoints for:
+   - A structured “Founder Briefing” payload.
+   - A small “New Lead / DFY Alert” generator.
+2) Scheduler jobs that:
+   - Generate a daily founder briefing summary (JSON).
+   - Optionally send alerts to existing notification channels (Telegram / email) via existing mechanisms.
+3) Wiring to the existing:
+   - `sales_leads`
+   - `dfy_requests`
+   - `telemetry_logs`
+   - `upgrade_plans`
+   - `executive_summary`
+   - `ceo-summary`
+4) Absolute safety:
+   - `safe_mode: true` everywhere.
+   - No auto-fix, no auto-deploy, no Stripe actions.
+
+HARD RULES
+- Do NOT:
+  - Modify Stripe prices, product IDs, or checkout logic.
+  - Change authentication flows.
+  - Change tenant logic or security.
+  - Trigger any shell commands or code changes based on alerts.
+- You MAY:
+  - Read from DB (Postgres) via `modules/db_wrapper.py`.
+  - Call existing Guardian endpoints/modules.
+  - Use existing alert channels (e.g. Telegram / Resend) IF they are already present.
+- All actions are **read + notify** only.
+
+ROOT CONTEXT
+- Root: `/home/runner/workspace`
+- Backend:
+  - `run.py`
+  - `api/guardian/*.py`
+  - `api/revenue/leads.py`
+  - `api/system/heartbeat.py`
+  - `modules/db_wrapper.py`
+  - `monitors/scheduler.py`
+- Frontend:
+  - `/home/runner/workspace/levqor-site` (NO CHANGES THIS WAVE)
+
+==================================================
+PHASE 1 – DISCOVERY (READ-ONLY)
+==================================================
+
+From `/home/runner/workspace`:
+
+1) File + structure scan:
+
+- `ls -la`
+- `find api -maxdepth 3 -type f 2>/dev/null | sort | head -200`
+- `find modules -maxdepth 3 -type f 2>/dev/null | sort | head -200`
+- `find monitors -maxdepth 2 -type f 2>/dev/null | sort`
+
+2) Read (DO NOT MODIFY YET):
+
+- `api/guardian/executive_summary.py`
+- `api/guardian/ceo_engine.py`
+- `api/guardian/revenue_summary.py` (if exists)
+- `api/guardian/telemetry*.py`
+- `api/guardian/daily_report.py`
+- `api/guardian/healing.py`
+- `api/revenue/leads.py`
+- `api/system/heartbeat.py`
+- `modules/db_wrapper.py`
+- `monitors/scheduler.py`
+- Any existing Telegram/email notification module (e.g. `monitors/alerts.py` or similar) if present.
+
+Understand:
+- How executive + ceo + revenue summaries are structured.
+- How scheduler jobs are registered + run.
+- How (if at all) Telegram / email alerts are already wired.
+
+NO changes in this phase.
+
+==================================================
+PHASE 2 – DESIGN FOUNDER BRIEFING SHAPE
+==================================================
+
+You will add:
+
+- New module: `api/guardian/founder_briefing.py`
+- New blueprint: `founder_briefing_bp`
+- New endpoint: `GET /api/guardian/founder-briefing`
+
+Target JSON shape:
+
+```json
+{
+  "safe_mode": true,
+  "generated_at": 0,
+  "window": {
+    "from": 0,
+    "to": 0,
+    "label": "last_24h"
+  },
+  "summary": {
+    "headline": "string",
+    "health_status": "healthy|warning|critical",
+    "health_score": 0,
+    "key_signals": [
+      "short bullet 1",
+      "short bullet 2"
+    ]
+  },
+  "revenue": {
+    "leads_24h": 0,
+    "dfy_24h": 0,
+    "leads_7d": 0,
+    "dfy_7d": 0,
+    "top_sources": [],
+    "notes": []
+  },
+  "system": {
+    "error_rate_24h": 0.0,
+    "slow_endpoints_24h": 0,
+    "open_high_priority_plans": 0,
+    "heartbeat_status": "ok|degraded|failed"
+  },
+  "strategy": {
+    "today": [],
+    "this_week": []
+  },
+  "raw_inputs": {
+    "ceo_summary": {
+      "health_score": 0,
+      "status": "..."
+    }
+  }
+}
+
+Interpretation:
+
+summary.headline = single-line, human-readable headline.
+
+strategy.today / strategy.this_week = 2–5 items each, taken from CEO strategy/priority matrix.
+
+raw_inputs includes only small slices (no huge payloads).
+
+
+================================================== PHASE 3 – IMPLEMENT FOUNDER BRIEFING ENDPOINT
+
+Create file:
+
+api/guardian/founder_briefing.py
+
+
+Inside:
+
+1. Imports:
+
+
+
+import time
+from flask import Blueprint, jsonify
+from modules.db_wrapper import fetch_all, fetch_one
+
+Plus any safe imports you need (e.g. json, math).
+
+2. Blueprint:
+
+
+
+founder_briefing_bp = Blueprint("guardian_founder_briefing", __name__)
+
+3. Helpers:
+
+
+
+(a) Time window:
+
+now = int(time.time())
+
+from_ts = now - 24*3600
+
+
+(b) Revenue slice:
+
+Implement get_revenue_24h_and_7d():
+
+Query sales_leads where created_at >= from_ts:
+
+leads_24h
+
+top 3 sources (GROUP BY source ORDER BY count DESC LIMIT 3)
+
+
+Query sales_leads last 7 days:
+
+leads_7d
+
+
+Similarly for dfy_requests:
+
+dfy_24h, dfy_7d, maybe count by status.
+
+
+
+Return dict:
+
+{
+  "leads_24h": ...,
+  "dfy_24h": ...,
+  "leads_7d": ...,
+  "dfy_7d": ...,
+  "top_sources": [ {"source":"pricing","count":3}, ... ]
+}
+
+Default all missing to 0/[].
+
+(c) System slice:
+
+Implement get_system_24h():
+
+Use telemetry_logs:
+
+total_24h
+
+error_24h (level='error')
+
+slow_24h where duration_ms > 2000
+
+
+Compute:
+
+error_rate_24h = (error_24h / max(total_24h,1)) * 100.0
+
+
+open_high_priority_plans:
+
+Query upgrade_plans where status='open' and priority <= 2.
+
+
+heartbeat_status:
+
+Option A: Call existing heartbeat logic if there is a helper.
+
+Option B: Derive from executive / ceo summary health_score:
+
+if score >= 85 → 'ok'
+
+if 70–84 → 'degraded'
+
+else → 'failed'
+
+
+
+
+(d) CEO slice:
+
+Implement get_ceo_slice():
+
+Either:
+
+Reuse existing ceo engine helper if available, OR
+
+Call the ceo helper logic again via DB queries.
+
+
+For simplicity, you can:
+
+Query data similarly to ceo_engine.
+
+
+Minimal requirement:
+
+health_score
+
+status
+
+Some existing strategy items if available (you may call build_strategy_and_priority again or copy core logic).
+
+
+
+If you cannot safely reuse ceo functions, reimplement a minimal version here that reuses DB access only.
+
+(e) Strategy extraction:
+
+Implement build_strategy_timeline(ceo_strategy, priority_matrix):
+
+Input: whatever structure you built in Wave 5.
+
+Output:
+
+today: list of 3–5 most urgent items (critical + high).
+
+this_week: list of 3–5 moderate items.
+
+
+
+Each item:
+
+{
+  "title": "string",
+  "reason": "string",
+  "category": "revenue|reliability|ux|other",
+  "priority": "critical|high|moderate|low"
+}
+
+If no strategy from ceo, fallback to simple, generic suggestions based on revenue + error_rate.
+
+(f) Headline builder:
+
+Implement build_headline(health_status, leads_24h, dfy_24h, error_rate):
+
+Examples:
+
+If health="critical" → "System needs attention: errors high, check Guardian."
+
+Else if leads_24h == 0 and dfy_24h == 0 → "Quiet day: no new leads in last 24h."
+
+Else if leads_24h > 0 and error_rate < 5 → "Good day: X new leads, system stable."
+
+Else adjust with simple rules.
+
+
+
+================================================== PHASE 4 – ROUTE + BLUEPRINT REGISTRATION
+
+In api/guardian/founder_briefing.py:
+
+Add endpoint:
+
+@founder_briefing_bp.route("/api/guardian/founder-briefing", methods=["GET"])
+def founder_briefing():
+    now = int(time.time())
+    window = {
+        "from": now - 24*3600,
+        "to": now,
+        "label": "last_24h"
+    }
+
+    try:
+        revenue = get_revenue_24h_and_7d()
+        system = get_system_24h()
+        ceo = get_ceo_slice()
+    except Exception:
+        # Hard fallback
+        return jsonify({
+            "safe_mode": True,
+            "generated_at": now,
+            "window": window,
+            "summary": {
+                "headline": "Founder briefing unavailable (fallback).",
+                "health_status": "warning",
+                "health_score": 60,
+                "key_signals": [
+                    "Failed to retrieve full briefing data."
+                ]
+            },
+            "revenue": {
+                "leads_24h": 0,
+                "dfy_24h": 0,
+                "leads_7d": 0,
+                "dfy_7d": 0,
+                "top_sources": [],
+                "notes": []
+            },
+            "system": {
+                "error_rate_24h": 0.0,
+                "slow_endpoints_24h": 0,
+                "open_high_priority_plans": 0,
+                "heartbeat_status": "warning"
+            },
+            "strategy": {
+                "today": [],
+                "this_week": []
+            },
+            "raw_inputs": {
+                "ceo_summary": {"error": "unavailable"}
+            }
+        }), 200
+
+    health_score = int(ceo.get("health_score", 70))
+    health_status = ceo.get("status", "warning")
+
+    error_rate = float(system.get("error_rate_24h", 0.0))
+    leads_24h = int(revenue.get("leads_24h", 0))
+    dfy_24h = int(revenue.get("dfy_24h", 0))
+
+    # Strategy
+    ceo_strategy = ceo.get("strategy", {})
+    ceo_priority = ceo.get("priority_matrix", {})
+    strategy_timeline = build_strategy_timeline(ceo_strategy, ceo_priority)
+
+    headline = build_headline(health_status, leads_24h, dfy_24h, error_rate)
+
+    summary = {
+        "headline": headline,
+        "health_status": health_status,
+        "health_score": health_score,
+        "key_signals": []
+    }
+
+    # Optional: append 2–3 key signals based on revenue + errors
+    if leads_24h > 0:
+        summary["key_signals"].append(f"{leads_24h} new leads in last 24h.")
+    if dfy_24h > 0:
+        summary["key_signals"].append(f"{dfy_24h} DFY requests in last 24h.")
+    if error_rate > 5:
+        summary["key_signals"].append(f"Error rate {error_rate:.1f}% in last 24h.")
+
+    return jsonify({
+        "safe_mode": True,
+        "generated_at": now,
+        "window": window,
+        "summary": summary,
+        "revenue": revenue,
+        "system": system,
+        "strategy": strategy_timeline,
+        "raw_inputs": {
+            "ceo_summary": {
+                "health_score": health_score,
+                "status": health_status
+            }
+        }
+    })
+
+In run.py:
+
+Import:
+
+
+from api.guardian.founder_briefing import founder_briefing_bp
+
+Register:
+
+
+app.register_blueprint(founder_briefing_bp)
+
+================================================== PHASE 5 – SCHEDULER: DAILY BRIEFING JOB
+
+We want an internal mechanism that can:
+
+Generate a daily founder briefing snapshot.
+
+Optionally send it to an alert channel.
+
+
+In monitors/scheduler.py:
+
+1. Create a new job function, e.g.:
+
+
+
+def job_daily_founder_briefing():
+    import requests, json, os, time
+    base_url = os.environ.get("BASE_INTERNAL_URL", "http://localhost:8000")
+    url = f"{base_url}/api/guardian/founder-briefing"
+
+    try:
+        resp = requests.get(url, timeout=10)
+        data = resp.json()
+    except Exception as e:
+        # log via telemetry if available
+        return
+
+    # Option A: If there is a Telegram notifier module, call it.
+    # Option B: If there is an existing alert hook (e.g. guardian alerts),
+    # reuse that pattern to send a short text message.
+
+    # Keep it SIMPLE:
+    # Build a one-line summary string:
+    headline = data.get("summary", {}).get("headline", "Founder briefing")
+    health = data.get("summary", {}).get("health_status", "unknown")
+    leads_24h = data.get("revenue", {}).get("leads_24h", 0)
+    dfy_24h = data.get("revenue", {}).get("dfy_24h", 0)
+
+    text = f"[Levqor Founder Briefing] {headline} | Health: {health} | Leads 24h: {leads_24h} | DFY 24h: {dfy_24h}"
+
+    # TODO: Replace this section with the actual alert sending logic if present.
+    # e.g. alert_via_telegram(text)
+    # For now, just log it via telemetry endpoint if you have one, or no-op.
+    try:
+        telemetry_url = f"{base_url}/api/guardian/telemetry/ingest"
+        payload = {
+            "source": "founder_briefing_job",
+            "level": "info",
+            "message": text,
+            "event_type": "founder_briefing"
+        }
+        requests.post(telemetry_url, json=payload, timeout=5)
+    except Exception:
+        pass
+
+2. Register the job in init_scheduler:
+
+
+
+Add something like:
+
+
+scheduler.add_job(
+    job_daily_founder_briefing,
+    "cron",
+    hour=7,
+    minute=0,
+    id="daily_founder_briefing",
+    replace_existing=True
+)
+
+This will run once per day (server time; adjust if needed).
+
+================================================== PHASE 6 – OPTIONAL: INSTANT NEW LEAD / DFY ALERT HOOK
+
+If it’s safe and simple, add one small alert hook when creating leads/dfy entries.
+
+In api/revenue/leads.py:
+
+After successfully inserting a new sales_leads row and returning { "ok": true, "id": ... }, optionally:
+
+
+def _notify_new_lead(email, source, plan_intent):
+    import os, requests
+    base_url = os.environ.get("BASE_INTERNAL_URL", "http://localhost:8000")
+    telemetry_url = f"{base_url}/api/guardian/telemetry/ingest"
+    msg = f"New lead: {email or 'unknown'} from {source}, plan: {plan_intent or 'unknown'}"
+    try:
+        requests.post(telemetry_url, json={
+            "source": "revenue_leads",
+            "level": "info",
+            "message": msg,
+            "event_type": "new_lead"
+        }, timeout=3)
+    except Exception:
+        pass
+
+Call _notify_new_lead(...) in the POST handler after DB insert.
+
+
+Analogously for DFY requests (event_type: 'new_dfy_request').
+
+If this causes circular import / complexity, SKIP this sub-step. Stability > cleverness.
+
+================================================== PHASE 7 – VERIFICATION (MANDATORY)
+
+From /home/runner/workspace:
+
+1. Backend sanity:
+
+
+
+python3 -m compileall api || echo "PYTHON COMPILE ERRORS (check above)"
+python3 -c "import run; print('Backend import OK')" 2>&1 | tail -30
+
+2. Founder briefing endpoint:
+
+
+
+echo "=== FOUNDER BRIEFING (COLD) ==="
+curl -sS http://localhost:8000/api/guardian/founder-briefing | python3 -m json.tool | head -120
+
+Confirm:
+
+safe_mode is present + true.
+
+summary.headline exists.
+
+summary.health_status is "healthy" | "warning" | "critical".
+
+revenue.leads_24h / dfy_24h keys exist.
+
+strategy.today / strategy.this_week exist (lists).
+
+
+3. Seed some data if needed:
+
+
+
+echo "=== SEED TEST DATA ==="
+curl -sS -X POST http://localhost:8000/api/revenue/leads \
+  -H "Content-Type: application/json" \
+  -d '{"email":"briefing@example.com","name":"Briefing User","source":"pricing","plan_intent":"launch"}' | python3 -m json.tool
+
+curl -sS -X POST http://localhost:8000/api/revenue/dfy-request \
+  -H "Content-Type: application/json" \
+  -d '{"email":"briefing-dfy@example.com","name":"DFY Founder","source":"pricing_dfy","use_case":"Agency onboarding","detail":"Full agency automation pilot"}' | python3 -m json.tool
+
+curl -sS -X POST http://localhost:8000/api/guardian/telemetry/ingest \
+  -H "Content-Type: application/json" \
+  -d '{"source":"test","level":"error","message":"Founder briefing test error"}' | python3 -m json.tool
+
+Then re-test:
+
+echo "=== FOUNDER BRIEFING (SEEDED) ==="
+curl -sS http://localhost:8000/api/guardian/founder-briefing | python3 -m json.tool | head -160
+
+Check that:
+
+Leads/DFY counts > 0.
+
+Strategy lists are not empty (if your heuristic rules fire).
+
+Summary headline reflects activity.
+
+
+4. Scheduler:
+
+
+
+Confirm that job_daily_founder_briefing is registered in logs and no import errors appear when scheduler starts.
+
+If there is a scheduler status endpoint, call it; otherwise, rely on logs.
+
+
+5. Frontend sanity:
+
+
+
+cd /home/runner/workspace/levqor-site
+npx tsc --noEmit 2>&1 | tail -40
+timeout 300 npm run build 2>&1 | tail -80
+
+No errors allowed.
+
+================================================== PHASE 8 – FINAL REPORT (FOR HUMAN)
+
+When finished, report (in chat):
+
+New file: api/guardian/founder_briefing.py.
+
+run.py updated with founder_briefing_bp import + registration.
+
+Scheduler updated with job_daily_founder_briefing.
+
+Example truncated JSON from /api/guardian/founder-briefing.
+
+Confirmation that:
+
+System remains in safe_mode: true.
+
+No auto-charges / auto-upgrades introduced.
+
+You can now get a daily, machine-generated “Boss summary” of Levqor’s state and revenue pipeline.
+
+
+
+---
+
+Run this.  
+When the agent is done, Levqor will be able to **brief you like a COO every day**, without you logging into anything.

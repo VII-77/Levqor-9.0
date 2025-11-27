@@ -224,3 +224,60 @@ export async function guardianLogPerformance(
     console.warn('[Guardian Telemetry] Performance send failed:', e);
   }
 }
+
+const REVENUE_LEADS_ENDPOINT = '/api/revenue/leads';
+const REVENUE_DFY_ENDPOINT = '/api/revenue/dfy-request';
+
+export async function captureLead(params: {
+  email?: string | null;
+  name?: string | null;
+  source: string;
+  planIntent?: string;
+  metadata?: Record<string, unknown>;
+}): Promise<void> {
+  if (!params.email) return;
+  
+  try {
+    await fetch(REVENUE_LEADS_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: params.email,
+        name: params.name || undefined,
+        source: params.source,
+        plan_intent: params.planIntent || 'unknown',
+        metadata: params.metadata || {},
+      }),
+    });
+  } catch (e) {
+    console.warn('[Revenue] Lead capture failed:', e);
+  }
+}
+
+export async function captureDFYRequest(params: {
+  email?: string | null;
+  name?: string | null;
+  useCase: string;
+  detail?: string;
+  source: string;
+  planIntent?: string;
+}): Promise<void> {
+  if (!params.email) return;
+  
+  try {
+    await fetch(REVENUE_DFY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: params.email,
+        name: params.name || undefined,
+        use_case: params.useCase,
+        detail: params.detail || undefined,
+        source: params.source,
+        plan_intent: params.planIntent || 'dfy',
+      }),
+    });
+  } catch (e) {
+    console.warn('[Revenue] DFY request capture failed:', e);
+  }
+}
