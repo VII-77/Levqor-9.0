@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import { useLocale } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
-import { useLanguageStore } from "@/stores/languageStore";
 
 interface WorkflowIssue {
   step_id: string;
@@ -33,7 +33,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function BrainFixMyWorkflow() {
   const brain = useLevqorBrainOptional();
-  const { displayLanguage } = useLanguageStore();
+  const locale = useLocale();
   
   const [workflowId, setWorkflowId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -60,7 +60,7 @@ export default function BrainFixMyWorkflow() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workflow_id: workflowId.trim(),
-          language: displayLanguage,
+          language: locale,
         }),
       });
 
@@ -84,7 +84,7 @@ export default function BrainFixMyWorkflow() {
     } finally {
       setLoading(false);
     }
-  }, [workflowId, displayLanguage, brain]);
+  }, [workflowId, locale, brain]);
 
   const handleFixAll = useCallback(async () => {
     if (!health || health.issues.length === 0) return;
@@ -100,7 +100,7 @@ export default function BrainFixMyWorkflow() {
         body: JSON.stringify({
           workflow_id: workflowId.trim(),
           fix_all: true,
-          language: displayLanguage,
+          language: locale,
         }),
       });
 
@@ -122,7 +122,7 @@ export default function BrainFixMyWorkflow() {
     } finally {
       setFixing(false);
     }
-  }, [health, workflowId, displayLanguage, brain]);
+  }, [health, workflowId, locale, brain]);
 
   const handleReset = useCallback(() => {
     setWorkflowId("");

@@ -67,7 +67,10 @@ def build_workflow():
         goal = data.get('goal', '')
         context = data.get('context', '')
         approx_volume = data.get('approx_volume', '')
-        language = data.get('language', 'en')
+        language = data.get('language') or 'en'
+        
+        # Log incoming language for debugging i18n flow
+        log.info(f"[BRAIN] Incoming language: {language!r}")
         
         if not goal:
             return jsonify({"error": "Goal is required"}), 400

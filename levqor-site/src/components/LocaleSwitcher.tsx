@@ -5,11 +5,29 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { LANGUAGES, LANGUAGES_BY_REGION, SUPPORTED_LOCALES, DEFAULT_LOCALE, type LanguageCode } from '@/config/languages';
 
 /**
+ * LocaleSwitcher Bug Fix Notes (November 2025):
+ * 
+ * BUG: Previously, we only changed the URL path but did NOT update the NEXT_LOCALE cookie.
+ * This caused next-intl middleware to potentially use stale cookie values, leading to:
+ * - User switching DE → EN but still seeing German content
+ * - Redirect loops or "translation page" issues in private windows
+ * 
+ * FIX: Now we explicitly set the NEXT_LOCALE cookie BEFORE navigating.
+ * The cookie is what next-intl uses for locale detection and persistence.
+ */
+
+/**
  * Handle language change with deterministic navigation.
- * Uses window.location.assign for full page reload to ensure next-intl re-initializes.
+ * 1. Sets NEXT_LOCALE cookie (so next-intl middleware respects the choice)
+ * 2. Navigates to the correct URL path
+ * 3. Uses window.location.assign for full page reload to ensure next-intl re-initializes
  */
 function navigateToLocale(nextLocale: LanguageCode) {
   if (typeof window === "undefined") return;
+
+  // CRITICAL: Set the NEXT_LOCALE cookie BEFORE navigating
+  // This ensures next-intl middleware respects our language choice
+  document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; SameSite=Lax`;
 
   const url = new URL(window.location.href);
   const segments = url.pathname.split("/").filter(Boolean);
@@ -17,6 +35,7 @@ function navigateToLocale(nextLocale: LanguageCode) {
   const hasLocalePrefix = SUPPORTED_LOCALES.includes(first as LanguageCode);
 
   if (nextLocale === DEFAULT_LOCALE) {
+    // For English: navigate to root path without locale prefix
     const pathWithoutLocale = hasLocalePrefix
       ? "/" + segments.slice(1).join("/")
       : url.pathname;
@@ -26,6 +45,7 @@ function navigateToLocale(nextLocale: LanguageCode) {
     return;
   }
 
+  // For other languages: add/replace locale prefix
   if (hasLocalePrefix) {
     segments[0] = nextLocale;
   } else {

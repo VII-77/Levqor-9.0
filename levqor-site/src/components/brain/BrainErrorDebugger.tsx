@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useLocale } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
-import { useLanguageStore } from "@/stores/languageStore";
 
 interface ErrorAnalysis {
   error_type: string;
@@ -27,7 +27,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
 export default function BrainErrorDebugger() {
   const brain = useLevqorBrainOptional();
-  const { displayLanguage } = useLanguageStore();
+  const locale = useLocale();
   
   const [errorLog, setErrorLog] = useState("");
   const [workflowId, setWorkflowId] = useState("");
@@ -57,7 +57,7 @@ export default function BrainErrorDebugger() {
         body: JSON.stringify({
           error_log: errorLog.trim(),
           workflow_id: workflowId.trim() || undefined,
-          language: displayLanguage,
+          language: locale,
         }),
       });
 
@@ -79,7 +79,7 @@ export default function BrainErrorDebugger() {
     } finally {
       setLoading(false);
     }
-  }, [errorLog, workflowId, displayLanguage, brain]);
+  }, [errorLog, workflowId, locale, brain]);
 
   const handleAutoFix = useCallback(async () => {
     if (!result?.analysis.auto_fix_available) return;
@@ -96,7 +96,7 @@ export default function BrainErrorDebugger() {
           error_type: result.analysis.error_type,
           workflow_id: workflowId.trim() || undefined,
           suggested_fix: result.analysis.suggested_fixes[0],
-          language: displayLanguage,
+          language: locale,
         }),
       });
 
@@ -113,7 +113,7 @@ export default function BrainErrorDebugger() {
     } finally {
       setFixing(false);
     }
-  }, [result, workflowId, displayLanguage, brain]);
+  }, [result, workflowId, locale, brain]);
 
   const handleReset = useCallback(() => {
     setErrorLog("");

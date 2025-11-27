@@ -3,6 +3,16 @@ import { useState, useTransition } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 
+/**
+ * LanguageSwitcher - Alternative language switcher component
+ * 
+ * NOTE: The Header uses LocaleSwitcher.tsx instead.
+ * This component is kept for backward compatibility but should NOT be used
+ * as the primary language control.
+ * 
+ * If you need to add language switching elsewhere, prefer using LocaleSwitcher.
+ */
+
 const LANGUAGE_FLAGS: Record<Locale, string> = {
   en: "🇬🇧",
   es: "🇪🇸",
@@ -54,6 +64,9 @@ export default function LanguageSwitcher() {
 
   function switchLanguage(locale: Locale) {
     const pathWithoutLocale = getPathWithoutLocale(pathname);
+    
+    // Set NEXT_LOCALE cookie for next-intl middleware
+    document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`;
     
     startTransition(() => {
       if (locale === 'en') {
