@@ -4,6 +4,7 @@ import Link from "next/link";
 import DashboardTiles from "@/components/DashboardTiles";
 import AnalyticsWidget from "@/components/AnalyticsWidget";
 import AIHelpPanel from "@/components/ai/AIHelpPanel";
+import LevqorPilotPanel from "@/components/ai/LevqorPilotPanel";
 import LifecycleBanner from "@/components/LifecycleBanner";
 import DashboardOnboarding from "@/components/DashboardOnboarding";
 import QuickstartPanel from "@/components/dashboard/QuickstartPanel";
@@ -197,6 +198,7 @@ export default async function Dashboard(){
       </div>
       
       <AIHelpPanel context="dashboard" />
+      <LevqorPilotPanel />
     </main>
     </DashboardClientWrapper>
   );
