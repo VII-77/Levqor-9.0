@@ -5,9 +5,11 @@ import PageViewTracker from "@/components/PageViewTracker";
 import CurrencySwitcher from "@/components/CurrencySwitcher";
 import ExitIntentModal from "@/components/ExitIntentModal";
 import ReferralInvite from "@/components/referrals/ReferralInvite";
+import { CURRENCY_RATES, type Currency, formatPrice } from "@/config/currency";
 
 type Term = "monthly" | "yearly";
 type Tier = "starter" | "launch" | "growth" | "agency";
+type DisplayCurrency = Currency;
 
 const plans = {
   starter: {
@@ -76,8 +78,8 @@ const comingSoonConnectors = [
 ];
 
 function DFYCard({
-  pack, title, price, features, badge
-}: { pack: string; title: string; price: number; features: string[]; badge?: string }) {
+  pack, title, price, features, badge, currency
+}: { pack: string; title: string; price: number; features: string[]; badge?: string; currency: DisplayCurrency }) {
   
   const handleClick = async () => {
     try {
@@ -109,7 +111,7 @@ function DFYCard({
         {badge && <span className="text-xs rounded-full px-3 py-1 bg-blue-600 text-white font-medium">{badge}</span>}
       </div>
       <div className="text-3xl font-bold text-blue-600">
-        £{price}
+        {formatPrice(price, currency)}
         <span className="text-base font-normal text-gray-600"> one-time</span>
       </div>
       <ul className="text-sm space-y-2 flex-1">
@@ -131,8 +133,8 @@ function DFYCard({
 }
 
 function AddonCard({
-  addon, title, price, description
-}: { addon: string; title: string; price: number; description: string }) {
+  addon, title, price, description, currency
+}: { addon: string; title: string; price: number; description: string; currency: DisplayCurrency }) {
   
   const handleClick = async () => {
     try {
@@ -165,7 +167,7 @@ function AddonCard({
       </div>
       <div className="flex items-center justify-between">
         <div className="text-2xl font-bold">
-          £{price}<span className="text-sm font-normal text-gray-600">/month</span>
+          {formatPrice(price, currency)}<span className="text-sm font-normal text-gray-600">/month</span>
         </div>
         <button
           onClick={handleClick}
@@ -179,8 +181,8 @@ function AddonCard({
 }
 
 function Card({
-  tier, title, price, per, features, badge, trial, term
-}: { tier: Tier; title: string; price: number; per: string; features: string[]; badge?: string; trial?: boolean; term: Term }) {
+  tier, title, price, per, features, badge, trial, term, currency
+}: { tier: Tier; title: string; price: number; per: string; features: string[]; badge?: string; trial?: boolean; term: Term; currency: DisplayCurrency }) {
   
   const handleClick = async () => {
     try {
@@ -219,7 +221,7 @@ function Card({
         {badge && <span className="text-xs rounded-full px-3 py-1 bg-black text-white font-medium">{badge}</span>}
       </div>
       <div className="text-3xl font-bold">
-        £{price}
+        {formatPrice(price, currency)}
         <span className="text-base font-normal text-gray-600">/{per}</span>
       </div>
       {trial && (
@@ -311,6 +313,7 @@ function NotifyModal({ connector, eta, onClose }: { connector: string; eta: stri
 export default function PricingPage() {
   const [term, setTerm] = useState<Term>("monthly");
   const [notifyModal, setNotifyModal] = useState<{ connector: string; eta: string } | null>(null);
+  const [displayCurrency, setDisplayCurrency] = useState<DisplayCurrency>("GBP");
 
   return (
     <main className="mx-auto max-w-6xl p-6">
@@ -319,9 +322,18 @@ export default function PricingPage() {
       
       {/* Currency Preference */}
       <div className="mb-6 flex items-center justify-end gap-3">
-        <span className="text-xs text-gray-500 hidden sm:inline">Currency:</span>
-        <CurrencySwitcher />
+        <span className="text-xs text-gray-500 hidden sm:inline">Display:</span>
+        <CurrencySwitcher onCurrencyChange={setDisplayCurrency} />
       </div>
+      
+      {/* Billing Currency Note */}
+      {displayCurrency !== "GBP" && (
+        <div className="mb-4 text-center">
+          <p className="text-xs text-neutral-500">
+            All subscriptions are billed in GBP (£). {displayCurrency} values shown are approximate for your convenience.
+          </p>
+        </div>
+      )}
       
       {/* Header */}
       <div className="text-center mb-8">
@@ -373,6 +385,7 @@ export default function PricingPage() {
             features={plans.starter.features}
             trial={plans.starter.trial}
             term={term}
+            currency={displayCurrency}
           />
           <Card
             tier="launch"
@@ -383,6 +396,7 @@ export default function PricingPage() {
             badge="Most Popular"
             trial={plans.launch.trial}
             term={term}
+            currency={displayCurrency}
           />
           <Card
             tier="growth"
@@ -392,6 +406,7 @@ export default function PricingPage() {
             features={plans.growth.features}
             trial={plans.growth.trial}
             term={term}
+            currency={displayCurrency}
           />
           <Card
             tier="agency"
@@ -402,6 +417,7 @@ export default function PricingPage() {
             badge="Best Value"
             trial={plans.agency.trial}
             term={term}
+            currency={displayCurrency}
           />
         </div>
       </div>
@@ -415,6 +431,7 @@ export default function PricingPage() {
             pack="dfy_starter"
             title="DFY Starter"
             price={149}
+            currency={displayCurrency}
             features={[
               "Complete workflow setup",
               "Basic automation templates",
@@ -428,6 +445,7 @@ export default function PricingPage() {
             title="DFY Professional"
             price={299}
             badge="Popular"
+            currency={displayCurrency}
             features={[
               "Advanced workflow setup",
               "Custom automation design",
@@ -441,6 +459,7 @@ export default function PricingPage() {
             pack="dfy_enterprise"
             title="DFY Enterprise"
             price={499}
+            currency={displayCurrency}
             features={[
               "Enterprise workflow setup",
               "Complex automation systems",
@@ -465,14 +484,14 @@ export default function PricingPage() {
             <div className="bg-white rounded-xl p-5 border border-gray-200">
               <h3 className="font-semibold text-lg mb-2">🚀 Growth + DFY Professional</h3>
               <p className="text-sm text-gray-600 mb-3">
-                Perfect for scaling teams: Get the Growth tier (£59/mo) plus expert DFY setup (£299 one-time) for a complete turnkey solution with advanced workflows and priority support.
+                Perfect for scaling teams: Get the Growth tier ({formatPrice(59, displayCurrency)}/mo) plus expert DFY setup ({formatPrice(299, displayCurrency)} one-time) for a complete turnkey solution with advanced workflows and priority support.
               </p>
               <p className="text-xs text-blue-600 font-medium">Recommended for teams of 3-5 users</p>
             </div>
             <div className="bg-white rounded-xl p-5 border border-gray-200">
               <h3 className="font-semibold text-lg mb-2">⚡ Scale + White Label</h3>
               <p className="text-sm text-gray-600 mb-3">
-                Built for agencies: Combine the Agency tier (£149/mo) with White Label add-on (£99/mo) to manage client workflows under your own brand with enterprise-grade support.
+                Built for agencies: Combine the Agency tier ({formatPrice(149, displayCurrency)}/mo) with White Label add-on ({formatPrice(99, displayCurrency)}/mo) to manage client workflows under your own brand with enterprise-grade support.
               </p>
               <p className="text-xs text-blue-600 font-medium">Ideal for agencies managing 10+ clients</p>
             </div>
@@ -492,24 +511,28 @@ export default function PricingPage() {
             addon="addon_priority_support"
             title="Priority Support"
             price={29}
+            currency={displayCurrency}
             description="Get faster responses and higher priority in our support queue"
           />
           <AddonCard
             addon="addon_sla_99"
             title="SLA 99.9%"
             price={49}
+            currency={displayCurrency}
             description="99.9% uptime guarantee with SLA commitment and monitoring"
           />
           <AddonCard
             addon="addon_white_label"
             title="White Label"
             price={99}
+            currency={displayCurrency}
             description="Remove Levqor branding and use your own custom brand"
           />
           <AddonCard
             addon="addon_extra_workflows"
             title="Extra Workflow Pack"
             price={10}
+            currency={displayCurrency}
             description="Add +50 extra workflow capacity to your current plan"
           />
         </div>
