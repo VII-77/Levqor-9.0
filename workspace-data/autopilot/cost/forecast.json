@@ -1,12 +1,11 @@
 {
-  "predicted_cost_usd": 0.0,
-  "confidence": "medium",
+  "predicted_cost_usd": 25.0,
+  "confidence": "low",
   "trend": "stable",
-  "trend_factor": 1.0,
   "factors": [
-    "high_compute"
+    "insufficient_data"
   ],
-  "timestamp": "2025-11-27T13:39:11.511528+00:00",
-  "budget_remaining": 50.0,
-  "budget_percent_used": 0.0
+  "timestamp": "2025-11-27T13:56:57.215808+00:00",
+  "budget_remaining": 25.0,
+  "budget_percent_used": 50.0
 }

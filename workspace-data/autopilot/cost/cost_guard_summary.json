@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-11-27T13:39:11.512007+00:00",
+  "timestamp": "2025-11-27T13:56:57.216767+00:00",
   "status": "PASS",
   "metrics": {
-    "timestamp": "2025-11-27T13:39:11.395204+00:00",
+    "timestamp": "2025-11-27T13:56:57.096554+00:00",
     "openai": {
       "tokens_today": 0,
       "tokens_hour": 0,
@@ -21,24 +21,23 @@
       "fees_today_usd": 0.0
     },
     "compute": {
-      "cpu_percent": 37.7,
-      "memory_percent": 60.2,
-      "memory_used_mb": 38739.5
+      "cpu_percent": 58.4,
+      "memory_percent": 66.6,
+      "memory_used_mb": 42801.01953125
     },
     "estimated_cost_today": 0.0,
     "estimated_cost_month": 0.0
   },
   "forecast": {
-    "predicted_cost_usd": 0.0,
-    "confidence": "medium",
+    "predicted_cost_usd": 25.0,
+    "confidence": "low",
     "trend": "stable",
-    "trend_factor": 1.0,
     "factors": [
-      "high_compute"
+      "insufficient_data"
     ],
-    "timestamp": "2025-11-27T13:39:11.511528+00:00",
-    "budget_remaining": 50.0,
-    "budget_percent_used": 0.0
+    "timestamp": "2025-11-27T13:56:57.215808+00:00",
+    "budget_remaining": 25.0,
+    "budget_percent_used": 50.0
   },
   "spike_detected": false,
   "alerts": [],
