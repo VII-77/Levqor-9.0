@@ -981,6 +981,10 @@ from api.partners import partners_bp
 from api.auto_recovery import auto_recovery_bp
 from api.guardian.summary import guardian_bp
 from api.guardian.healing import healing_bp
+from api.guardian.telemetry_ingest import telemetry_ingest_bp as guardian_telemetry_ingest_bp
+from api.guardian.telemetry_summary import telemetry_summary_bp as guardian_telemetry_summary_bp
+from api.guardian.anomaly_detector import anomaly_detector_bp
+from api.guardian.daily_report import daily_report_bp
 from api.telemetry import telemetry_ingest_bp
 
 app.register_blueprint(ai_chat_bp)
@@ -1019,6 +1023,10 @@ app.register_blueprint(partners_bp)
 app.register_blueprint(auto_recovery_bp)
 app.register_blueprint(guardian_bp)
 app.register_blueprint(healing_bp)
+app.register_blueprint(guardian_telemetry_ingest_bp)
+app.register_blueprint(guardian_telemetry_summary_bp)
+app.register_blueprint(anomaly_detector_bp)
+app.register_blueprint(daily_report_bp)
 app.register_blueprint(telemetry_ingest_bp)
 
 @app.get("/ops/auto_tune")

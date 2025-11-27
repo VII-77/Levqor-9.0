@@ -24,6 +24,7 @@ interface TelemetryPerformance {
 }
 
 const TELEMETRY_ENDPOINT = '/api/telemetry';
+const GUARDIAN_TELEMETRY_ENDPOINT = '/api/guardian/telemetry/ingest';
 const BATCH_INTERVAL_MS = 5000;
 const MAX_BATCH_SIZE = 20;
 
@@ -173,4 +174,53 @@ if (typeof window !== 'undefined') {
       type: 'promise_rejection',
     });
   });
+}
+
+/**
+ * Wave 2: Direct Guardian Telemetry Logger
+ * Sends telemetry directly to database-backed Guardian endpoint.
+ * Use for important events that require persistent storage.
+ */
+export async function guardianLog(
+  message: string, 
+  level: 'info' | 'warning' | 'error' = 'info', 
+  meta: Record<string, unknown> = {}
+): Promise<void> {
+  try {
+    await fetch(GUARDIAN_TELEMETRY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'frontend',
+        level,
+        message,
+        meta: meta ? sanitizeData(meta) : {},
+      }),
+    });
+  } catch (e) {
+    console.warn('[Guardian Telemetry] Send failed:', e);
+  }
+}
+
+export async function guardianLogPerformance(
+  endpoint: string,
+  durationMs: number,
+  statusCode?: number
+): Promise<void> {
+  try {
+    await fetch(GUARDIAN_TELEMETRY_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        source: 'frontend',
+        level: durationMs > 5000 ? 'warning' : 'info',
+        event_type: 'performance',
+        endpoint,
+        duration_ms: durationMs,
+        status_code: statusCode,
+      }),
+    });
+  } catch (e) {
+    console.warn('[Guardian Telemetry] Performance send failed:', e);
+  }
 }
