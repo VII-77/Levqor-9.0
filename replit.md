@@ -67,6 +67,7 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
 
 - **Reliability & Resiliency**: Database connection retry logic and backend keep-alive monitoring.
 - **Observability & Monitoring**: Structured JSON logging, error monitoring, frontend client logger, real-time health tiles, and performance metrics (e.g., BrainCanvas frame time).
+- **Autopilot Telemetry System**: Full-stack telemetry collecting errors, events, and performance data. Backend module (`api/telemetry/`) with `log_event`, `log_error`, `log_performance` helpers. Rotating JSONL log at `logs/telemetry.log`. Frontend telemetry utility (`src/lib/telemetry.ts`) batches events to backend ingestion endpoint. Guardian feed endpoint (`/api/guardian/summary`) aggregates metrics with anomaly detection (high error rates, slow endpoints).
 - **Enterprise Support**: Tier-aware support routing and SLA mapping.
 - **Governance**: Hardening checklist, automated health checks, and a comprehensive CI/CD safety harness for safe deployments. Includes preflight testing with user journey personas and launch readiness checks.
 - **Legal & Compliance**: Backend privacy API, 4 legal pages, cookie consent UX, automated file integrity monitoring, and log hygiene (e.g., email truncation).
