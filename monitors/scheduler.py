@@ -565,6 +565,49 @@ def run_system_heartbeat():
         log.error(f"System heartbeat error: {e}")
 
 
+def run_upgrade_planner():
+    """AUTOPILOT WAVE 3: Upgrade Planner (every 6 hours)
+    
+    DESIGN-ONLY MODE: Generates upgrade plans without auto-applying fixes.
+    Analyzes telemetry, heartbeat, and healing data to produce structured
+    upgrade proposals stored in the database.
+    
+    Safe Mode enforced: All plans are proposals only, no code changes.
+    """
+    log.info("Running Upgrade Planner (Wave 3)...")
+    try:
+        from api.guardian.upgrade_planner import compute_upgrade_plans, write_plans_to_db, archive_old_open_plans
+        
+        archived = archive_old_open_plans(max_age_hours=72)
+        if archived > 0:
+            log.info(f"Archived {archived} old upgrade plans")
+        
+        plans = compute_upgrade_plans(time_window_minutes=360)
+        created = write_plans_to_db(plans, deduplicate=True)
+        
+        log.info(f"✅ Upgrade Planner complete: {created} new plans created (DESIGN-ONLY, no auto-apply)")
+        
+        try:
+            from api.guardian.telemetry_ingest import store_telemetry
+            store_telemetry(
+                source="guardian",
+                level="info",
+                event_type="upgrade_planner_scheduled",
+                message=f"Scheduled upgrade planner generated {created} plans",
+                metadata={
+                    "plans_created": created,
+                    "plans_archived": archived,
+                    "mode": "design_only",
+                    "auto_applicable": False
+                }
+            )
+        except Exception as e:
+            log.debug(f"Telemetry logging failed: {e}")
+            
+    except Exception as e:
+        log.error(f"Upgrade Planner error: {e}")
+
+
 def init_scheduler():
     """Initialize and start APScheduler"""
     try:
@@ -596,6 +639,15 @@ def init_scheduler():
             seconds=60,
             id='system_heartbeat',
             name='System heartbeat (Autopilot Wave 1)',
+            replace_existing=True
+        )
+        
+        scheduler.add_job(
+            run_upgrade_planner,
+            'interval',
+            hours=6,
+            id='upgrade_planner',
+            name='Upgrade Planner (Autopilot Wave 3 - Design Only)',
             replace_existing=True
         )
         
