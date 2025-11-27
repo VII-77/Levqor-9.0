@@ -542,6 +542,73 @@ def run_guardian_founder_digest():
         log.error(f"Guardian Founder Digest error: {e}")
 
 
+def run_daily_founder_briefing():
+    """AUTOPILOT WAVE 6: Daily Founder Briefing (daily at 7 AM UTC)
+    
+    Generates a structured founder briefing from the Guardian + Revenue + CEO stack.
+    Logs the briefing via telemetry and optionally sends alerts to configured channels.
+    
+    PASSIVE MODE: Read-only, no auto-fixes, no auto-charges.
+    """
+    log.info("Running Daily Founder Briefing (Wave 6)...")
+    try:
+        import requests
+        import os
+        
+        base_url = os.environ.get("BASE_INTERNAL_URL", "http://localhost:8000")
+        url = f"{base_url}/api/guardian/founder-briefing"
+        
+        resp = requests.get(url, timeout=15)
+        if resp.status_code != 200:
+            log.error(f"Founder briefing endpoint returned {resp.status_code}")
+            return
+        
+        data = resp.json()
+        
+        headline = data.get("summary", {}).get("headline", "Founder briefing")
+        health_status = data.get("summary", {}).get("health_status", "unknown")
+        health_score = data.get("summary", {}).get("health_score", 0)
+        leads_24h = data.get("revenue", {}).get("leads_24h", 0)
+        dfy_24h = data.get("revenue", {}).get("dfy_24h", 0)
+        
+        alert_text = (
+            f"[Levqor Founder Briefing] {headline} | "
+            f"Health: {health_status} ({health_score}%) | "
+            f"Leads 24h: {leads_24h} | DFY 24h: {dfy_24h}"
+        )
+        
+        try:
+            from monitors.alert_router import send_alert
+            send_alert("info", alert_text)
+            log.info("✅ Founder briefing alert sent")
+        except Exception as e:
+            log.warning(f"Alert send failed (non-critical): {e}")
+        
+        try:
+            telemetry_url = f"{base_url}/api/guardian/telemetry/ingest"
+            payload = {
+                "source": "founder_briefing_job",
+                "level": "info",
+                "message": alert_text,
+                "event_type": "founder_briefing_daily",
+                "metadata": {
+                    "health_score": health_score,
+                    "health_status": health_status,
+                    "leads_24h": leads_24h,
+                    "dfy_24h": dfy_24h,
+                    "safe_mode": True
+                }
+            }
+            requests.post(telemetry_url, json=payload, timeout=5)
+        except Exception as e:
+            log.debug(f"Telemetry logging failed: {e}")
+        
+        log.info(f"✅ Daily Founder Briefing complete: {headline}")
+        
+    except Exception as e:
+        log.error(f"Daily Founder Briefing error: {e}")
+
+
 def run_system_heartbeat():
     """AUTOPILOT WAVE 1: System Heartbeat (every 60 seconds)
     
@@ -892,8 +959,17 @@ def init_scheduler():
             replace_existing=True
         )
         
+        # AUTOPILOT WAVE 6 - Daily Founder Briefing (daily at 7 AM UTC)
+        scheduler.add_job(
+            run_daily_founder_briefing,
+            CronTrigger(hour=7, minute=0, timezone='UTC'),
+            id='daily_founder_briefing',
+            name='Daily Founder Briefing (Wave 6)',
+            replace_existing=True
+        )
+        
         scheduler.start()
-        log.info("✅ APScheduler initialized with 29 jobs (including 6 monitoring + 1 security + 4 omega + 5 guardian jobs)")
+        log.info("✅ APScheduler initialized with 30 jobs (including 6 monitoring + 1 security + 4 omega + 6 guardian/wave jobs)")
         return scheduler
         
     except ImportError:

@@ -989,6 +989,7 @@ from api.guardian.upgrade_planner import upgrade_planner_bp
 from api.guardian.executive_summary import executive_bp
 from api.guardian.revenue_summary import revenue_summary_bp
 from api.guardian.ceo_engine import ceo_bp
+from api.guardian.founder_briefing import founder_briefing_bp
 from api.revenue.leads import revenue_leads_bp
 from api.telemetry import telemetry_ingest_bp
 
@@ -1036,6 +1037,7 @@ app.register_blueprint(upgrade_planner_bp)
 app.register_blueprint(executive_bp)
 app.register_blueprint(revenue_summary_bp)
 app.register_blueprint(ceo_bp)
+app.register_blueprint(founder_briefing_bp)
 app.register_blueprint(revenue_leads_bp)
 app.register_blueprint(telemetry_ingest_bp)
 
