@@ -81,6 +81,14 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
   - `GET /api/guardian/daily-report`: Generates health score (0-100), improvement suggestions, top errors/events
   - Frontend integration: `guardianLog()` function in `src/lib/telemetry.ts` for Wave 2 database logging
   - Passive Mode enforced: All suggestions are dry-run only (`auto_applicable: false`)
+- **Auto-Upgrade Engine (Autopilot Wave 3 - Design Only)**: Passive planner that reads telemetry/heartbeat/healing data and generates structured upgrade plans WITHOUT auto-applying any fixes.
+  - `POST /api/guardian/upgrade/plans/rebuild`: Analyzes anomalies and generates new upgrade plans, archives stale ones
+  - `GET /api/guardian/upgrade/plans`: Lists upgrade plans with optional filters (status, category, limit)
+  - `GET /api/guardian/upgrade/plans/<id>`: Gets single plan details by ID
+  - `GET /api/guardian/upgrade/summary`: Statistics breakdown by status/category/priority
+  - Database: `upgrade_plans` table with id, status (open/in_progress/applied/archived), priority (1-5), category (performance/reliability/i18n/UX/pricing/security), risk_level (low/medium/high), source, metadata (JSON)
+  - Scheduler: Runs every 6 hours automatically via APScheduler job "Upgrade Planner (Autopilot Wave 3 - Design Only)"
+  - Strict Design-Only Mode: All plans have `auto_applicable: false`, `safe_mode: true` - no shell commands, no config edits, no service restarts
 - **Enterprise Support**: Tier-aware support routing and SLA mapping.
 - **Governance**: Hardening checklist, automated health checks, and a comprehensive CI/CD safety harness for safe deployments. Includes preflight testing with user journey personas and launch readiness checks.
 - **Legal & Compliance**: Backend privacy API, 4 legal pages, cookie consent UX, automated file integrity monitoring, and log hygiene (e.g., email truncation).
