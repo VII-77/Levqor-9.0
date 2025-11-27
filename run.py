@@ -978,6 +978,8 @@ from api.validator import validator_bp
 from api.growth import growth_loops_bp
 from api.partners import partners_bp
 from api.auto_recovery import auto_recovery_bp
+from api.guardian.summary import guardian_bp
+from api.telemetry import telemetry_ingest_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -1012,6 +1014,8 @@ app.register_blueprint(validator_bp)
 app.register_blueprint(growth_loops_bp)
 app.register_blueprint(partners_bp)
 app.register_blueprint(auto_recovery_bp)
+app.register_blueprint(guardian_bp)
+app.register_blueprint(telemetry_ingest_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():

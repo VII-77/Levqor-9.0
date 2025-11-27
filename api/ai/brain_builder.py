@@ -4,6 +4,7 @@ Endpoint for AI-powered workflow generation via Levqor Brain
 """
 import uuid
 import logging
+from time import time as _time
 from flask import Blueprint, jsonify, request, g
 from typing import Dict, Any
 
@@ -12,6 +13,15 @@ from modules.approval_policy import classify_workflow, ImpactLevel, requires_app
 from modules.approvals import enqueue_action
 from modules.workflows.models import Workflow, WorkflowStep
 from modules.workflows.storage import create_workflow
+
+try:
+    from api.telemetry import log_event, log_error, log_performance
+    TELEMETRY_ENABLED = True
+except ImportError:
+    TELEMETRY_ENABLED = False
+    def log_event(*args, **kwargs): pass
+    def log_error(*args, **kwargs): pass
+    def log_performance(*args, **kwargs): pass
 
 log = logging.getLogger("levqor.ai.brain_builder")
 
@@ -61,6 +71,7 @@ def build_workflow():
     Input: { goal, context?, approx_volume?, language? }
     Output: { proposed_workflow, explanation, impact_level }
     """
+    _start = _time()
     try:
         data = request.get_json() or {}
         
@@ -68,6 +79,12 @@ def build_workflow():
         context = data.get('context', '')
         approx_volume = data.get('approx_volume', '')
         language = data.get('language') or 'en'
+        
+        log_event("brain_build_workflow", {
+            "goal_length": len(goal),
+            "has_context": bool(context),
+            "language": language
+        }, endpoint="/api/ai/brain/build_workflow")
         
         # Log incoming language for debugging i18n flow
         log.info(f"[BRAIN] Incoming language: {language!r}")
@@ -106,6 +123,11 @@ def build_workflow():
         
         explanation = _generate_explanation(proposed_workflow, impact_level)
         
+        log_performance("/api/ai/brain/build_workflow", (_time() - _start) * 1000, 200, {
+            "language": language,
+            "impact_level": impact_level.value
+        })
+        
         return jsonify({
             "proposed_workflow": proposed_workflow,
             "explanation": explanation,
@@ -115,6 +137,8 @@ def build_workflow():
         }), 200
         
     except Exception as e:
+        log_error("brain_builder.build_workflow", e, {"goal_length": len(goal) if goal else 0})
+        log_performance("/api/ai/brain/build_workflow", (_time() - _start) * 1000, 500)
         log.error(f"Error in brain workflow builder: {e}")
         return jsonify({"error": "Failed to build workflow"}), 500
 

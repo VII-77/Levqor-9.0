@@ -5,10 +5,20 @@ Uses Replit Stripe connector for automatic credential management
 """
 import os
 import logging
+from time import time as _time
 from flask import Blueprint, request, jsonify
 
 bp = Blueprint("billing_checkout", __name__, url_prefix="/api/billing")
 log = logging.getLogger("levqor.checkout")
+
+try:
+    from api.telemetry import log_event, log_error, log_performance
+    TELEMETRY_ENABLED = True
+except ImportError:
+    TELEMETRY_ENABLED = False
+    def log_event(*args, **kwargs): pass
+    def log_error(*args, **kwargs): pass
+    def log_performance(*args, **kwargs): pass
 
 try:
     import stripe
@@ -192,8 +202,11 @@ def create_checkout_session():
       "session_id": "cs_..."
     }
     """
+    _start = _time()
+    
     if not ensure_stripe_configured():
         log.error("Stripe not configured")
+        log_error("billing.checkout", Exception("Stripe not configured"))
         return jsonify({"error": "stripe_not_configured"}), 500
     
     try:
@@ -266,6 +279,11 @@ def create_checkout_session():
             )
             
             log.info(f"Created add-on checkout session for addons={','.join(addon_names)}")
+            log_event("checkout_session_created", {
+                "purchase_type": "addons",
+                "addons": addon_names
+            }, endpoint="/api/billing/checkout")
+            log_performance("/api/billing/checkout", (_time() - _start) * 1000, 200, {"type": "addons"})
             
             return jsonify({
                 "ok": True,
@@ -325,6 +343,11 @@ def create_checkout_session():
             )
             
             log.info(f"Created DFY checkout session for package={dfy_pack}")
+            log_event("checkout_session_created", {
+                "purchase_type": "dfy",
+                "package": dfy_pack
+            }, endpoint="/api/billing/checkout")
+            log_performance("/api/billing/checkout", (_time() - _start) * 1000, 200, {"type": "dfy"})
             
             return jsonify({
                 "ok": True,
@@ -392,6 +415,12 @@ def create_checkout_session():
         )
         
         log.info(f"Created subscription checkout session for tier={tier}, interval={billing_interval}")
+        log_event("checkout_session_created", {
+            "purchase_type": "subscription",
+            "tier": tier,
+            "billing_interval": billing_interval
+        }, endpoint="/api/billing/checkout")
+        log_performance("/api/billing/checkout", (_time() - _start) * 1000, 200, {"type": "subscription", "tier": tier})
         
         return jsonify({
             "ok": True,
@@ -401,11 +430,17 @@ def create_checkout_session():
         }), 200
         
     except stripe.error.InvalidRequestError as e:
+        log_error("billing.checkout.stripe_invalid", e)
+        log_performance("/api/billing/checkout", (_time() - _start) * 1000, 400)
         log.error(f"Stripe InvalidRequestError: {e}")
         return jsonify({"error": str(e)}), 400
     except stripe.error.AuthenticationError as e:
+        log_error("billing.checkout.stripe_auth", e)
+        log_performance("/api/billing/checkout", (_time() - _start) * 1000, 401)
         log.error(f"Stripe authentication failed: {e}")
         return jsonify({"error": "stripe_auth_failed"}), 401
     except Exception as e:
+        log_error("billing.checkout.general", e)
+        log_performance("/api/billing/checkout", (_time() - _start) * 1000, 500)
         log.error(f"Checkout error: {e}", exc_info=True)
         return jsonify({"error": "checkout_failed", "message": str(e)}), 500
