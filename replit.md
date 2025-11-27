@@ -74,6 +74,13 @@ Levqor X 9.0 employs a clean separation of concerns with a Next.js frontend depl
   - `GET /api/guardian/healing-plan`: 6 health checks (db, Stripe, Brain, error rate, slow endpoints, repeated errors) with suggested actions
   - Scheduler job runs every 60 seconds, logs heartbeat telemetry events
   - Safe Mode enforced: all healing actions are dry-run only (`auto_applicable: false`), no destructive operations
+- **Telemetry Autopilot Core (Wave 2)**: Database-backed log ingestion, anomaly detection, and daily reporting in passive mode.
+  - `POST /api/guardian/telemetry/ingest`: Stores telemetry events in PostgreSQL (`telemetry_logs` table)
+  - `GET /api/guardian/telemetry`: Summarizes telemetry data (sources, error rates, performance metrics)
+  - `GET /api/guardian/anomalies`: Detects patterns (repeated messages >=3x, slow endpoints >2000ms, high error rates >10%)
+  - `GET /api/guardian/daily-report`: Generates health score (0-100), improvement suggestions, top errors/events
+  - Frontend integration: `guardianLog()` function in `src/lib/telemetry.ts` for Wave 2 database logging
+  - Passive Mode enforced: All suggestions are dry-run only (`auto_applicable: false`)
 - **Enterprise Support**: Tier-aware support routing and SLA mapping.
 - **Governance**: Hardening checklist, automated health checks, and a comprehensive CI/CD safety harness for safe deployments. Includes preflight testing with user journey personas and launch readiness checks.
 - **Legal & Compliance**: Backend privacy API, 4 legal pages, cookie consent UX, automated file integrity monitoring, and log hygiene (e.g., email truncation).
