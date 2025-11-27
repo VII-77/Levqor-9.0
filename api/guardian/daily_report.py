@@ -54,9 +54,9 @@ def generate_daily_report(hours: int = 24) -> Dict[str, Any]:
         """
         totals = execute_query(totals_query, (cutoff,), fetch='one') or {}
         
-        total_logs = totals.get('total', 0)
-        total_errors = totals.get('errors', 0)
-        total_warnings = totals.get('warnings', 0)
+        total_logs = totals.get('total') or 0
+        total_errors = totals.get('errors') or 0
+        total_warnings = totals.get('warnings') or 0
         
         sources_query = """
             SELECT source, COUNT(*) as cnt 
@@ -117,9 +117,10 @@ def generate_daily_report(hours: int = 24) -> Dict[str, Any]:
         """
         top_errors = []
         for row in execute_query(errors_query, (cutoff,), fetch='all') or []:
+            error_msg = row.get('error_message') or ''
             error_info = {
                 "type": row.get('error_type', 'Unknown'),
-                "message": (row.get('error_message', '')[:100] + '...') if len(row.get('error_message', '')) > 100 else row.get('error_message', ''),
+                "message": (error_msg[:100] + '...') if len(error_msg) > 100 else error_msg,
                 "count": row['cnt']
             }
             top_errors.append(error_info)
