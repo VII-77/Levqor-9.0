@@ -970,6 +970,7 @@ from api.analytics import analytics_bp
 from api.templates import templates_bp
 from api.me import me_bp
 from api.system.launch_readiness import system_bp
+from api.system.heartbeat import heartbeat_bp
 from api.recovery import recovery_bp
 from api.tenants import tenants_bp
 from api.support_feedback import support_feedback_bp
@@ -979,6 +980,7 @@ from api.growth import growth_loops_bp
 from api.partners import partners_bp
 from api.auto_recovery import auto_recovery_bp
 from api.guardian.summary import guardian_bp
+from api.guardian.healing import healing_bp
 from api.telemetry import telemetry_ingest_bp
 
 app.register_blueprint(ai_chat_bp)
@@ -1006,6 +1008,7 @@ app.register_blueprint(analytics_bp)
 app.register_blueprint(templates_bp)
 app.register_blueprint(me_bp)
 app.register_blueprint(system_bp)
+app.register_blueprint(heartbeat_bp)
 app.register_blueprint(recovery_bp)
 app.register_blueprint(tenants_bp)
 app.register_blueprint(support_feedback_bp)
@@ -1015,6 +1018,7 @@ app.register_blueprint(growth_loops_bp)
 app.register_blueprint(partners_bp)
 app.register_blueprint(auto_recovery_bp)
 app.register_blueprint(guardian_bp)
+app.register_blueprint(healing_bp)
 app.register_blueprint(telemetry_ingest_bp)
 
 @app.get("/ops/auto_tune")

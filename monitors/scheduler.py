@@ -542,6 +542,29 @@ def run_guardian_founder_digest():
         log.error(f"Guardian Founder Digest error: {e}")
 
 
+def run_system_heartbeat():
+    """AUTOPILOT WAVE 1: System Heartbeat (every 60 seconds)
+    
+    Runs in-process heartbeat check without HTTP calls.
+    Logs telemetry events and alerts for degraded/error status.
+    """
+    log.debug("Running system heartbeat...")
+    try:
+        from api.system.heartbeat import run_heartbeat_check
+        data = run_heartbeat_check()
+        status = data.get("status", "unknown")
+        
+        if status == "ok":
+            log.debug(f"✅ Heartbeat OK: db={data.get('db_ok')}, stripe={data.get('stripe_ok')}, brain={data.get('brain_ok')}")
+        elif status == "degraded":
+            log.warning(f"⚠️ Heartbeat DEGRADED: db={data.get('db_ok')}, stripe={data.get('stripe_ok')}, brain={data.get('brain_ok')}, errors={data.get('error_count_recent')}")
+        else:
+            log.error(f"❌ Heartbeat ERROR: db={data.get('db_ok')}, stripe={data.get('stripe_ok')}, brain={data.get('brain_ok')}")
+            
+    except Exception as e:
+        log.error(f"System heartbeat error: {e}")
+
+
 def init_scheduler():
     """Initialize and start APScheduler"""
     try:
@@ -564,6 +587,15 @@ def init_scheduler():
             minutes=5,
             id='slo_watchdog',
             name='SLO monitoring',
+            replace_existing=True
+        )
+        
+        scheduler.add_job(
+            run_system_heartbeat,
+            'interval',
+            seconds=60,
+            id='system_heartbeat',
+            name='System heartbeat (Autopilot Wave 1)',
             replace_existing=True
         )
         
