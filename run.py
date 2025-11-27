@@ -986,6 +986,7 @@ from api.guardian.telemetry_summary import telemetry_summary_bp as guardian_tele
 from api.guardian.anomaly_detector import anomaly_detector_bp
 from api.guardian.daily_report import daily_report_bp
 from api.guardian.upgrade_planner import upgrade_planner_bp
+from api.guardian.executive_summary import executive_bp
 from api.telemetry import telemetry_ingest_bp
 
 app.register_blueprint(ai_chat_bp)
@@ -1029,6 +1030,7 @@ app.register_blueprint(guardian_telemetry_summary_bp)
 app.register_blueprint(anomaly_detector_bp)
 app.register_blueprint(daily_report_bp)
 app.register_blueprint(upgrade_planner_bp)
+app.register_blueprint(executive_bp)
 app.register_blueprint(telemetry_ingest_bp)
 
 @app.get("/ops/auto_tune")
