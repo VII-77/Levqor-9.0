@@ -110,5 +110,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
 
-  debug: process.env.NODE_ENV === "development",
+  debug: process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_AUTH_DEBUG === "1",
+
+  events: {
+    async signIn(message) {
+      console.log("[AUTH EVENT] signIn", {
+        user: { email: message.user?.email ?? null, id: message.user?.id ?? null },
+        accountProvider: message.account?.provider ?? null,
+      });
+    },
+    async session(message) {
+      console.log("[AUTH EVENT] session", {
+        sessionUser: { email: message.session?.user?.email ?? null },
+      });
+    },
+  },
 });
