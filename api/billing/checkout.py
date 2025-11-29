@@ -444,3 +444,81 @@ def create_checkout_session():
         log_performance("/api/billing/checkout", (_time() - _start) * 1000, 500)
         log.error(f"Checkout error: {e}", exc_info=True)
         return jsonify({"error": "checkout_failed", "message": str(e)}), 500
+
+
+@bp.post("/portal")
+def create_customer_portal_session():
+    """
+    Create a Stripe Customer Portal session for subscription management
+    
+    Allows customers to:
+    - View/update payment methods
+    - View invoices and billing history
+    - Cancel or modify subscriptions
+    
+    Request body (optional):
+    {
+      "customer_email": "user@example.com"
+    }
+    
+    Response:
+    {
+      "ok": true,
+      "url": "https://billing.stripe.com/..."
+    }
+    """
+    _start = _time()
+    
+    if not ensure_stripe_configured():
+        return jsonify({"error": "stripe_not_configured"}), 500
+    
+    try:
+        data = request.get_json() or {}
+        customer_email = (data.get("customer_email") or "").strip().lower()
+        
+        if not customer_email:
+            return jsonify({
+                "ok": False,
+                "error": "customer_email_required",
+                "message": "Please provide a customer email to access the billing portal"
+            }), 400
+        
+        customers = stripe.Customer.list(email=customer_email, limit=1)
+        
+        if not customers.data:
+            return jsonify({
+                "ok": False,
+                "error": "customer_not_found",
+                "message": "No billing record found for this email. Please subscribe first."
+            }), 404
+        
+        customer = customers.data[0]
+        
+        return_url = os.environ.get("NEXTAUTH_URL", "https://www.levqor.ai") + "/en/billing"
+        
+        portal_session = stripe.billing_portal.Session.create(
+            customer=customer.id,
+            return_url=return_url
+        )
+        
+        log.info(f"Created customer portal session for customer={customer.id}")
+        log_event("portal_session_created", {
+            "customer_id": customer.id
+        }, endpoint="/api/billing/portal")
+        log_performance("/api/billing/portal", (_time() - _start) * 1000, 200)
+        
+        return jsonify({
+            "ok": True,
+            "url": portal_session.url
+        }), 200
+        
+    except stripe.error.InvalidRequestError as e:
+        log_error("billing.portal.stripe_invalid", e)
+        log_performance("/api/billing/portal", (_time() - _start) * 1000, 400)
+        log.error(f"Stripe InvalidRequestError: {e}")
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        log_error("billing.portal.general", e)
+        log_performance("/api/billing/portal", (_time() - _start) * 1000, 500)
+        log.error(f"Portal error: {e}", exc_info=True)
+        return jsonify({"error": "portal_failed", "message": str(e)}), 500

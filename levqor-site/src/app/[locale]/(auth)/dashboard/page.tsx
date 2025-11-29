@@ -12,6 +12,9 @@ import HealthOverview from "@/components/dashboard/HealthOverview";
 import GrowthPanel from "@/components/dashboard/GrowthPanel";
 import { DashboardBrainCanvas } from "@/components/brain";
 import DashboardClientWrapper from "@/components/dashboard/DashboardClientWrapper";
+import AccountBar from "@/components/dashboard/AccountBar";
+import GettingStarted from "@/components/dashboard/GettingStarted";
+import StarterTemplates from "@/components/dashboard/StarterTemplates";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -64,7 +67,7 @@ function AuthDebugPanel({ session }: { session: AuthDebugSession | null }) {
           target="_blank" 
           className="ml-auto text-blue-600 hover:underline"
         >
-          Full Debug Info →
+          Full Debug Info &rarr;
         </a>
       </div>
     </div>
@@ -85,11 +88,11 @@ export default async function Dashboard(){
   return (
     <DashboardClientWrapper>
     <AuthDebugPanel session={session} />
+    <AccountBar />
     <main className="min-h-screen bg-gray-50 p-4 md:p-8" style={SHOW_AUTH_DEBUG ? { paddingTop: '60px' } : undefined}>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-stretch">
-            {/* Left: Header Content */}
             <div className="flex-1 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -116,12 +119,15 @@ export default async function Dashboard(){
               </div>
             </div>
             
-            {/* Right: Levqor Brain Canvas - Uses context-driven state */}
             <div className="hidden md:block w-48 lg:w-64">
               <DashboardBrainCanvas className="w-full h-full min-h-[100px]" />
             </div>
           </div>
         </div>
+        
+        <GettingStarted />
+        
+        <StarterTemplates />
         
         <QuickstartPanel className="mb-6" />
         

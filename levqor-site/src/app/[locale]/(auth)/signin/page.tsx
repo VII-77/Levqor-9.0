@@ -4,8 +4,6 @@ import { signIn } from "next-auth/react";
 import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 
-const SHOW_MICROSOFT = false;
-
 const ERROR_MESSAGES: Record<string, string> = {
   OAuthSignin: "There was a problem starting the sign-in process. Please try again.",
   OAuthCallback: "There was a problem completing the sign-in. Please try a different method.",
@@ -16,6 +14,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   EmailSignin: "The email could not be sent. Please try again or use a different method.",
   CredentialsSignin: "Invalid email or password. Please check your credentials.",
   SessionRequired: "Please sign in to access this page.",
+  Configuration: "Sign-in failed. Please try again or use a different provider.",
+  OAuthCallbackError: "Sign-in failed. Please try again or use a different provider.",
   Default: "An unexpected error occurred. Please try again.",
 };
 
@@ -23,6 +23,7 @@ function SignInContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hasMicrosoft, setHasMicrosoft] = useState(false);
   const searchParams = useSearchParams();
   const params = useParams();
   const locale = (params?.locale as string) || "en";
@@ -31,6 +32,21 @@ function SignInContent() {
   const callbackUrl = typeof window !== "undefined"
     ? `${window.location.origin}/${locale}/dashboard`
     : `/${locale}/dashboard`;
+  
+  useEffect(() => {
+    async function checkProviders() {
+      try {
+        const res = await fetch("/api/auth/providers");
+        if (res.ok) {
+          const providers = await res.json();
+          setHasMicrosoft(!!providers["azure-ad"]);
+        }
+      } catch (err) {
+        console.error("Failed to fetch providers:", err);
+      }
+    }
+    checkProviders();
+  }, []);
   
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -123,7 +139,7 @@ function SignInContent() {
                   <p className="text-sm text-red-700 mt-1">
                     {ERROR_MESSAGES[errorCode] || ERROR_MESSAGES.Default}
                   </p>
-                  {(errorCode === "OAuthSignin" || errorCode === "OAuthCallback") && (
+                  {(errorCode === "OAuthSignin" || errorCode === "OAuthCallback" || errorCode === "OAuthCallbackError") && (
                     <p className="text-xs text-red-600 mt-2">
                       This may be caused by provider configuration. Try email sign-in below.
                     </p>
@@ -148,7 +164,7 @@ function SignInContent() {
               Continue with Google
             </button>
             
-            {SHOW_MICROSOFT && (
+            {hasMicrosoft && (
               <button 
                 onClick={() => handleOAuthSignIn("azure-ad")}
                 disabled={loading}
