@@ -57,6 +57,16 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [{ type: 'host', value: 'levqor.ai' }],
+        destination: 'https://www.levqor.ai/:path*',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

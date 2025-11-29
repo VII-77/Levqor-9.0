@@ -1,0 +1,136 @@
+{
+  "colorScheme": "light",
+  "fonts": [
+    {
+      "family": "Roboto",
+      "role": "body"
+    },
+    {
+      "family": "Segoe UI",
+      "role": "body"
+    },
+    {
+      "family": "Oxygen",
+      "role": "body"
+    },
+    {
+      "family": "Ubuntu",
+      "role": "body"
+    },
+    {
+      "family": "Cantarell",
+      "role": "body"
+    }
+  ],
+  "colors": {
+    "primary": "#0F172A",
+    "accent": "#0070F3",
+    "background": "#F5F5F5",
+    "textPrimary": "#0070F3",
+    "link": "#0070F3"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "Roboto",
+      "heading": "Roboto"
+    },
+    "fontStacks": {
+      "heading": [
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Roboto",
+        "Oxygen",
+        "Ubuntu",
+        "Cantarell",
+        "sans-serif"
+      ],
+      "body": [
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Roboto",
+        "Oxygen",
+        "Ubuntu",
+        "Cantarell",
+        "sans-serif"
+      ],
+      "paragraph": [
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Roboto",
+        "Oxygen",
+        "Ubuntu",
+        "Cantarell",
+        "sans-serif"
+      ]
+    },
+    "fontSizes": {
+      "h1": "30px",
+      "h2": "30px",
+      "body": "16px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 4,
+    "borderRadius": "0px"
+  },
+  "components": {
+    "input": {
+      "borderColor": "#CCCCCC",
+      "borderRadius": "0px"
+    },
+    "buttonPrimary": {
+      "background": "#000000",
+      "textColor": "#FFFFFF",
+      "borderRadius": "12px",
+      "shadow": "none"
+    },
+    "buttonSecondary": {
+      "background": "#F9FAFB",
+      "textColor": "#374151",
+      "borderColor": "#9CA3AF",
+      "borderRadius": "12px",
+      "shadow": "none"
+    }
+  },
+  "images": {
+    "logo": "File saved at: attached_assets/logo.svg",
+    "favicon": null,
+    "ogImage": null
+  },
+  "__framework_hints": [],
+  "__llm_logo_reasoning": {
+    "selectedIndex": 0,
+    "reasoning": "Logo #0 matches the brand name 'Levqor' and is located in the header, linking to the homepage, making it the most suitable choice for the brand logo.",
+    "confidence": 0.95
+  },
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": 2,
+      "text": "Go Home",
+      "reasoning": "Button #2 ('Go Home') has a vibrant black background with white text, making it stand out as a primary call-to-action. It is visually striking and action-oriented, fitting the criteria for a primary CTA."
+    },
+    "secondary": {
+      "index": 0,
+      "text": "Documentation",
+      "reasoning": "Button #0 ('Documentation') has a subtle blue background and is less prominent compared to the primary button. It serves as a secondary action, fitting the criteria for a secondary button with a different color group."
+    },
+    "confidence": 0.9
+  },
+  "personality": {
+    "tone": "modern",
+    "energy": "medium",
+    "targetAudience": "tech-savvy individuals and businesses looking for AI solutions."
+  },
+  "designSystem": {
+    "framework": "tailwind",
+    "componentLibrary": null
+  },
+  "confidence": {
+    "buttons": 0.9,
+    "colors": 0.95,
+    "overall": 0.925
+  }
+}
