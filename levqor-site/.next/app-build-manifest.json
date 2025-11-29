@@ -1,9 +1,24 @@
 {
   "pages": {
-    "/[locale]/page": [
+    "/[locale]/(auth)/signin/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/page.js"
+      "static/chunks/app/[locale]/(auth)/signin/page.js"
+    ],
+    "/[locale]/(auth)/signin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/layout.js"
+    ],
+    "/[locale]/(auth)/signin/error": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/error.js"
+    ],
+    "/[locale]/(auth)/signin/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth)/signin/loading.js"
     ],
     "/[locale]/layout": [
       "static/chunks/webpack.js",
@@ -31,25 +46,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
-    "/[locale]/(auth)/signin/page": [
+    "/[locale]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(auth)/signin/page.js"
-    ],
-    "/[locale]/(auth)/signin/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(auth)/signin/layout.js"
-    ],
-    "/[locale]/(auth)/signin/error": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(auth)/signin/error.js"
-    ],
-    "/[locale]/(auth)/signin/loading": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(auth)/signin/loading.js"
+      "static/chunks/app/[locale]/page.js"
     ]
   }
 }

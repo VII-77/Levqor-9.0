@@ -15,6 +15,7 @@ import DashboardClientWrapper from "@/components/dashboard/DashboardClientWrappe
 import AccountBar from "@/components/dashboard/AccountBar";
 import GettingStarted from "@/components/dashboard/GettingStarted";
 import StarterTemplates from "@/components/dashboard/StarterTemplates";
+import AIFounderStrip from "@/components/dashboard/AIFounderStrip";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -91,6 +92,8 @@ export default async function Dashboard(){
     <AccountBar />
     <main className="min-h-screen bg-gray-50 p-4 md:p-8" style={SHOW_AUTH_DEBUG ? { paddingTop: '60px' } : undefined}>
       <div className="max-w-6xl mx-auto space-y-6">
+        <AIFounderStrip />
+        
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-stretch">
             <div className="flex-1 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">

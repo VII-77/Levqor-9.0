@@ -18,7 +18,28 @@ export async function middleware(req: NextRequest) {
     ? "/" + pathSegments.slice(1).join("/")
     : pathname
 
-  const protectedPaths = ["/dashboard", "/admin"]
+  const protectedPaths = [
+    "/dashboard",
+    "/admin",
+    "/billing",
+    "/revenue",
+    "/onboarding",
+    "/trial",
+    "/post-auth",
+    "/paywall",
+    "/builder",
+    "/templates"
+  ]
+  
+  const allowedWithoutSubscription = [
+    "/billing",
+    "/paywall",
+    "/support",
+    "/trial",
+    "/onboarding",
+    "/post-auth"
+  ]
+  
   const isProtectedPath = protectedPaths.some(
     (path) =>
       pathWithoutLocale === path || pathWithoutLocale.startsWith(path + "/")
@@ -26,6 +47,7 @@ export async function middleware(req: NextRequest) {
 
   if (isProtectedPath) {
     const token = await getToken({ req })
+    const signinPath = hasLocalePrefix ? `/${firstSegment}/signin` : "/signin"
     
     if (!token) {
       const host = req.nextUrl.host
@@ -33,14 +55,11 @@ export async function middleware(req: NextRequest) {
       const hasCookie = cookieHeader.includes("authjs.session-token") || 
                         cookieHeader.includes("next-auth.session-token")
       
-      console.log(`[AUTH-DEBUG] NO TOKEN for ${pathWithoutLocale} host=${host} hasCookie=${hasCookie}`)
+      console.log(`[AUTH-MW] NO TOKEN for ${pathWithoutLocale} host=${host} hasCookie=${hasCookie}`)
       
-      if (pathWithoutLocale.startsWith("/admin")) {
-        const signinPath = hasLocalePrefix ? `/${firstSegment}/signin` : "/signin"
-        return NextResponse.redirect(new URL(signinPath, req.url))
-      }
+      return NextResponse.redirect(new URL(signinPath, req.url))
     } else {
-      console.log(`[AUTH-DEBUG] TOKEN OK for ${pathWithoutLocale} sub=${token.sub?.substring(0, 8)}...`)
+      console.log(`[AUTH-MW] TOKEN OK for ${pathWithoutLocale} sub=${token.sub?.substring(0, 8)}...`)
     }
   }
   return intlMiddleware(req)

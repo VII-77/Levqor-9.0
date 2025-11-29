@@ -972,6 +972,7 @@ from api.me import me_bp
 from api.system.launch_readiness import system_bp
 from api.system.heartbeat import heartbeat_bp
 from api.system.auth_debug import auth_debug_bp
+from api.system.account_status import bp as account_status_bp
 from api.recovery import recovery_bp
 from api.tenants import tenants_bp
 from api.support_feedback import support_feedback_bp
@@ -1021,6 +1022,7 @@ app.register_blueprint(me_bp)
 app.register_blueprint(system_bp)
 app.register_blueprint(heartbeat_bp)
 app.register_blueprint(auth_debug_bp)
+app.register_blueprint(account_status_bp)
 app.register_blueprint(recovery_bp)
 app.register_blueprint(tenants_bp)
 app.register_blueprint(support_feedback_bp)
