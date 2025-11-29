@@ -36,10 +36,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/[locale]/layout.js"
     ],
-    "/pricing/page": [
+    "/[locale]/(public)/pricing/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/pricing/page.js"
+      "static/chunks/app/[locale]/(public)/pricing/page.js"
+    ],
+    "/[locale]/(public)/pricing/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public)/pricing/layout.js"
+    ],
+    "/[locale]/(public)/integrations/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public)/integrations/page.js"
     ],
     "/[locale]/(auth)/signin/page": [
       "static/chunks/webpack.js",
@@ -60,11 +70,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/[locale]/(auth)/signin/loading.js"
-    ],
-    "/[locale]/(public)/integrations/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(public)/integrations/page.js"
     ]
   }
 }
