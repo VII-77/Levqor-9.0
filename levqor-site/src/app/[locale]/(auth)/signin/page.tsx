@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect, Suspense } from "react";
 import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
+
+const SHOW_MICROSOFT = false;
 
 const ERROR_MESSAGES: Record<string, string> = {
   OAuthSignin: "There was a problem starting the sign-in process. Please try again.",
@@ -22,8 +24,13 @@ function SignInContent() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const searchParams = useSearchParams();
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
   const errorCode = searchParams.get("error");
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  
+  const callbackUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/${locale}/dashboard`
+    : `/${locale}/dashboard`;
   
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -141,20 +148,22 @@ function SignInContent() {
               Continue with Google
             </button>
             
-            <button 
-              onClick={() => handleOAuthSignIn("azure-ad")}
-              disabled={loading}
-              className="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3 px-4 rounded-lg border border-gray-300 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 23 23">
-                <path fill="#f3f3f3" d="M0 0h23v23H0z"/>
-                <path fill="#f35325" d="M1 1h10v10H1z"/>
-                <path fill="#81bc06" d="M12 1h10v10H12z"/>
-                <path fill="#05a6f0" d="M1 12h10v10H1z"/>
-                <path fill="#ffba08" d="M12 12h10v10H12z"/>
-              </svg>
-              Continue with Microsoft
-            </button>
+            {SHOW_MICROSOFT && (
+              <button 
+                onClick={() => handleOAuthSignIn("azure-ad")}
+                disabled={loading}
+                className="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3 px-4 rounded-lg border border-gray-300 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-5 h-5" viewBox="0 0 23 23">
+                  <path fill="#f3f3f3" d="M0 0h23v23H0z"/>
+                  <path fill="#f35325" d="M1 1h10v10H1z"/>
+                  <path fill="#81bc06" d="M12 1h10v10H12z"/>
+                  <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                  <path fill="#ffba08" d="M12 12h10v10H12z"/>
+                </svg>
+                Continue with Microsoft
+              </button>
+            )}
           </div>
 
           <div className="relative mb-6">
