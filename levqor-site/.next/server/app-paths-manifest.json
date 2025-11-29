@@ -1,7 +1,1 @@
-{
-  "/api/auth/session-debug/route": "app/api/auth/session-debug/route.js",
-  "/api/auth/debug/route": "app/api/auth/debug/route.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/[locale]/page": "app/[locale]/page.js",
-  "/[locale]/(auth)/signin/page": "app/[locale]/(auth)/signin/page.js"
-}
+{}
