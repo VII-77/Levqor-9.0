@@ -10,19 +10,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
 
-  cookies: {
-    sessionToken: {
-      name: IS_PRODUCTION ? "__Secure-authjs.session-token" : "authjs.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: IS_PRODUCTION,
-        domain: IS_PRODUCTION ? ".levqor.ai" : undefined,
-      },
-    },
-  },
-
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
