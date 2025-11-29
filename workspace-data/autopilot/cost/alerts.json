@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-29T00:07:29.937271+00:00",
+  "timestamp": "2025-11-29T01:56:13.232331+00:00",
   "alerts": [
     {
       "type": "cpu_spike",
@@ -9,7 +9,7 @@
     }
   ],
   "current_metrics": {
-    "timestamp": "2025-11-29T00:07:29.789838+00:00",
+    "timestamp": "2025-11-29T01:56:13.109465+00:00",
     "openai": {
       "tokens_today": 0,
       "tokens_hour": 0,
@@ -29,8 +29,8 @@
     },
     "compute": {
       "cpu_percent": 80.8,
-      "memory_percent": 54.5,
-      "memory_used_mb": 35029.484375
+      "memory_percent": 56.3,
+      "memory_used_mb": 36212.47265625
     },
     "estimated_cost_today": 0.0,
     "estimated_cost_month": 0.0
