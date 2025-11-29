@@ -16,6 +16,8 @@ import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
 
+const SHOW_AUTH_DEBUG = process.env.NEXT_PUBLIC_SHOW_AUTH_DEBUG === "1";
+
 export const metadata: Metadata = {
   robots: {
     index: false,
@@ -34,18 +36,56 @@ async function getUsage(){
   }
 }
 
+interface AuthDebugSession {
+  user?: {
+    email?: string | null;
+    id?: string;
+  } | null;
+}
+
+function AuthDebugPanel({ session }: { session: AuthDebugSession | null }) {
+  if (!SHOW_AUTH_DEBUG) return null;
+  
+  return (
+    <div className="fixed top-0 left-0 right-0 bg-yellow-100 border-b-2 border-yellow-400 p-3 z-50 text-sm font-mono">
+      <div className="max-w-6xl mx-auto flex items-center gap-4">
+        <span className="font-bold text-yellow-800">AUTH DEBUG:</span>
+        {session?.user ? (
+          <span className="text-green-700">
+            Logged in as: {session.user.email}
+          </span>
+        ) : (
+          <span className="text-red-700">
+            No session detected - auth() returned null
+          </span>
+        )}
+        <a 
+          href="/api/auth/debug" 
+          target="_blank" 
+          className="ml-auto text-blue-600 hover:underline"
+        >
+          Full Debug Info →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 export default async function Dashboard(){
   const session = await auth();
   
   if(!session?.user){
-    redirect('/signin');
+    if (!SHOW_AUTH_DEBUG) {
+      redirect('/signin');
+    }
   }
   
   const usage = await getUsage();
   
   return (
     <DashboardClientWrapper>
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <AuthDebugPanel session={session} />
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8" style={SHOW_AUTH_DEBUG ? { paddingTop: '60px' } : undefined}>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white rounded-lg shadow overflow-hidden">
           <div className="flex flex-col md:flex-row md:items-stretch">
@@ -54,7 +94,7 @@ export default async function Dashboard(){
               <div>
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
                 <p className="text-gray-600 mt-1">
-                  Welcome back, {session.user.email}
+                  Welcome back, {session?.user?.email || "Guest"}
                 </p>
               </div>
               <div className="flex gap-3">

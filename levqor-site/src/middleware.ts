@@ -25,10 +25,22 @@ export async function middleware(req: NextRequest) {
   )
 
   if (isProtectedPath) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
+    const token = await getToken({ req })
+    
     if (!token) {
-      const signinPath = hasLocalePrefix ? `/${firstSegment}/signin` : "/signin"
-      return NextResponse.redirect(new URL(signinPath, req.url))
+      const host = req.nextUrl.host
+      const cookieHeader = req.headers.get("cookie") || "none"
+      const hasCookie = cookieHeader.includes("authjs.session-token") || 
+                        cookieHeader.includes("next-auth.session-token")
+      
+      console.log(`[AUTH-DEBUG] NO TOKEN for ${pathWithoutLocale} host=${host} hasCookie=${hasCookie}`)
+      
+      if (pathWithoutLocale.startsWith("/admin")) {
+        const signinPath = hasLocalePrefix ? `/${firstSegment}/signin` : "/signin"
+        return NextResponse.redirect(new URL(signinPath, req.url))
+      }
+    } else {
+      console.log(`[AUTH-DEBUG] TOKEN OK for ${pathWithoutLocale} sub=${token.sub?.substring(0, 8)}...`)
     }
   }
   return intlMiddleware(req)
