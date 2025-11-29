@@ -35,7 +35,7 @@ export default function TrialSuccessPage() {
           </div>
           
           <h1 className="text-3xl font-bold text-white mb-2">Trial started!</h1>
-          <p className="text-blue-200">Your 7-day free trial is now active.</p>
+          <p className="text-blue-200">Your 14-day free trial is now active.</p>
         </div>
         
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 mb-8">

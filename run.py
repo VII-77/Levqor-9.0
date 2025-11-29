@@ -996,6 +996,9 @@ from api.guardian.ceo_engine import ceo_bp
 from api.guardian.founder_briefing import founder_briefing_bp
 from api.revenue.leads import revenue_leads_bp
 from api.telemetry import telemetry_ingest_bp
+from api.billing.trial import trial_bp
+from api.wow.brain import brain_bp as wow_brain_bp
+from api.builder.generate import builder_bp
 
 app.register_blueprint(ai_chat_bp)
 app.register_blueprint(ai_workflow_bp)
@@ -1046,6 +1049,9 @@ app.register_blueprint(ceo_bp)
 app.register_blueprint(founder_briefing_bp)
 app.register_blueprint(revenue_leads_bp)
 app.register_blueprint(telemetry_ingest_bp)
+app.register_blueprint(trial_bp)
+app.register_blueprint(wow_brain_bp)
+app.register_blueprint(builder_bp)
 
 @app.get("/ops/auto_tune")
 def auto_tune_endpoint():
