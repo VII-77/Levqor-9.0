@@ -1,1 +1,6 @@
-{}
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/debug/route": "app/api/auth/debug/route.js",
+  "/api/auth/session-debug/route": "app/api/auth/session-debug/route.js",
+  "/[locale]/page": "app/[locale]/page.js"
+}
