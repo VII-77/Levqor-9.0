@@ -68,12 +68,9 @@ export default function LanguageSwitcher() {
     // Set NEXT_LOCALE cookie for next-intl middleware
     document.cookie = `NEXT_LOCALE=${locale}; path=/; max-age=31536000; SameSite=Lax`;
     
+    // Always use explicit locale prefix for reliable routing
     startTransition(() => {
-      if (locale === 'en') {
-        router.push(pathWithoutLocale);
-      } else {
-        router.push(`/${locale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`);
-      }
+      router.push(`/${locale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`);
     });
     setOpen(false);
   }

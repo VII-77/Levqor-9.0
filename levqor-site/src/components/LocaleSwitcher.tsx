@@ -26,7 +26,6 @@ function navigateToLocale(nextLocale: LanguageCode) {
   if (typeof window === "undefined") return;
 
   // CRITICAL: Set the NEXT_LOCALE cookie BEFORE navigating
-  // This ensures next-intl middleware respects our language choice
   document.cookie = `NEXT_LOCALE=${nextLocale}; path=/; max-age=31536000; SameSite=Lax`;
 
   const url = new URL(window.location.href);
@@ -34,18 +33,7 @@ function navigateToLocale(nextLocale: LanguageCode) {
   const first = segments[0];
   const hasLocalePrefix = SUPPORTED_LOCALES.includes(first as LanguageCode);
 
-  if (nextLocale === DEFAULT_LOCALE) {
-    // For English: navigate to root path without locale prefix
-    const pathWithoutLocale = hasLocalePrefix
-      ? "/" + segments.slice(1).join("/")
-      : url.pathname;
-    
-    url.pathname = pathWithoutLocale === "" ? "/" : pathWithoutLocale;
-    window.location.assign(url.toString());
-    return;
-  }
-
-  // For other languages: add/replace locale prefix
+  // Always use explicit locale prefix for reliable routing
   if (hasLocalePrefix) {
     segments[0] = nextLocale;
   } else {

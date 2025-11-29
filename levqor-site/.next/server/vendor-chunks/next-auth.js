@@ -51,16 +51,6 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ }),
 
-/***/ "(rsc)/./node_modules/next-auth/jwt.js":
-/*!***************************************!*\
-  !*** ./node_modules/next-auth/jwt.js ***!
-  \***************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   decode: () => (/* reexport safe */ _auth_core_jwt__WEBPACK_IMPORTED_MODULE_0__.decode),\n/* harmony export */   encode: () => (/* reexport safe */ _auth_core_jwt__WEBPACK_IMPORTED_MODULE_0__.encode),\n/* harmony export */   getToken: () => (/* reexport safe */ _auth_core_jwt__WEBPACK_IMPORTED_MODULE_0__.getToken)\n/* harmony export */ });\n/* harmony import */ var _auth_core_jwt__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @auth/core/jwt */ \"(rsc)/./node_modules/next-auth/node_modules/@auth/core/jwt.js\");\n/**\n * :::warning Not recommended\n * In NextAuth.js v5 or newer, we recommend other authentication methods server-side. Read more at: https://authjs.dev/getting-started/migrating-to-v5#authenticating-server-side\n * :::\n *\n * @module jwt\n */\n\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL2p3dC5qcyIsIm1hcHBpbmdzIjoiOzs7Ozs7O0FBQUE7QUFDQTtBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDK0IiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly9sZXZxb3Itc2l0ZS8uL25vZGVfbW9kdWxlcy9uZXh0LWF1dGgvand0LmpzPzZiNzUiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiA6Ojp3YXJuaW5nIE5vdCByZWNvbW1lbmRlZFxuICogSW4gTmV4dEF1dGguanMgdjUgb3IgbmV3ZXIsIHdlIHJlY29tbWVuZCBvdGhlciBhdXRoZW50aWNhdGlvbiBtZXRob2RzIHNlcnZlci1zaWRlLiBSZWFkIG1vcmUgYXQ6IGh0dHBzOi8vYXV0aGpzLmRldi9nZXR0aW5nLXN0YXJ0ZWQvbWlncmF0aW5nLXRvLXY1I2F1dGhlbnRpY2F0aW5nLXNlcnZlci1zaWRlXG4gKiA6OjpcbiAqXG4gKiBAbW9kdWxlIGp3dFxuICovXG5leHBvcnQgKiBmcm9tIFwiQGF1dGgvY29yZS9qd3RcIjtcbiJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/jwt.js\n");
-
-/***/ }),
-
 /***/ "(rsc)/./node_modules/next-auth/lib/actions.js":
 /*!***********************************************!*\
   !*** ./node_modules/next-auth/lib/actions.js ***!

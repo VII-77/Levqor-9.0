@@ -1,5 +1,8 @@
 {
-  "/signin/page": "app/signin/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/auth/session-debug/route": "app/api/auth/session-debug/route.js"
+  "/page": "app/page.js",
+  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/[locale]/page": "app/[locale]/page.js",
+  "/[locale]/(public)/integrations/page": "app/[locale]/(public)/integrations/page.js",
+  "/[locale]/(auth)/signin/page": "app/[locale]/(auth)/signin/page.js"
 }
