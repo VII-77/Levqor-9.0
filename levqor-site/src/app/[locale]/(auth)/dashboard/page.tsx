@@ -16,6 +16,9 @@ import AccountBar from "@/components/dashboard/AccountBar";
 import GettingStarted from "@/components/dashboard/GettingStarted";
 import StarterTemplates from "@/components/dashboard/StarterTemplates";
 import AIFounderStrip from "@/components/dashboard/AIFounderStrip";
+import AIBriefingCard from "@/components/dashboard/AIBriefingCard";
+import CommandPalette from "@/components/CommandPalette";
+import SuggestionChips from "@/components/dashboard/SuggestionChips";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -127,6 +130,8 @@ export default async function Dashboard(){
             </div>
           </div>
         </div>
+        
+        <AIBriefingCard />
         
         <GettingStarted />
         
@@ -248,6 +253,8 @@ export default async function Dashboard(){
       
       <AIHelpPanel context="dashboard" />
       <LevqorPilotPanel />
+      <CommandPalette />
+      <SuggestionChips />
     </main>
     </DashboardClientWrapper>
   );

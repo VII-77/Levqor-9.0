@@ -900,6 +900,7 @@ from api.billing.pricing import bp as pricing_bp
 from api.billing.discounts import bp as discounts_bp
 from api.billing.checkout import bp as billing_checkout_bp
 from api.billing.webhooks import bp as billing_webhooks_bp
+from api.billing.status import billing_status_bp
 from api.admin.insights import bp as admin_insights_bp
 from api.admin.runbooks import bp as admin_runbooks_bp
 from api.admin.postmortem import bp as admin_postmortem_bp
@@ -927,6 +928,7 @@ app.register_blueprint(pricing_bp)
 app.register_blueprint(discounts_bp)
 app.register_blueprint(billing_checkout_bp)
 app.register_blueprint(billing_webhooks_bp)
+app.register_blueprint(billing_status_bp)
 app.register_blueprint(admin_insights_bp)
 app.register_blueprint(admin_runbooks_bp)
 app.register_blueprint(admin_postmortem_bp)
