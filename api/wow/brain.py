@@ -10,15 +10,11 @@ from flask import Blueprint, request, jsonify
 
 brain_bp = Blueprint("wow_brain", __name__, url_prefix="/api/wow/brain")
 
-
-def get_db():
-    from levqor.db import get_db as _get_db
-    return _get_db()
+from modules.db_wrapper import execute, execute_query, commit
 
 
 def ensure_brain_table():
-    db = get_db()
-    db.execute("""
+    execute("""
         CREATE TABLE IF NOT EXISTS user_brain_state (
             user_id TEXT PRIMARY KEY,
             email TEXT UNIQUE,
@@ -26,7 +22,7 @@ def ensure_brain_table():
             json_state TEXT NOT NULL
         )
     """)
-    db.commit()
+    commit()
 
 
 def get_default_state():
@@ -64,12 +60,11 @@ def record_event():
         return jsonify({"ok": False, "error": "Event type required"}), 400
     
     ensure_brain_table()
-    db = get_db()
     now = time.time()
     
-    existing = db.execute(
-        "SELECT * FROM user_brain_state WHERE email = ?", (email,)
-    ).fetchone()
+    existing = execute_query(
+        "SELECT * FROM user_brain_state WHERE email = ?", (email,), fetch='one'
+    )
     
     if existing:
         state = json.loads(existing["json_state"])
@@ -113,18 +108,18 @@ def record_event():
     json_state = json.dumps(state)
     
     if existing:
-        db.execute(
+        execute(
             "UPDATE user_brain_state SET json_state = ?, updated_at = ? WHERE email = ?",
             (json_state, now, email)
         )
     else:
         user_id = str(uuid.uuid4())
-        db.execute(
+        execute(
             "INSERT INTO user_brain_state (user_id, email, updated_at, json_state) VALUES (?, ?, ?, ?)",
             (user_id, email, now, json_state)
         )
     
-    db.commit()
+    commit()
     
     return jsonify({
         "ok": True,
@@ -142,11 +137,10 @@ def get_state():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_brain_table()
-    db = get_db()
     
-    existing = db.execute(
-        "SELECT * FROM user_brain_state WHERE email = ?", (email,)
-    ).fetchone()
+    existing = execute_query(
+        "SELECT * FROM user_brain_state WHERE email = ?", (email,), fetch='one'
+    )
     
     if existing:
         state = json.loads(existing["json_state"])
@@ -173,11 +167,10 @@ def get_recommendations():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_brain_table()
-    db = get_db()
     
-    existing = db.execute(
-        "SELECT * FROM user_brain_state WHERE email = ?", (email,)
-    ).fetchone()
+    existing = execute_query(
+        "SELECT * FROM user_brain_state WHERE email = ?", (email,), fetch='one'
+    )
     
     if existing:
         state = json.loads(existing["json_state"])
@@ -248,29 +241,28 @@ def reset_state():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_brain_table()
-    db = get_db()
     now = time.time()
     
     default = get_default_state()
     json_state = json.dumps(default)
     
-    existing = db.execute(
-        "SELECT * FROM user_brain_state WHERE email = ?", (email,)
-    ).fetchone()
+    existing = execute_query(
+        "SELECT * FROM user_brain_state WHERE email = ?", (email,), fetch='one'
+    )
     
     if existing:
-        db.execute(
+        execute(
             "UPDATE user_brain_state SET json_state = ?, updated_at = ? WHERE email = ?",
             (json_state, now, email)
         )
     else:
         user_id = str(uuid.uuid4())
-        db.execute(
+        execute(
             "INSERT INTO user_brain_state (user_id, email, updated_at, json_state) VALUES (?, ?, ?, ?)",
             (user_id, email, now, json_state)
         )
     
-    db.commit()
+    commit()
     
     return jsonify({
         "ok": True,

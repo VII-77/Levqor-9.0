@@ -12,15 +12,11 @@ builder_bp = Blueprint("builder", __name__, url_prefix="/api/builder")
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
-
-def get_db():
-    from levqor.db import get_db as _get_db
-    return _get_db()
+from modules.db_wrapper import execute, execute_query, commit
 
 
 def ensure_builder_table():
-    db = get_db()
-    db.execute("""
+    execute("""
         CREATE TABLE IF NOT EXISTS builder_history (
             id TEXT PRIMARY KEY,
             user_id TEXT NOT NULL,
@@ -32,7 +28,7 @@ def ensure_builder_table():
             status TEXT DEFAULT 'active'
         )
     """)
-    db.commit()
+    commit()
 
 
 WORKFLOW_TEMPLATES = {
@@ -196,18 +192,17 @@ def save_workflow():
         return jsonify({"ok": False, "error": "YAML content required"}), 400
     
     ensure_builder_table()
-    db = get_db()
     now = time.time()
     
     workflow_id = str(uuid.uuid4())
     user_id = email.split("@")[0]
     
-    db.execute("""
+    execute("""
         INSERT INTO builder_history (id, user_id, email, created_at, prompt, yaml, summary)
         VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (workflow_id, user_id, email, now, prompt, yaml_content, summary))
     
-    db.commit()
+    commit()
     
     return jsonify({
         "ok": True,
@@ -226,15 +221,14 @@ def get_history():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_builder_table()
-    db = get_db()
     
-    workflows = db.execute("""
+    workflows = execute_query("""
         SELECT id, created_at, prompt, yaml, summary, status
         FROM builder_history
         WHERE email = ? AND status = 'active'
         ORDER BY created_at DESC
         LIMIT ?
-    """, (email, limit)).fetchall()
+    """, (email, limit), fetch='all')
     
     items = []
     for w in workflows:
@@ -263,12 +257,11 @@ def delete_workflow(workflow_id):
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_builder_table()
-    db = get_db()
     
-    db.execute("""
+    execute("""
         UPDATE builder_history SET status = 'deleted' WHERE id = ? AND email = ?
     """, (workflow_id, email))
     
-    db.commit()
+    commit()
     
     return jsonify({"ok": True, "deleted": workflow_id})

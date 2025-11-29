@@ -22,15 +22,11 @@ if STRIPE_SECRET_KEY:
     except ImportError:
         pass
 
-
-def get_db():
-    from levqor.db import get_db as _get_db
-    return _get_db()
+from modules.db_wrapper import execute, execute_query, commit
 
 
 def ensure_trial_table():
-    db = get_db()
-    db.execute("""
+    execute("""
         CREATE TABLE IF NOT EXISTS user_trials (
             user_id TEXT PRIMARY KEY,
             email TEXT NOT NULL,
@@ -43,7 +39,7 @@ def ensure_trial_table():
             updated_at REAL NOT NULL
         )
     """)
-    db.commit()
+    commit()
 
 
 @trial_bp.route("/start", methods=["POST"])
@@ -60,11 +56,10 @@ def start_trial():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_trial_table()
-    db = get_db()
     
-    existing = db.execute(
-        "SELECT * FROM user_trials WHERE email = ?", (email,)
-    ).fetchone()
+    existing = execute_query(
+        "SELECT * FROM user_trials WHERE email = ?", (email,), fetch='one'
+    )
     
     if existing and existing["status"] in ("active", "trialing"):
         return jsonify({
@@ -98,17 +93,17 @@ def start_trial():
         user_id = str(uuid.uuid4())
         
         if existing:
-            db.execute("""
+            execute("""
                 UPDATE user_trials 
                 SET status = 'checkout_pending', updated_at = ?
                 WHERE email = ?
             """, (now, email))
         else:
-            db.execute("""
+            execute("""
                 INSERT INTO user_trials (user_id, email, status, created_at, updated_at)
                 VALUES (?, ?, 'checkout_pending', ?, ?)
             """, (user_id, email, now, now))
-        db.commit()
+        commit()
         
         return jsonify({
             "ok": True,
@@ -129,11 +124,10 @@ def trial_status():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_trial_table()
-    db = get_db()
     
-    user = db.execute(
-        "SELECT * FROM user_trials WHERE email = ?", (email,)
-    ).fetchone()
+    user = execute_query(
+        "SELECT * FROM user_trials WHERE email = ?", (email,), fetch='one'
+    )
     
     now = time.time()
     
@@ -187,16 +181,15 @@ def confirm_trial():
         customer_email = session.customer_email or email
         
         ensure_trial_table()
-        db = get_db()
         now = time.time()
         trial_ends = now + (14 * 86400)
         
-        existing = db.execute(
-            "SELECT * FROM user_trials WHERE email = ?", (customer_email,)
-        ).fetchone()
+        existing = execute_query(
+            "SELECT * FROM user_trials WHERE email = ?", (customer_email,), fetch='one'
+        )
         
         if existing:
-            db.execute("""
+            execute("""
                 UPDATE user_trials 
                 SET stripe_customer_id = ?, stripe_subscription_id = ?,
                     trial_started_at = ?, trial_ends_at = ?, status = 'trialing', updated_at = ?
@@ -204,13 +197,13 @@ def confirm_trial():
             """, (customer_id, subscription_id, now, trial_ends, now, customer_email))
         else:
             user_id = str(uuid.uuid4())
-            db.execute("""
+            execute("""
                 INSERT INTO user_trials 
                 (user_id, email, stripe_customer_id, stripe_subscription_id, trial_started_at, trial_ends_at, status, created_at, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, 'trialing', ?, ?)
             """, (user_id, customer_email, customer_id, subscription_id, now, trial_ends, now, now))
         
-        db.commit()
+        commit()
         
         return jsonify({
             "ok": True,
@@ -237,11 +230,10 @@ def customer_portal():
         return jsonify({"ok": False, "error": "Email required"}), 400
     
     ensure_trial_table()
-    db = get_db()
     
-    user = db.execute(
-        "SELECT stripe_customer_id FROM user_trials WHERE email = ?", (email,)
-    ).fetchone()
+    user = execute_query(
+        "SELECT stripe_customer_id FROM user_trials WHERE email = ?", (email,), fetch='one'
+    )
     
     if not user or not user["stripe_customer_id"]:
         return jsonify({"ok": False, "error": "No subscription found"}), 404
