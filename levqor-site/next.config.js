@@ -57,6 +57,12 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  allowedDevOrigins: [
+    'http://localhost:5000',
+    'https://*.replit.dev',
+    'https://*.replit.app',
+    'https://*.kirk.replit.dev',
+  ],
   async redirects() {
     return [
       {
