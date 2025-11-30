@@ -35,16 +35,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email) {
-          console.debug("[AUTH] Credentials: no email provided");
-          return null;
-        }
-        console.debug("[AUTH] Credentials login:", credentials.email);
-        return {
-          id: credentials.email as string,
-          email: credentials.email as string,
-          name: (credentials.email as string).split("@")[0],
-        };
+        console.debug("[AUTH] Credentials provider disabled - use OAuth instead");
+        return null;
       },
     }),
   ],

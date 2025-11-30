@@ -7,12 +7,9 @@ import Link from "next/link";
 const ERROR_MESSAGES: Record<string, string> = {
   OAuthSignin: "There was a problem starting the sign-in process. Please try again.",
   OAuthCallback: "There was a problem completing the sign-in. Please try a different method.",
-  OAuthCreateAccount: "Could not create an account with this provider. Please try email instead.",
-  EmailCreateAccount: "Could not create an account with this email. Please try again.",
+  OAuthCreateAccount: "Could not create an account with this provider. Please try again.",
   Callback: "There was a problem with the callback. Please try again.",
   OAuthAccountNotLinked: "This email is already linked to another account. Please sign in with your original method.",
-  EmailSignin: "The email could not be sent. Please try again or use a different method.",
-  CredentialsSignin: "Invalid email or password. Please check your credentials.",
   SessionRequired: "Please sign in to access this page.",
   Configuration: "Sign-in failed. Please try again or use a different provider.",
   OAuthCallbackError: "Sign-in failed. Please try again or use a different provider.",
@@ -20,8 +17,6 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 function SignInContent() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasMicrosoft, setHasMicrosoft] = useState(false);
   const searchParams = useSearchParams();
@@ -60,55 +55,12 @@ function SignInContent() {
     }
   }, [searchParams]);
   
-  async function trackReferral(userEmail: string) {
-    const source = sessionStorage.getItem("levqor_ref_source") || "direct";
-    const campaign = sessionStorage.getItem("levqor_ref_campaign") || "";
-    const medium = sessionStorage.getItem("levqor_ref_medium") || "";
-    
-    try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/referrals/track`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: userEmail, source, campaign, medium })
-      });
-      sessionStorage.removeItem("levqor_ref_source");
-      sessionStorage.removeItem("levqor_ref_campaign");
-      sessionStorage.removeItem("levqor_ref_medium");
-    } catch (err) {
-      console.error("Failed to track referral:", err);
-    }
-  }
-  
   async function handleOAuthSignIn(provider: string) {
     setLoading(true);
     try {
       await signIn(provider, { callbackUrl });
     } catch (err) {
       console.error("OAuth sign-in error:", err);
-      setLoading(false);
-    }
-  }
-  
-  async function handleCredentialsSignIn(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      await trackReferral(email);
-      const result = await signIn("credentials", {
-        email,
-        password,
-        callbackUrl,
-        redirect: false,
-      });
-      
-      if (result?.error) {
-        window.location.href = `/signin?error=CredentialsSignin&callbackUrl=${encodeURIComponent(callbackUrl)}`;
-      } else if (result?.ok) {
-        window.location.href = callbackUrl;
-      }
-    } catch (err) {
-      console.error("Credentials sign-in error:", err);
-    } finally {
       setLoading(false);
     }
   }
@@ -141,7 +93,7 @@ function SignInContent() {
                   </p>
                   {(errorCode === "OAuthSignin" || errorCode === "OAuthCallback" || errorCode === "OAuthCallbackError") && (
                     <p className="text-xs text-red-600 mt-2">
-                      This may be caused by provider configuration. Try email sign-in below.
+                      This may be caused by provider configuration. Please try again or contact support.
                     </p>
                   )}
                 </div>
@@ -149,7 +101,7 @@ function SignInContent() {
             </div>
           )}
       
-          <div className="space-y-3 mb-6">
+          <div className="space-y-3">
             <button 
               onClick={() => handleOAuthSignIn("google")}
               disabled={loading}
@@ -181,68 +133,6 @@ function SignInContent() {
               </button>
             )}
           </div>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-3 bg-white text-gray-500">Or continue with email</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleCredentialsSignIn} className="space-y-4">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email address
-              </label>
-              <input 
-                id="email"
-                type="email" 
-                className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                placeholder="you@example.com" 
-                value={email} 
-                onChange={e => setEmail(e.target.value)} 
-                required
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Password
-              </label>
-              <input 
-                id="password"
-                type="password" 
-                className="border border-gray-300 p-3 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                placeholder="Enter your password" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                required
-                disabled={loading}
-              />
-            </div>
-            <button 
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2" 
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                  </svg>
-                  Continuing...
-                </>
-              ) : (
-                "Continue"
-              )}
-            </button>
-            <p className="text-xs text-gray-500 text-center">
-              New here? We'll create your account automatically.
-            </p>
-          </form>
           
           <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
             <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
@@ -250,7 +140,7 @@ function SignInContent() {
                 <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
-                OAuth handled by provider
+                Secure OAuth 2.0
               </span>
               <span className="flex items-center gap-1">
                 <svg className="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +159,7 @@ function SignInContent() {
         </div>
         
         <p className="text-xs text-gray-500 mt-6 text-center">
-          Passwords handled by Google/Microsoft • Levqor never sees them
+          Sign in with your Google or Microsoft account
         </p>
       </div>
     </main>
