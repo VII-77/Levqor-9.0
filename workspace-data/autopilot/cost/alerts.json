@@ -1,15 +1,15 @@
 {
-  "timestamp": "2025-11-30T19:16:18.911817+00:00",
+  "timestamp": "2025-11-30T19:46:25.418165+00:00",
   "alerts": [
     {
       "type": "cpu_spike",
       "severity": "medium",
-      "message": "CPU usage (83.1%) exceeds threshold (80%)",
+      "message": "CPU usage (89.9%) exceeds threshold (80%)",
       "action": "reduce_background_jobs"
     }
   ],
   "current_metrics": {
-    "timestamp": "2025-11-30T19:16:18.786764+00:00",
+    "timestamp": "2025-11-30T19:46:25.289633+00:00",
     "openai": {
       "tokens_today": 0,
       "tokens_hour": 0,
@@ -28,9 +28,9 @@
       "fees_today_usd": 0.0
     },
     "compute": {
-      "cpu_percent": 83.1,
-      "memory_percent": 47.8,
-      "memory_used_mb": 30758.43359375
+      "cpu_percent": 89.9,
+      "memory_percent": 48.4,
+      "memory_used_mb": 31155.01953125
     },
     "estimated_cost_today": 0.0,
     "estimated_cost_month": 0.0

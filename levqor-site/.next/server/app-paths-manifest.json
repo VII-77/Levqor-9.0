@@ -1,17 +1,6 @@
 {
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/[locale]/(public-disabled)/integrations/page": "app/[locale]/(public-disabled)/integrations/page.js",
-  "/[locale]/(public-disabled)/docs/page": "app/[locale]/(public-disabled)/docs/page.js",
-  "/[locale]/(public-disabled)/how-it-works/page": "app/[locale]/(public-disabled)/how-it-works/page.js",
-  "/[locale]/(public-disabled)/use-cases/page": "app/[locale]/(public-disabled)/use-cases/page.js",
-  "/[locale]/(public-disabled)/tour/page": "app/[locale]/(public-disabled)/tour/page.js",
-  "/[locale]/(public-disabled)/about/page": "app/[locale]/(public-disabled)/about/page.js",
-  "/[locale]/(public-disabled)/team/page": "app/[locale]/(public-disabled)/team/page.js",
-  "/[locale]/(public-disabled)/blog/page": "app/[locale]/(public-disabled)/blog/page.js",
-  "/[locale]/(public-disabled)/contact/page": "app/[locale]/(public-disabled)/contact/page.js",
-  "/[locale]/(public-disabled)/roadmap/page": "app/[locale]/(public-disabled)/roadmap/page.js",
-  "/[locale]/(public-disabled)/careers/page": "app/[locale]/(public-disabled)/careers/page.js",
-  "/[locale]/(public-disabled)/support/page": "app/[locale]/(public-disabled)/support/page.js",
-  "/[locale]/(public-disabled)/guarantee/page": "app/[locale]/(public-disabled)/guarantee/page.js",
-  "/[locale]/(auth-disabled)/signin/page": "app/[locale]/(auth-disabled)/signin/page.js"
+  "/api/version/route": "app/api/version/route.js",
+  "/api/health/route": "app/api/health/route.js",
+  "/[locale]/page": "app/[locale]/page.js"
 }

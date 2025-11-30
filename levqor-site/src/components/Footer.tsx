@@ -8,6 +8,7 @@
 
 import { Link } from '@/i18n/routing';
 import Logo from './Logo';
+import VersionBadge from './VersionBadge';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -95,7 +96,9 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-neutral-800 pt-8 text-sm text-center">
           <p className="mb-2 text-neutral-400">&copy; {currentYear} Levqor Technologies Ltd. All rights reserved.</p>
-          <p className="text-xs text-neutral-500">Company Number: 12345678 • Registered in England and Wales</p>
+          <p className="text-xs text-neutral-500">
+            Company Number: 12345678 • Registered in England and Wales • <VersionBadge />
+          </p>
         </div>
       </div>
     </footer>
