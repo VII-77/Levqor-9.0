@@ -30,6 +30,91 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
+    ],
+    "/[locale]/(auth-disabled)/signin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth-disabled)/signin/page.js"
+    ],
+    "/[locale]/(auth-disabled)/signin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth-disabled)/signin/layout.js"
+    ],
+    "/[locale]/(auth-disabled)/signin/error": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth-disabled)/signin/error.js"
+    ],
+    "/[locale]/(auth-disabled)/signin/loading": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(auth-disabled)/signin/loading.js"
+    ],
+    "/[locale]/(public-disabled)/integrations/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/integrations/page.js"
+    ],
+    "/[locale]/(public-disabled)/docs/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/docs/page.js"
+    ],
+    "/[locale]/(public-disabled)/how-it-works/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/how-it-works/page.js"
+    ],
+    "/[locale]/(public-disabled)/use-cases/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/use-cases/page.js"
+    ],
+    "/[locale]/(public-disabled)/tour/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/tour/page.js"
+    ],
+    "/[locale]/(public-disabled)/about/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/about/page.js"
+    ],
+    "/[locale]/(public-disabled)/team/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/team/page.js"
+    ],
+    "/[locale]/(public-disabled)/blog/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/blog/page.js"
+    ],
+    "/[locale]/(public-disabled)/roadmap/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/roadmap/page.js"
+    ],
+    "/[locale]/(public-disabled)/contact/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/contact/page.js"
+    ],
+    "/[locale]/(public-disabled)/careers/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/careers/page.js"
+    ],
+    "/[locale]/(public-disabled)/support/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/support/page.js"
+    ],
+    "/[locale]/(public-disabled)/guarantee/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/[locale]/(public-disabled)/guarantee/page.js"
     ]
   }
 }
