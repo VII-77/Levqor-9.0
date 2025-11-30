@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-11-30T13:46:07.491666+00:00",
+  "timestamp": "2025-11-30T14:16:07.385133+00:00",
   "status": "WARN",
   "metrics": {
-    "timestamp": "2025-11-30T13:46:07.327045+00:00",
+    "timestamp": "2025-11-30T14:16:07.246946+00:00",
     "openai": {
       "tokens_today": 0,
       "tokens_hour": 0,
@@ -21,9 +21,9 @@
       "fees_today_usd": 0.0
     },
     "compute": {
-      "cpu_percent": 91.1,
-      "memory_percent": 27.7,
-      "memory_used_mb": 17792.0546875
+      "cpu_percent": 92.5,
+      "memory_percent": 36.7,
+      "memory_used_mb": 23627.296875
     },
     "estimated_cost_today": 0.0,
     "estimated_cost_month": 0.0
@@ -36,7 +36,7 @@
     "factors": [
       "high_compute"
     ],
-    "timestamp": "2025-11-30T13:46:07.484718+00:00",
+    "timestamp": "2025-11-30T14:16:07.382941+00:00",
     "budget_remaining": 50.0,
     "budget_percent_used": 0.0
   },
@@ -45,7 +45,7 @@
     {
       "type": "cpu_spike",
       "severity": "medium",
-      "message": "CPU usage (91.1%) exceeds threshold (80%)",
+      "message": "CPU usage (92.5%) exceeds threshold (80%)",
       "action": "reduce_background_jobs"
     }
   ],
