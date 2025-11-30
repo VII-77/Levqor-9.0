@@ -1,39 +1,40 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import {
+  SUBSCRIPTION_PLANS,
+  DFY_PACKS,
+  ADDONS,
+  type SubscriptionTier,
+  type BillingInterval,
+  type DFYPackId,
+  type AddonId,
+} from "@/config/pricing";
 
 export const dynamic = "force-dynamic";
 
-function readEnv() {
-  return {
-    SECRET: process.env.STRIPE_SECRET_KEY,
-    SITE_URL: process.env.SITE_URL || "https://www.levqor.ai",
-    STARTER_M: process.env.STRIPE_PRICE_STARTER,
-    STARTER_Y: process.env.STRIPE_PRICE_STARTER_YEAR,
-    LAUNCH_M:  process.env.STRIPE_PRICE_LAUNCH,
-    LAUNCH_Y:  process.env.STRIPE_PRICE_LAUNCH_YEAR,
-    GROWTH_M:  process.env.STRIPE_PRICE_GROWTH,
-    GROWTH_Y:  process.env.STRIPE_PRICE_GROWTH_YEAR,
-    AGENCY_M:  process.env.STRIPE_PRICE_AGENCY,
-    AGENCY_Y:  process.env.STRIPE_PRICE_AGENCY_YEAR,
-    DFY_STARTER:      process.env.STRIPE_PRICE_DFY_STARTER,
-    DFY_PROFESSIONAL: process.env.STRIPE_PRICE_DFY_PROFESSIONAL,
-    DFY_ENTERPRISE:   process.env.STRIPE_PRICE_DFY_ENTERPRISE,
-    ADDON_PRIORITY_SUPPORT: process.env.STRIPE_PRICE_ADDON_PRIORITY_SUPPORT,
-    ADDON_SLA_99:           process.env.STRIPE_PRICE_ADDON_SLA_99,
-    ADDON_WHITE_LABEL:      process.env.STRIPE_PRICE_ADDON_WHITE_LABEL,
-    ADDON_EXTRA_WORKFLOWS:  process.env.STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS,
-  };
+function getEnv(key: string): string | undefined {
+  return process.env[key];
 }
 
-function stripeClient(secret?: string) {
+function stripeClient() {
+  const secret = getEnv("STRIPE_SECRET_KEY");
   if (!secret) throw new Error("missing STRIPE_SECRET_KEY");
   return new Stripe(secret, { apiVersion: "2024-06-20" as any });
 }
 
+function getSiteUrl(): string {
+  return getEnv("SITE_URL") || "https://www.levqor.ai";
+}
+
 export async function GET() {
-  const env = readEnv();
-  const required = ["SECRET", "STARTER_M", "STARTER_Y", "LAUNCH_M", "LAUNCH_Y"];
-  const missing = required.filter(k => !env[k as keyof typeof env]);
+  const requiredEnvVars = [
+    "STRIPE_SECRET_KEY",
+    "STRIPE_PRICE_STARTER",
+    "STRIPE_PRICE_STARTER_YEAR",
+    "STRIPE_PRICE_LAUNCH",
+    "STRIPE_PRICE_LAUNCH_YEAR",
+  ];
+  const missing = requiredEnvVars.filter(k => !getEnv(k));
   return NextResponse.json({ ok: missing.length === 0, missing });
 }
 
@@ -47,51 +48,57 @@ type RequestBody = {
   addons?: string | string[];
 };
 
+function normalizeInterval(interval?: string, term?: string): BillingInterval {
+  if (interval === "year" || term === "yearly") return "year";
+  return "month";
+}
+
+function isValidTier(tier: string): tier is SubscriptionTier {
+  return tier in SUBSCRIPTION_PLANS;
+}
+
+function isValidDFYPack(pack: string): pack is DFYPackId {
+  return pack in DFY_PACKS;
+}
+
+function isValidAddon(addon: string): addon is AddonId {
+  return addon in ADDONS;
+}
+
 export async function POST(req: Request) {
   try {
-    const env = readEnv();
-    if (!env.SECRET) {
+    const secret = getEnv("STRIPE_SECRET_KEY");
+    if (!secret) {
       return NextResponse.json({ ok: false, error: "missing_env:SECRET" }, { status: 500 });
     }
 
     const body: RequestBody = await req.json();
-    console.log("CHECKOUT-DEBUG", JSON.stringify(body, null, 2));
-
     const purchaseType = body.purchase_type || "subscription";
 
     if (purchaseType === "subscription") {
-      const tier = body.tier || body.plan || "starter";
-      const interval = body.billing_interval || (body.term === "yearly" ? "year" : "month");
+      const tier = (body.tier || body.plan || "starter").toLowerCase();
+      const interval = normalizeInterval(body.billing_interval, body.term);
       
-      const priceMap: Record<string, string | undefined> = {
-        "starter:month":  env.STARTER_M,
-        "starter:year":   env.STARTER_Y,
-        "launch:month":   env.LAUNCH_M,
-        "launch:year":    env.LAUNCH_Y,
-        "growth:month":   env.GROWTH_M,
-        "growth:year":    env.GROWTH_Y,
-        "agency:month":   env.AGENCY_M,
-        "agency:year":    env.AGENCY_Y,
-        "starter:monthly": env.STARTER_M,
-        "starter:yearly":  env.STARTER_Y,
-        "launch:monthly":  env.LAUNCH_M,
-        "launch:yearly":   env.LAUNCH_Y,
-        "growth:monthly":  env.GROWTH_M,
-        "growth:yearly":   env.GROWTH_Y,
-        "agency:monthly":  env.AGENCY_M,
-        "agency:yearly":   env.AGENCY_Y,
-      };
-
-      const priceId = priceMap[`${tier}:${interval}`];
-      if (!priceId) {
+      if (!isValidTier(tier)) {
         return NextResponse.json({ 
           ok: false, 
-          error: `invalid_plan: ${tier}:${interval}`,
-          available: Object.keys(priceMap).filter(k => priceMap[k])
+          error: `invalid_tier: ${tier}`,
+          available: Object.keys(SUBSCRIPTION_PLANS)
         }, { status: 400 });
       }
 
-      const stripe = stripeClient(env.SECRET);
+      const plan = SUBSCRIPTION_PLANS[tier];
+      const envKey = plan.stripePriceEnvKeys[interval];
+      const priceId = getEnv(envKey);
+      
+      if (!priceId) {
+        return NextResponse.json({ 
+          ok: false, 
+          error: `missing_env: ${envKey}`,
+        }, { status: 500 });
+      }
+
+      const stripe = stripeClient();
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
@@ -99,8 +106,8 @@ export async function POST(req: Request) {
         subscription_data: {
           trial_period_days: 7,
         },
-        success_url: `${env.SITE_URL}/welcome?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${env.SITE_URL}/pricing?canceled=1`,
+        success_url: `${getSiteUrl()}/welcome?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${getSiteUrl()}/pricing?canceled=1`,
       });
 
       return NextResponse.json({ ok: true, url: session.url });
@@ -108,61 +115,75 @@ export async function POST(req: Request) {
 
     if (purchaseType === "dfy") {
       const pack = body.dfy_pack || "";
-      const dfyMap: Record<string, string | undefined> = {
-        "dfy_starter":      env.DFY_STARTER,
-        "dfy_professional": env.DFY_PROFESSIONAL,
-        "dfy_enterprise":   env.DFY_ENTERPRISE,
-      };
-
-      const priceId = dfyMap[pack];
-      if (!priceId) {
+      
+      if (!isValidDFYPack(pack)) {
         return NextResponse.json({ 
           ok: false, 
           error: `invalid_dfy_pack: ${pack}`,
-          available: Object.keys(dfyMap)
+          available: Object.keys(DFY_PACKS)
         }, { status: 400 });
       }
 
-      const stripe = stripeClient(env.SECRET);
+      const dfyPack = DFY_PACKS[pack];
+      const priceId = getEnv(dfyPack.stripePriceEnvKey);
+      
+      if (!priceId) {
+        return NextResponse.json({ 
+          ok: false, 
+          error: `missing_env: ${dfyPack.stripePriceEnvKey}`,
+        }, { status: 500 });
+      }
+
+      const stripe = stripeClient();
       const session = await stripe.checkout.sessions.create({
         mode: "payment",
         line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
-        success_url: `${env.SITE_URL}/welcome?session_id={CHECKOUT_SESSION_ID}&type=dfy`,
-        cancel_url: `${env.SITE_URL}/pricing?canceled=1`,
+        success_url: `${getSiteUrl()}/welcome?session_id={CHECKOUT_SESSION_ID}&type=dfy`,
+        cancel_url: `${getSiteUrl()}/pricing?canceled=1`,
       });
 
       return NextResponse.json({ ok: true, url: session.url });
     }
 
     if (purchaseType === "addons") {
-      const addon = typeof body.addons === "string" ? body.addons : body.addons?.[0] || "";
-      const addonMap: Record<string, string | undefined> = {
-        "addon_priority_support": env.ADDON_PRIORITY_SUPPORT,
-        "addon_sla_99":           env.ADDON_SLA_99,
-        "addon_white_label":      env.ADDON_WHITE_LABEL,
-        "addon_extra_workflows":  env.ADDON_EXTRA_WORKFLOWS,
-        "PRIORITY_SUPPORT":       env.ADDON_PRIORITY_SUPPORT,
-        "SLA_99_9":               env.ADDON_SLA_99,
-        "WHITE_LABEL":            env.ADDON_WHITE_LABEL,
+      let addon = typeof body.addons === "string" ? body.addons : body.addons?.[0] || "";
+      
+      const addonAliases: Record<string, AddonId> = {
+        "PRIORITY_SUPPORT": "addon_priority_support",
+        "SLA_99_9": "addon_sla_99",
+        "WHITE_LABEL": "addon_white_label",
       };
-
-      const priceId = addonMap[addon];
-      if (!priceId) {
+      
+      if (addon in addonAliases) {
+        addon = addonAliases[addon];
+      }
+      
+      if (!isValidAddon(addon)) {
         return NextResponse.json({ 
           ok: false, 
           error: `invalid_addon: ${addon}`,
-          available: Object.keys(addonMap)
+          available: Object.keys(ADDONS)
         }, { status: 400 });
       }
 
-      const stripe = stripeClient(env.SECRET);
+      const addonConfig = ADDONS[addon];
+      const priceId = getEnv(addonConfig.stripePriceEnvKey);
+      
+      if (!priceId) {
+        return NextResponse.json({ 
+          ok: false, 
+          error: `missing_env: ${addonConfig.stripePriceEnvKey}`,
+        }, { status: 500 });
+      }
+
+      const stripe = stripeClient();
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         line_items: [{ price: priceId, quantity: 1 }],
         allow_promotion_codes: true,
-        success_url: `${env.SITE_URL}/welcome?session_id={CHECKOUT_SESSION_ID}&type=addon`,
-        cancel_url: `${env.SITE_URL}/pricing?canceled=1`,
+        success_url: `${getSiteUrl()}/welcome?session_id={CHECKOUT_SESSION_ID}&type=addon`,
+        cancel_url: `${getSiteUrl()}/pricing?canceled=1`,
       });
 
       return NextResponse.json({ ok: true, url: session.url });
