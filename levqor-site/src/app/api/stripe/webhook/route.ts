@@ -8,6 +8,32 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-10-29.clover',
 });
 
+async function persistSubscriptionEvent(event: Stripe.Event): Promise<void> {
+  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
+  
+  try {
+    const response = await fetch(`${backendUrl}/api/billing/webhook-event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Webhook-Source': 'stripe',
+      },
+      body: JSON.stringify({
+        event_id: event.id,
+        event_type: event.type,
+        created: event.created,
+        data: event.data.object,
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to persist webhook event:', await response.text());
+    }
+  } catch (error) {
+    console.error('Error persisting webhook event:', error);
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const raw = await req.text();
@@ -21,16 +47,50 @@ export async function POST(req: NextRequest) {
       return new NextResponse(JSON.stringify({ error: 'Invalid signature', detail: e?.message }), { status: 400 });
     }
 
+    console.log(`[Stripe Webhook] Received event: ${event.type} (${event.id})`);
+
     switch (event.type) {
-      case 'checkout.session.completed':
-      case 'customer.subscription.created':
-      case 'customer.subscription.updated':
-      case 'customer.subscription.deleted':
-        // TODO: persist to DB or log
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        console.log(`[Stripe] Checkout completed: ${session.id}, customer: ${session.customer}`);
+        await persistSubscriptionEvent(event);
         break;
+      }
+      case 'customer.subscription.created': {
+        const subscription = event.data.object as Stripe.Subscription;
+        console.log(`[Stripe] Subscription created: ${subscription.id}, status: ${subscription.status}`);
+        await persistSubscriptionEvent(event);
+        break;
+      }
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object as Stripe.Subscription;
+        console.log(`[Stripe] Subscription updated: ${subscription.id}, status: ${subscription.status}`);
+        await persistSubscriptionEvent(event);
+        break;
+      }
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object as Stripe.Subscription;
+        console.log(`[Stripe] Subscription canceled: ${subscription.id}`);
+        await persistSubscriptionEvent(event);
+        break;
+      }
+      case 'invoice.paid': {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log(`[Stripe] Invoice paid: ${invoice.id}, amount: ${invoice.amount_paid}`);
+        await persistSubscriptionEvent(event);
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log(`[Stripe] Invoice payment failed: ${invoice.id}`);
+        await persistSubscriptionEvent(event);
+        break;
+      }
     }
-    return NextResponse.json({ ok: true });
+    
+    return NextResponse.json({ ok: true, event_id: event.id });
   } catch (e: any) {
+    console.error('[Stripe Webhook] Handler error:', e);
     return new NextResponse(JSON.stringify({ error: 'handler_failed', detail: e?.message }), { status: 500 });
   }
 }

@@ -3,7 +3,9 @@ Stripe Webhook Handler
 Processes Stripe webhook events for subscription updates, payments, etc.
 """
 import os
+import json
 import logging
+from datetime import datetime
 from flask import Blueprint, request, jsonify
 
 from security_core import audit, config as sec_config
@@ -174,8 +176,85 @@ def handle_payment_failed(invoice):
     customer_id = invoice.get('customer')
     
     log.error(f"Payment failed: {invoice_id} for customer {customer_id}")
+
+
+@bp.post("/webhook-event")
+def webhook_event():
+    """
+    Receive and persist webhook events from the frontend webhook handler.
+    This endpoint allows the Next.js Edge webhook to forward events for database persistence.
+    """
+    from modules.db_wrapper import execute_query
     
-    # TODO: Handle failed payment
-    # - Send notification to user
-    # - Update subscription status
-    # - Trigger dunning workflow
+    if request.headers.get("X-Webhook-Source") != "stripe":
+        return jsonify({"error": "invalid_source"}), 403
+    
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({"error": "missing_body"}), 400
+        
+        event_id = data.get("event_id")
+        event_type = data.get("event_type")
+        created = data.get("created")
+        event_data = data.get("data", {})
+        
+        if not event_id or not event_type:
+            return jsonify({"error": "missing_event_id_or_type"}), 400
+        
+        log.info(f"[Webhook Event] Persisting: {event_type} (id: {event_id})")
+        
+        execute_query("""
+            INSERT INTO stripe_events (event_id, event_type, created_at, data, processed_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT (event_id) DO NOTHING
+        """, (
+            event_id,
+            event_type,
+            datetime.utcfromtimestamp(created) if created else datetime.utcnow(),
+            json.dumps(event_data),
+            datetime.utcnow()
+        ), fetch=None)
+        
+        if event_type == 'customer.subscription.created':
+            handle_subscription_created(event_data)
+        elif event_type == 'customer.subscription.updated':
+            handle_subscription_updated(event_data)
+        elif event_type == 'customer.subscription.deleted':
+            handle_subscription_deleted(event_data)
+        elif event_type == 'invoice.paid':
+            handle_payment_succeeded(event_data)
+        elif event_type == 'invoice.payment_failed':
+            handle_payment_failed(event_data)
+        elif event_type == 'checkout.session.completed':
+            handle_checkout_completed(event_data)
+        
+        return jsonify({"ok": True, "event_id": event_id}), 200
+        
+    except Exception as e:
+        log.error(f"Error persisting webhook event: {e}")
+        return jsonify({"error": "persist_failed", "message": str(e)}), 500
+
+
+def handle_checkout_completed(session):
+    """Handle checkout session completion"""
+    session_id = session.get('id')
+    customer_id = session.get('customer')
+    customer_email = session.get('customer_email') or session.get('customer_details', {}).get('email')
+    subscription_id = session.get('subscription')
+    mode = session.get('mode')
+    
+    log.info(f"Checkout completed: {session_id} for customer {customer_id} (mode: {mode})")
+    
+    if subscription_id:
+        try:
+            from modules.db_wrapper import execute_query
+            execute_query("""
+                UPDATE users 
+                SET stripe_customer_id = ?, stripe_subscription_id = ?, subscription_status = 'active', updated_at = ?
+                WHERE email = ?
+            """, (customer_id, subscription_id, datetime.utcnow(), customer_email), fetch=None)
+            log.info(f"Updated user {customer_email} with subscription {subscription_id}")
+        except Exception as e:
+            log.error(f"Failed to update user subscription: {e}")
