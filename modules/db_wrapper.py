@@ -24,26 +24,64 @@ def get_db_type() -> str:
         log.info(f"Database type: {_db_type}")
     return _db_type
 
+def _is_connection_valid(conn, db_type: str) -> bool:
+    """Check if database connection is still valid"""
+    if conn is None:
+        return False
+    try:
+        if db_type == 'postgresql':
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+            cursor.close()
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+        return True
+    except Exception:
+        return False
+
+def _close_connection():
+    """Close the current thread's connection"""
+    if hasattr(_thread_local, 'connection') and _thread_local.connection is not None:
+        try:
+            _thread_local.connection.close()
+        except Exception:
+            pass
+        _thread_local.connection = None
+
 def get_db():
     """
     Get database connection - automatically uses PostgreSQL if DATABASE_URL is set
     Thread-safe: Returns one connection per thread for PostgreSQL
     Returns a connection object compatible with both SQLite and PostgreSQL
+    Automatically reconnects if connection is stale
     """
     global _schema_initialized
     
     db_type = get_db_type()
     
     # Use thread-local storage for PostgreSQL to ensure thread safety
+    # Check if existing connection is still valid
     if hasattr(_thread_local, 'connection') and _thread_local.connection is not None:
-        return _thread_local.connection
+        if _is_connection_valid(_thread_local.connection, db_type):
+            return _thread_local.connection
+        else:
+            # Connection is stale, close and reconnect
+            log.info("Reconnecting stale database connection")
+            _close_connection()
     
     if db_type == 'postgresql':
         import psycopg2
         
-        # Create new connection for this thread
+        # Create new connection for this thread with keepalives for Neon
         conn = psycopg2.connect(
-            os.environ.get("DATABASE_URL")
+            os.environ.get("DATABASE_URL"),
+            keepalives=1,
+            keepalives_idle=30,
+            keepalives_interval=10,
+            keepalives_count=5
         )
         conn.autocommit = False  # Manual transaction control
         
@@ -115,8 +153,10 @@ def execute_query(query: str, params: Optional[Tuple] = None, fetch: str = 'all'
             # Convert to list of dicts for consistency
             if db_type == 'postgresql':
                 # Manually convert tuples to dicts using cursor.description
-                columns = [desc[0] for desc in cursor.description]
-                return [dict(zip(columns, row)) for row in result]
+                if cursor.description:
+                    columns = [desc[0] for desc in cursor.description]
+                    return [dict(zip(columns, row)) for row in result]
+                return []
             else:
                 return [dict(row) for row in result]
         elif fetch == 'one':
@@ -125,8 +165,10 @@ def execute_query(query: str, params: Optional[Tuple] = None, fetch: str = 'all'
                 return None
             if db_type == 'postgresql':
                 # Manually convert tuple to dict using cursor.description
-                columns = [desc[0] for desc in cursor.description]
-                return dict(zip(columns, result))
+                if cursor.description:
+                    columns = [desc[0] for desc in cursor.description]
+                    return dict(zip(columns, result))
+                return None
             else:
                 return dict(result)
         else:
