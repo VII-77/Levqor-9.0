@@ -178,27 +178,95 @@ def handle_payment_failed(invoice):
     log.error(f"Payment failed: {invoice_id} for customer {customer_id}")
 
 
+def verify_internal_signature(payload: str, signature: str) -> bool:
+    """Verify HMAC-SHA256 signature from frontend webhook handler"""
+    import hashlib
+    import hmac as hmac_module
+    
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+    if not webhook_secret:
+        log.warning("STRIPE_WEBHOOK_SECRET not set for internal verification")
+        return False
+    
+    expected_sig = hmac_module.new(
+        webhook_secret.encode('utf-8'),
+        payload.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+    expected_sig = f"sha256={expected_sig}"
+    
+    return hmac_module.compare_digest(signature, expected_sig)
+
+
+def retrieve_stripe_event_data(event_id: str) -> dict:
+    """Retrieve and return actual event data from Stripe (secure fallback)"""
+    if not STRIPE_AVAILABLE:
+        return None
+    try:
+        event = stripe.Event.retrieve(event_id)
+        return {
+            "event_id": event.id,
+            "event_type": event.type,
+            "created": event.created,
+            "data": event.data.object
+        }
+    except Exception as e:
+        log.warning(f"Could not retrieve Stripe event {event_id}: {e}")
+        return None
+
+
 @bp.post("/webhook-event")
 def webhook_event():
     """
     Receive and persist webhook events from the frontend webhook handler.
     This endpoint allows the Next.js Edge webhook to forward events for database persistence.
+    Requires valid signature or Stripe event verification for security.
     """
     from modules.db_wrapper import execute_query
     
     if request.headers.get("X-Webhook-Source") != "stripe":
         return jsonify({"error": "invalid_source"}), 403
     
+    signature = request.headers.get("X-Webhook-Signature", "")
+    event_id_header = request.headers.get("X-Stripe-Event-Id", "")
+    raw_body = request.get_data(as_text=True)
+    
+    use_stripe_data = False
+    stripe_event_data = None
+    
+    if not signature or not verify_internal_signature(raw_body, signature):
+        if event_id_header:
+            stripe_event_data = retrieve_stripe_event_data(event_id_header)
+            if stripe_event_data:
+                log.info(f"Verified event via Stripe API, using Stripe data: {event_id_header}")
+                use_stripe_data = True
+            else:
+                log.warning("Invalid webhook signature and failed Stripe verification")
+                audit.audit_security_event("webhook_event_invalid_signature", {
+                    "event_id": event_id_header[:20] if event_id_header else "unknown",
+                    "ip": request.headers.get("X-Forwarded-For", "").split(",")[0].strip() or request.remote_addr or "unknown"
+                })
+                return jsonify({"error": "invalid_signature"}), 403
+        else:
+            log.warning("Missing signature and event ID for verification")
+            return jsonify({"error": "invalid_signature"}), 403
+    
     try:
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({"error": "missing_body"}), 400
-        
-        event_id = data.get("event_id")
-        event_type = data.get("event_type")
-        created = data.get("created")
-        event_data = data.get("data", {})
+        if use_stripe_data and stripe_event_data:
+            event_id = stripe_event_data.get("event_id")
+            event_type = stripe_event_data.get("event_type")
+            created = stripe_event_data.get("created")
+            event_data = stripe_event_data.get("data", {})
+        else:
+            data = request.get_json()
+            
+            if not data:
+                return jsonify({"error": "missing_body"}), 400
+            
+            event_id = data.get("event_id")
+            event_type = data.get("event_type")
+            created = data.get("created")
+            event_data = data.get("data", {})
         
         if not event_id or not event_type:
             return jsonify({"error": "missing_event_id_or_type"}), 400

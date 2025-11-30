@@ -8,8 +8,33 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-10-29.clover',
 });
 
+async function computeHmacSha256(data: string, secret: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+  const hashArray = Array.from(new Uint8Array(signature));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return `sha256=${hashHex}`;
+}
+
 async function persistSubscriptionEvent(event: Stripe.Event): Promise<void> {
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
+  const internalSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+  
+  const payload = JSON.stringify({
+    event_id: event.id,
+    event_type: event.type,
+    created: event.created,
+    data: event.data.object,
+  });
+  
+  const signature = await computeHmacSha256(payload, internalSecret);
   
   try {
     const response = await fetch(`${backendUrl}/api/billing/webhook-event`, {
@@ -17,13 +42,10 @@ async function persistSubscriptionEvent(event: Stripe.Event): Promise<void> {
       headers: {
         'Content-Type': 'application/json',
         'X-Webhook-Source': 'stripe',
+        'X-Webhook-Signature': signature,
+        'X-Stripe-Event-Id': event.id,
       },
-      body: JSON.stringify({
-        event_id: event.id,
-        event_type: event.type,
-        created: event.created,
-        data: event.data.object,
-      }),
+      body: payload,
     });
     
     if (!response.ok) {
