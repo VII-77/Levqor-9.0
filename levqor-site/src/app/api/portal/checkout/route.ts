@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     
     const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'https://api.levqor.ai';
     
-    const response = await fetch(`${apiBase}/api/billing/checkout`, {
+    const response = await fetch(`${apiBase}/api/checkout`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

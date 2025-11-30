@@ -51,7 +51,7 @@ export default function TrialPage() {
     setError(null);
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/billing/checkout`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/checkout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

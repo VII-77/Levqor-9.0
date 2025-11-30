@@ -92,7 +92,7 @@ function DFYCard({
     }).catch(() => {});
     
     try {
-      const response = await fetch("/api/billing/checkout", {
+      const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 
@@ -147,7 +147,7 @@ function AddonCard({
   
   const handleClick = async () => {
     try {
-      const response = await fetch("/api/billing/checkout", {
+      const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 
@@ -203,7 +203,7 @@ function Card({
     }).catch(() => {});
     
     try {
-      const response = await fetch("/api/billing/checkout", {
+      const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ 
