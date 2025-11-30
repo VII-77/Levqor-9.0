@@ -30,16 +30,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
-    ],
-    "/[locale]/(public-disabled)/pricing/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(public-disabled)/pricing/page.js"
-    ],
-    "/[locale]/(public-disabled)/pricing/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/[locale]/(public-disabled)/pricing/layout.js"
     ]
   }
 }
