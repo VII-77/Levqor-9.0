@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
+import { getApiBase } from "@/lib/api-config";
 
 interface WorkflowStep {
   id: string;
@@ -33,7 +34,7 @@ interface SubmitResponse {
   impact_level: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function BrainWorkflowBuilder() {
   const brain = useLevqorBrainOptional();

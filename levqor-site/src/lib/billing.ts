@@ -1,3 +1,5 @@
+import { getApiBase } from '@/lib/api-config';
+
 export interface BillingStatus {
   safe_mode: boolean;
   has_active_subscription: boolean;
@@ -10,7 +12,7 @@ export interface BillingStatus {
   can_access_dashboard: boolean;
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_URL = getApiBase();
 
 export async function fetchBillingStatus(email: string): Promise<BillingStatus | null> {
   if (!email) return null;

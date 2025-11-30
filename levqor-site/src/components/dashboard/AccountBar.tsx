@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { getApiBase } from "@/lib/api-config";
 
 interface AccountStatus {
   subscription_status: string;
@@ -23,7 +24,7 @@ export default function AccountBar() {
       
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/system/account-status?email=${encodeURIComponent(session.user.email)}`
+          `${getApiBase()}/api/system/account-status?email=${encodeURIComponent(session.user.email)}`
         );
         if (res.ok) {
           const data = await res.json();

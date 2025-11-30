@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
+import { getApiBase } from "@/lib/api-config";
 
 const TEMPLATES = [
   {
@@ -62,7 +63,7 @@ export default function StarterTemplates() {
     setLaunchStatus("AI is wiring this template now...");
     
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/system/templates/launch`, {
+      const res = await fetch(`${getApiBase()}/api/system/templates/launch`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

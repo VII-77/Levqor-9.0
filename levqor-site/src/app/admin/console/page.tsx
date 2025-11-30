@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getApiBase } from '@/lib/api-config'
 
 interface HealthData {
   app_up: boolean
@@ -31,7 +32,7 @@ export default function AdminConsolePage() {
 
   async function fetchStatus() {
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://levqor-backend.replit.app'
+      const apiBase = getApiBase()
       const adminToken = localStorage.getItem('admin_token') || ''
       
       const headers = { 'Authorization': `Bearer ${adminToken}` }
@@ -58,7 +59,7 @@ export default function AdminConsolePage() {
     setCheckOutput(null)
     
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://levqor-backend.replit.app'
+      const apiBase = getApiBase()
       const adminToken = localStorage.getItem('admin_token') || ''
       
       const res = await fetch(`${apiBase}/api/admin/health-check`, {

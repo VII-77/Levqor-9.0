@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { getApiBase } from '@/lib/api-config';
 
 interface AnalyticsData {
   users: {
@@ -30,7 +31,7 @@ export default function AnalyticsWidget() {
           return;
         }
 
-        const resp = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/analytics`, {
+        const resp = await fetch(`${getApiBase()}/admin/analytics`, {
           headers: {
             "Authorization": `Bearer ${adminToken}`
           }

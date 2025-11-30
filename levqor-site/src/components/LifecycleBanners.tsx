@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { getApiBase } from '@/lib/api-config';
 
 interface LifecycleBanner {
   day: number;
@@ -77,7 +78,7 @@ export default function LifecycleBanners({ userId }: { userId?: string }) {
     if (!userId) return;
 
     // Fetch current lifecycle day from backend
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/marketing/lifecycle/user/${userId}/current_day`)
+    fetch(`${getApiBase()}/api/marketing/lifecycle/user/${userId}/current_day`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.banner_type && data.banner_type !== 'none') {

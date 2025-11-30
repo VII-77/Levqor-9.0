@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface HealthData {
   status: "healthy" | "warning" | "degraded" | "critical";
@@ -27,7 +28,7 @@ export default function HealthOverview({ className = "" }: { className?: string 
   const fetchHealth = useCallback(async () => {
     const startTime = performance.now();
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const apiUrl = getApiBase();
       const res = await fetch(`${apiUrl}/api/health/summary`, {
         cache: "no-store"
       });

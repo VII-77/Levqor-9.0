@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
+import { getApiBase } from "@/lib/api-config";
 
 interface ExecutiveSummary {
   health_score: number;
@@ -62,7 +63,7 @@ export default function BrainDashboard({ userEmail }: Props) {
   const params = useParams();
   const locale = (params?.locale as string) || "en";
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+  const API_URL = getApiBase();
 
   useEffect(() => {
     async function fetchAll() {

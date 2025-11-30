@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getApiBase } from '@/lib/api-config'
 
 interface User {
   id: string
@@ -46,7 +47,7 @@ export default function AdminUsersPage() {
   async function fetchUsers() {
     setLoading(true)
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://levqor-backend.replit.app'
+      const apiBase = getApiBase()
       const adminToken = localStorage.getItem('admin_token') || ''
       
       const params = new URLSearchParams({ page: String(page), limit: '20' })
@@ -70,7 +71,7 @@ export default function AdminUsersPage() {
   async function viewUserDetail(userId: string) {
     setLoadingDetail(true)
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://levqor-backend.replit.app'
+      const apiBase = getApiBase()
       const adminToken = localStorage.getItem('admin_token') || ''
       
       const res = await fetch(`${apiBase}/api/admin/users/${userId}`, {

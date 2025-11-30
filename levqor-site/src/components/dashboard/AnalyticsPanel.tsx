@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface AnalyticsData {
   workflows_count: number;
@@ -10,7 +11,7 @@ interface AnalyticsData {
   avg_steps_per_workflow: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function AnalyticsPanel() {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);

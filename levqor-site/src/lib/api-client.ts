@@ -3,7 +3,9 @@
  * Centralized API utilities with resilient error handling
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
+import { getApiBase } from './api-config';
+
+const API_BASE = getApiBase();
 
 export async function apiGet<T>(endpoint: string, params: Record<string, string> = {}): Promise<T | null> {
   try {

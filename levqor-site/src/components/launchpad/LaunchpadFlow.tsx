@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { getApiBase } from '@/lib/api-config';
 
 interface Props {
   userEmail: string;
@@ -82,7 +83,7 @@ export default function LaunchpadFlow({ userEmail, userName }: Props) {
     setLoading(true);
     
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/system/onboarding`, {
+      await fetch(`${getApiBase()}/api/system/onboarding`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -97,7 +98,7 @@ export default function LaunchpadFlow({ userEmail, userName }: Props) {
       });
 
       if (mode === "dfy") {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/revenue/dfy-request`, {
+        await fetch(`${getApiBase()}/api/revenue/dfy-request`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

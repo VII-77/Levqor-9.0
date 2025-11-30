@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocale } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
+import { getApiBase } from "@/lib/api-config";
 
 interface WorkflowIssue {
   step_id: string;
@@ -29,7 +30,7 @@ interface FixResponse {
   fixed_issues: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function BrainFixMyWorkflow() {
   const brain = useLevqorBrainOptional();

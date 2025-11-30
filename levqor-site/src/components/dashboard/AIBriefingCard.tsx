@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { getApiBase } from "@/lib/api-config";
 
 interface FounderBriefing {
   summary?: {
@@ -33,7 +34,7 @@ export default function AIBriefingCard() {
     async function fetchBriefing() {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/guardian/founder-briefing`,
+          `${getApiBase()}/api/guardian/founder-briefing`,
           { cache: "no-store" }
         );
         if (res.ok) {

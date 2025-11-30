@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { getApiBase } from '@/lib/api-config';
 
 interface Message {
   id: string;
@@ -13,7 +14,7 @@ interface Message {
   data?: any;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = getApiBase();
 
 export default function LevqorPilotPanel() {
   const locale = useLocale();

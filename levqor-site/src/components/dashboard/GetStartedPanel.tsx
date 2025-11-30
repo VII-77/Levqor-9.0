@@ -3,12 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useLevqorBrainOptional } from "@/components/brain/LevqorBrainContext";
+import { getApiBase } from "@/lib/api-config";
 
 interface GetStartedPanelProps {
   className?: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function GetStartedPanel({ className = "" }: GetStartedPanelProps) {
   const [hasWorkflows, setHasWorkflows] = useState<boolean | null>(null);

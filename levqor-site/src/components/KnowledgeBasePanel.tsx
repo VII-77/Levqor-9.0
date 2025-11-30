@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { getApiBase } from '@/lib/api-config';
 
 interface Article {
   id: string;
@@ -15,7 +16,7 @@ export default function KnowledgeBasePanel() {
   const [results, setResults] = useState<Article[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || "https://api.levqor.ai";
+  const apiBase = getApiBase();
 
   async function handleSearch() {
     if (!query || query.length < 2) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface Segment {
   name: string;
@@ -17,7 +18,7 @@ interface PendingCampaign {
   created_at: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 const segmentIcons: Record<string, string> = {
   new_signups: "🆕",

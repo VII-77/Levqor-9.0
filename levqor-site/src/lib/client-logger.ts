@@ -3,6 +3,8 @@
  * Lightweight abstraction for frontend error tracking and monitoring.
  */
 
+import { getApiBase } from '@/lib/api-config';
+
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
 interface LogEvent {
@@ -40,8 +42,9 @@ function sendLog(event: LogEvent): void {
   
   // TODO: Future enhancement - Send to backend logging endpoint
   // Example:
-  // if (process.env.NEXT_PUBLIC_API_URL) {
-  //   fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logs/client`, {
+  // const apiBase = getApiBase();
+  // if (apiBase) {
+  //   fetch(`${apiBase}/api/logs/client`, {
   //     method: 'POST',
   //     headers: { 'Content-Type': 'application/json' },
   //     body: JSON.stringify(event),

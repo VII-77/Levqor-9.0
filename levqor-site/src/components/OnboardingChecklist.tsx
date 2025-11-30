@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { getApiBase } from '@/lib/api-config';
 
 interface ChecklistItem {
   id: string;
@@ -41,7 +42,7 @@ export default function OnboardingChecklist() {
   useEffect(() => {
     async function checkProgress() {
       try {
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
+        const API_BASE = getApiBase();
         const res = await fetch(`${API_BASE}/api/usage/summary`, { cache: "no-store" });
         
         if (res.ok) {

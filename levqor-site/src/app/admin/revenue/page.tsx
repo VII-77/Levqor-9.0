@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { getApiBase } from '@/lib/api-config'
 
 interface RevenueData {
   mrr: number
@@ -26,7 +27,7 @@ export default function AdminRevenuePage() {
   async function fetchRevenue() {
     setLoading(true)
     try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://levqor-backend.replit.app'
+      const apiBase = getApiBase()
       const adminToken = localStorage.getItem('admin_token') || ''
       
       const res = await fetch(`${apiBase}/api/admin/revenue?range=${range}`, {

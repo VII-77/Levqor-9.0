@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { getApiBase } from "@/lib/api-config";
 
 interface ChipData {
   label: string;
@@ -18,7 +19,7 @@ export default function SuggestionChips() {
 
   useEffect(() => {
     async function fetchData() {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+      const API_URL = getApiBase();
       
       try {
         const [execRes, revRes] = await Promise.all([

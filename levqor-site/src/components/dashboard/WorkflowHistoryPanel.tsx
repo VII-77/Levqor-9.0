@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface WorkflowRun {
   id: string;
@@ -11,7 +12,7 @@ interface WorkflowRun {
   error: string | null;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function WorkflowHistoryPanel() {
   const [runs, setRuns] = useState<WorkflowRun[]>([]);

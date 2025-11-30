@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
+import { getApiBase } from "@/lib/api-config";
 
 interface WorkflowStep {
   id: string;
@@ -26,9 +27,7 @@ interface BuilderResponse {
   requires_approval: boolean;
 }
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (typeof window !== "undefined" ? window.location.origin : "");
+const API_BASE = getApiBase();
 
 export default function HomepageBrainDemo() {
   const brain = useLevqorBrainOptional();

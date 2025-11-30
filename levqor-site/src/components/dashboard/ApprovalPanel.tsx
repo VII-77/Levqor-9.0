@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface ApprovalAction {
   id: string;
@@ -18,7 +19,7 @@ interface ApprovalStats {
   rejected: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function ApprovalPanel() {
   const [actions, setActions] = useState<ApprovalAction[]>([]);

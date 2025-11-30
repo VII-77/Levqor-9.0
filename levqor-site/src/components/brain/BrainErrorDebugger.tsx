@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { useLocale } from "next-intl";
 import { useLevqorBrainOptional } from "./LevqorBrainContext";
+import { getApiBase } from "@/lib/api-config";
 
 interface ErrorAnalysis {
   error_type: string;
@@ -23,7 +24,7 @@ interface DebugResponse {
   };
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 export default function BrainErrorDebugger() {
   const brain = useLevqorBrainOptional();

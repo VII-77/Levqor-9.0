@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface ReadinessCheck {
   name: string;
@@ -14,7 +15,7 @@ interface LaunchReadiness {
   timestamp: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 const checkNames: Record<string, string> = {
   health_ok: "System Health",

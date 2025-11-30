@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
+import { getApiBase } from '@/lib/api-config';
 
 interface Step {
   id: number;
@@ -64,7 +65,7 @@ export default function OnboardingFlow() {
       if (!session?.user?.email) return;
 
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+        const API_URL = getApiBase();
         const res = await fetch(
           `${API_URL}/api/wow/brain/state?email=${encodeURIComponent(session.user.email)}`
         );
@@ -95,7 +96,7 @@ export default function OnboardingFlow() {
     const nextStep = currentStep + 1;
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+      const API_URL = getApiBase();
       await fetch(`${API_URL}/api/wow/brain/event`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

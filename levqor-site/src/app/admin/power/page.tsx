@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import { getApiBase } from '@/lib/api-config'
 
 interface SystemToggles {
   low_cost_mode: boolean
@@ -33,7 +34,7 @@ interface LogEntry {
   source: string
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://levqor-backend.replit.app'
+const API_BASE = getApiBase()
 
 export default function AdminPowerPanel() {
   const [toggles, setToggles] = useState<SystemToggles>({

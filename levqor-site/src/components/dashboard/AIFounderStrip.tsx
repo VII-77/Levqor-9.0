@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { getApiBase } from "@/lib/api-config";
 
 interface BriefingData {
   headline?: string;
@@ -19,7 +20,7 @@ export default function AIFounderStrip() {
   useEffect(() => {
     async function fetchBriefing() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/guardian/founder-briefing`, {
+        const res = await fetch(`${getApiBase()}/api/guardian/founder-briefing`, {
           cache: "no-store"
         });
         

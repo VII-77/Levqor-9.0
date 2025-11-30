@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useLevqorBrain } from "@/components/brain";
+import { getApiBase } from '@/lib/api-config';
 
 interface WorkflowStep {
   id: string;
@@ -26,7 +27,7 @@ interface WorkflowEditorProps {
   onSave?: (workflow: Workflow) => void;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = getApiBase();
 
 const stepTypeLabels: Record<string, string> = {
   http_request: "HTTP Request",

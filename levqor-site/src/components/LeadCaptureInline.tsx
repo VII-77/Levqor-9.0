@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
+import { getApiBase } from '@/lib/api-config';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.levqor.ai';
+const API_BASE = getApiBase();
 
 type LeadCaptureInlineProps = {
   source?: string;
