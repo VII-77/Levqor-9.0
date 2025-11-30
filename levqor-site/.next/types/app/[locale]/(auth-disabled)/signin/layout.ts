@@ -1,8 +1,8 @@
-// File: /home/runner/workspace/levqor-site/src/app/[locale]/(public)/pricing/layout.tsx
-import * as entry from '../../../../../../src/app/[locale]/(public)/pricing/layout.js'
+// File: /home/runner/workspace/levqor-site/src/app/[locale]/(auth-disabled)/signin/layout.tsx
+import * as entry from '../../../../../../src/app/[locale]/(auth-disabled)/signin/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../../../src/app/[locale]/(public)/pricing/layout.js')
+type TEntry = typeof import('../../../../../../src/app/[locale]/(auth-disabled)/signin/layout.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{
