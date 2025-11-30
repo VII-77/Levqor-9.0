@@ -9,7 +9,7 @@
     "installCommand": "npm install",
     "buildCommand": "npm run build",
     "outputDirectory": ".next",
-    "rootDirectory": "levqor-site",
+    "rootDirectory": null,
     "directoryListing": true,
     "nodeVersion": "20.x"
   }
