@@ -2,10 +2,5 @@
   "/page": "app/page.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
   "/api/health/route": "app/api/health/route.js",
-  "/api/[...path]/route": "app/api/[...path]/route.js",
-  "/workflows/page": "app/workflows/page.js",
-  "/[locale]/(public-disabled)/workflows/library/page": "app/[locale]/(public-disabled)/workflows/library/page.js",
-  "/[locale]/page": "app/[locale]/page.js",
-  "/[locale]/(public-disabled)/pricing/page": "app/[locale]/(public-disabled)/pricing/page.js",
-  "/[locale]/(auth-disabled)/signin/page": "app/[locale]/(auth-disabled)/signin/page.js"
+  "/[locale]/page": "app/[locale]/page.js"
 }
