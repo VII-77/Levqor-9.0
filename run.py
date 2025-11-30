@@ -37,11 +37,22 @@ if os.environ.get("SENTRY_DSN"):
     except Exception as e:
         log.warning(f"Sentry init failed: {e}")
 
-try:
-    from monitors.scheduler import get_scheduler
-    _scheduler_instance = get_scheduler()
-except Exception as e:
-    log.warning(f"Scheduler initialization skipped: {e}")
+_scheduler_instance = None
+_scheduler_initialized = False
+
+def _deferred_scheduler_init():
+    """Initialize scheduler after server is ready - runs once"""
+    global _scheduler_instance, _scheduler_initialized
+    if _scheduler_initialized:
+        return
+    _scheduler_initialized = True
+    
+    try:
+        from monitors.scheduler import get_scheduler
+        _scheduler_instance = get_scheduler()
+        log.info("✅ Deferred scheduler initialization complete")
+    except Exception as e:
+        log.warning(f"Scheduler initialization skipped: {e}")
 
 try:
     from modules.db_wrapper import get_db, execute, commit as db_commit, rollback as db_rollback, execute_query, get_db_type
@@ -128,6 +139,12 @@ def protected_path_throttle():
 
 @app.before_request
 def _log_in():
+    # Deferred scheduler initialization (for Autoscale deployment)
+    # This runs after the server port is open, avoiding startup delays
+    if not _scheduler_initialized:
+        import threading
+        threading.Thread(target=_deferred_scheduler_init, daemon=True).start()
+    
     # Attach tenant context early (MEGA-PHASE 9)
     try:
         attach_tenant_to_g(request)
