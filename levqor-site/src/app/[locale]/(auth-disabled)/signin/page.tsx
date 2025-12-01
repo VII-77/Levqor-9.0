@@ -134,6 +134,13 @@ function SignInContent() {
             )}
           </div>
           
+          <p className="mt-4 text-sm text-center text-gray-500">
+            Don&apos;t use Google or Microsoft?{" "}
+            <Link href="/support?type=login" className="text-blue-600 hover:underline">
+              Request a secure login link →
+            </Link>
+          </p>
+          
           <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
             <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
               <span className="flex items-center gap-1">
