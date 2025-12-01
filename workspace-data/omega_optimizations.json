@@ -1,5 +1,5 @@
 {
-  "generated_at": "2025-11-30T23:02:13.623887Z",
+  "generated_at": "2025-12-01T10:54:22.638107Z",
   "optimization_count": 2,
   "by_priority": {
     "critical": 0,
@@ -9,7 +9,7 @@
   },
   "optimizations": [
     {
-      "id": "gtm_trial_feedback_20251130",
+      "id": "gtm_trial_feedback_20251201",
       "category": "retention",
       "priority": "medium",
       "type": "enhancement",
@@ -24,7 +24,7 @@
       }
     },
     {
-      "id": "perf_monitoring_baseline_20251130",
+      "id": "perf_monitoring_baseline_20251201",
       "category": "performance",
       "priority": "low",
       "type": "info",
