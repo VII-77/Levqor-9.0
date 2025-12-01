@@ -1,7 +1,6 @@
 {
-  "/api/health/route": "app/api/health/route.js",
   "/api/version/route": "app/api/version/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/[locale]/page": "app/[locale]/page.js",
-  "/[locale]/(auth-disabled)/signin/page": "app/[locale]/(auth-disabled)/signin/page.js"
+  "/api/health/route": "app/api/health/route.js",
+  "/[locale]/page": "app/[locale]/page.js"
 }

@@ -1,8 +1,8 @@
 {
   "name": "levqor-site",
-  "commit": "ece66f54601d7a921c598f32606949b8f3d44035",
-  "commitShort": "ece66f5",
+  "commit": "a0d377e86d82b69b8c5db8116a89a6822870a9d3",
+  "commitShort": "a0d377e",
   "branch": "main",
-  "generatedAt": "2025-11-30T22:40:17.253Z",
+  "generatedAt": "2025-12-01T10:24:13.509Z",
   "runtime": "next.js"
 }
