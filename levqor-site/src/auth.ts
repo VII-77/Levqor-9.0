@@ -1,10 +1,8 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import AzureADProvider from "next-auth/providers/azure-ad";
-import CredentialsProvider from "next-auth/providers/credentials";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || "https://www.levqor.ai";
-const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -26,18 +24,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     AzureADProvider({
       clientId: process.env.MICROSOFT_CLIENT_ID || "",
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET || "",
-    }),
-
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        console.debug("[AUTH] Credentials provider disabled - use OAuth instead");
-        return null;
-      },
     }),
   ],
 
