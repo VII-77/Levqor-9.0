@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+set -e
+
+echo "========================================"
+echo "[pre-push] Levqor Safety Checks"
+echo "========================================"
+
+if ! command -v python >/dev/null 2>&1 && ! command -v python3 >/dev/null 2>&1; then
+    echo "[pre-push] WARNING: Python not found, skipping Stripe audit."
+    exit 0
+fi
+
+PYTHON_CMD="python3"
+if ! command -v python3 >/dev/null 2>&1; then
+    PYTHON_CMD="python"
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts"
+
+if [ -f "$SCRIPT_DIR/stripe_price_audit.py" ]; then
+    echo "[pre-push] Running Stripe price audit..."
+    if $PYTHON_CMD "$SCRIPT_DIR/stripe_price_audit.py"; then
+        echo "[pre-push] Stripe price audit PASSED."
+    else
+        echo "[pre-push] ERROR: Stripe price audit FAILED."
+        echo "[pre-push] Fix the issues above before pushing."
+        exit 1
+    fi
+else
+    echo "[pre-push] WARNING: stripe_price_audit.py not found, skipping."
+fi
+
+if [ -f "$SCRIPT_DIR/checkout_smoke_test.py" ]; then
+    echo ""
+    echo "[pre-push] Running checkout smoke test (optional)..."
+    if $PYTHON_CMD "$SCRIPT_DIR/checkout_smoke_test.py"; then
+        echo "[pre-push] Checkout smoke test PASSED."
+    else
+        echo ""
+        echo "[pre-push] WARNING: Checkout smoke test FAILED."
+        echo -n "[pre-push] Continue anyway? (y/N): "
+        read -r ans
+        if [ "$ans" != "y" ] && [ "$ans" != "Y" ]; then
+            echo "[pre-push] Aborting push."
+            exit 1
+        fi
+        echo "[pre-push] Continuing with push despite test failure."
+    fi
+fi
+
+echo ""
+echo "[pre-push] All checks passed. Proceeding with push."
+echo "========================================"
