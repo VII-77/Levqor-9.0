@@ -1,6 +1,6 @@
 # Levqor Founder Digest
 
-**Generated:** 2025-11-26 14:10:36 UTC
+**Generated:** 2025-12-02 08:00:00 UTC
 **Launch Stage:** POST (LIVE AUTONOMOUS)
 
 ---
@@ -79,14 +79,7 @@
 
 ## Onboarding UX
 
-**Onboarding Score:** [OK] 100%
-
-| Check | Status |
-|-------|--------|
-| Locales Covered | 9/9 |
-| Signup Route | OK |
-| Header CTA | OK |
-| Homepage Onboarding | OK |
+*No onboarding UX audit data available. Run onboarding_ux_audit.py first.*
 
 ---
 
