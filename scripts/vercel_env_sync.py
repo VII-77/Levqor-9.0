@@ -38,6 +38,13 @@ STRIPE_KEYS = [
     "STRIPE_PRICE_ADDON_EXTRA_WORKFLOWS",
 ]
 
+AUTH_KEYS = [
+    "NEXTAUTH_SECRET",
+    "NEXTAUTH_URL",
+]
+
+ALL_SYNC_KEYS = STRIPE_KEYS + AUTH_KEYS
+
 def parse_env_file(filepath: Path) -> dict:
     """Parse .env file into a dictionary."""
     env_vars = {}
@@ -173,12 +180,12 @@ def main():
     file_env = parse_env_file(ENV_FILE)
     
     local_values = {}
-    for key in STRIPE_KEYS:
+    for key in ALL_SYNC_KEYS:
         value = get_env_value(key, file_env)
         if value:
             local_values[key] = value
     
-    print(f"\nLocal keys found: {len(local_values)}/{len(STRIPE_KEYS)}")
+    print(f"\nLocal keys found: {len(local_values)}/{len(ALL_SYNC_KEYS)}")
     
     if not args.dry_run:
         api = VercelAPI(token, project_id, team_id)
@@ -195,7 +202,7 @@ def main():
     results = []
     errors = 0
     
-    for key in STRIPE_KEYS:
+    for key in ALL_SYNC_KEYS:
         local_value = local_values.get(key, "")
         
         if not local_value:
