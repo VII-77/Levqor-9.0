@@ -1,0 +1,142 @@
+You are operating inside the Levqor monorepo.  
+Your job is to FIX THE NEXTAUTH v5 AUTH ROUTE + REINJECT DEEP LOGGING + VERIFY EVERYTHING end-to-end.
+
+STRICT RULES (MANDATORY):
+1. Use existing environment variables automatically.
+2. Verify every action with real file reads, greps, diffs, builds, and curl checks.
+3. Never assume success — prove it.
+4. Output full diffs before committing.
+5. If any step fails, stop and show the failing output.
+
+==============================================================
+PHASE 1 — VALIDATE FILE STRUCTURE
+==============================================================
+1. Show:
+   - levqor-site/src/auth.ts
+   - levqor-site/src/app/api/auth/[...nextauth]/route.ts
+Commands:
+   ls -R levqor-site/src/app/api/auth
+   sed -n '1,200p' levqor-site/src/app/api/auth/[...nextauth]/route.ts
+   sed -n '1,250p' levqor-site/src/auth.ts
+
+==============================================================
+PHASE 2 — REWRITE THE ROUTE HANDLER (NEXTAUTH v5)
+==============================================================
+Completely replace the route file with the correct v5 handler:
+
+FILE: levqor-site/src/app/api/auth/[...nextauth]/route.ts
+CONTENT:
+--------------------------------------------------------------
+import NextAuth from "next-auth";
+import auth from "@/auth";
+
+export const { GET, POST } = NextAuth(auth);
+--------------------------------------------------------------
+
+After writing it:
+   cat the file
+   npx tsc --noEmit || true
+
+==============================================================
+PHASE 3 — ENSURE DEEP LOGGING IS PRESENT IN auth.ts
+==============================================================
+Add BEFORE the NextAuth({...}) export:
+
+console.log("[NEXTAUTH_BOOT]", {
+  timestamp: new Date().toISOString(),
+});
+
+Inside the NextAuth config, ensure BOTH blocks exist:
+
+1) logger:
+--------------------------------------------------------------
+logger: {
+  error(error) {
+    console.log("[NEXTAUTH_ERROR]", JSON.stringify({
+      name: error?.name,
+      message: error?.message,
+      stack: error?.stack,
+      timestamp: new Date().toISOString(),
+    }));
+  },
+  warn(code) {
+    console.log("[NEXTAUTH_WARN]", JSON.stringify({code, ts: new Date().toISOString()}));
+  },
+  debug(code, meta) {
+    console.log("[NEXTAUTH_DEBUG]", JSON.stringify({code, meta, ts: new Date().toISOString()}));
+  },
+},
+--------------------------------------------------------------
+
+2) events:
+--------------------------------------------------------------
+events: {
+  async signIn(msg) {
+    console.log("[NEXTAUTH_EVENT_SIGNIN]", JSON.stringify({
+      user: msg.user,
+      account: msg.account,
+      isNewUser: msg.isNewUser,
+      ts: new Date().toISOString(),
+    }));
+  },
+  async session(msg) {
+    console.log("[NEXTAUTH_EVENT_SESSION]", JSON.stringify({
+      sessionUser: msg.session?.user,
+      ts: new Date().toISOString(),
+    }));
+  },
+  async signOut() {
+    console.log("[NEXTAUTH_EVENT_SIGNOUT]", JSON.stringify({
+      ts: new Date().toISOString(),
+    }));
+  },
+},
+--------------------------------------------------------------
+
+After editing:
+   grep -R "NEXTAUTH_BOOT" -n levqor-site/src/auth.ts
+   grep -R "NEXTAUTH_EVENT" -n levqor-site/src/auth.ts
+   grep -R "NEXTAUTH_DEBUG" -n levqor-site/src/auth.ts
+   npx tsc --noEmit || true
+
+==============================================================
+PHASE 4 — LOCAL BUILD VALIDATION
+==============================================================
+Run the production build locally:
+
+cd levqor-site
+npm run build > /tmp/local_build_log.txt 2>&1 || echo "LOCAL BUILD FAILED"
+
+Then show:
+   sed -n '1,200p' /tmp/local_build_log.txt
+   grep -i "error" -n /tmp/local_build_log.txt || true
+   grep -i "nextauth" -n /tmp/local_build_log.txt || true
+
+IF IT FAILS:
+Stop immediately and show full log.
+
+==============================================================
+PHASE 5 — GIT DIFF, COMMIT, PUSH (ONLY IF BUILD PASSES)
+==============================================================
+Commands:
+cd /home/runner/workspace
+git add levqor-site/src/auth.ts levqor-site/src/app/api/auth/[...nextauth]/route.ts
+git commit -m "Fix NextAuth v5 route handler + install deep logging"
+git push origin main
+
+==============================================================
+PHASE 6 — VERIFY PRODUCTION ENDPOINTS
+==============================================================
+After pushing, run:
+
+curl -I https://www.levqor.ai/api/auth/providers
+curl -s https://www.levqor.ai/api/auth/error || true
+
+Show output.
+
+==============================================================
+
+THE AGENT MUST:
+- Execute these steps exactly.
+- Stop on any failure.
+- Show ALL logs, ALL errors, ALL diffs.

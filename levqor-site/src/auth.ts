@@ -4,6 +4,12 @@ import AzureADProvider from "next-auth/providers/azure-ad";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || "https://www.levqor.ai";
 
+console.log("[NEXTAUTH_BOOT]", JSON.stringify({
+  timestamp: new Date().toISOString(),
+  NEXTAUTH_URL,
+  NODE_ENV: process.env.NODE_ENV,
+}));
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
