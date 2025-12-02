@@ -106,45 +106,71 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
 
-  debug: process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_AUTH_DEBUG === "1",
+  debug: true,
 
   logger: {
     error(error: Error) {
-      console.error("[NEXTAUTH LOGGER ERROR]", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-        cause: error.cause,
+      console.log("========================================");
+      console.log("[NEXTAUTH_ERROR]", JSON.stringify({
+        errorName: error?.name ?? "UnknownError",
+        errorMessage: error?.message ?? "No message",
+        errorStack: error?.stack ?? "No stack",
+        errorCause: String(error?.cause ?? "No cause"),
         timestamp: new Date().toISOString(),
-      });
+      }));
+      console.log("========================================");
     },
     warn(code: string) {
-      console.warn("[NEXTAUTH LOGGER WARN]", { code, timestamp: new Date().toISOString() });
+      console.log("[NEXTAUTH_WARN]", JSON.stringify({
+        code,
+        timestamp: new Date().toISOString(),
+      }));
     },
     debug(code: string, metadata: unknown) {
-      console.debug("[NEXTAUTH LOGGER DEBUG]", { code, metadata, timestamp: new Date().toISOString() });
+      console.log("[NEXTAUTH_DEBUG]", JSON.stringify({
+        code,
+        metadata: typeof metadata === "object" ? JSON.stringify(metadata) : String(metadata),
+        timestamp: new Date().toISOString(),
+      }));
     },
   },
 
   events: {
     async signIn(message) {
-      console.log("[NEXTAUTH EVENT] signIn", {
-        user: { email: message.user?.email ?? null, id: message.user?.id ?? null },
+      console.log("[NEXTAUTH_EVENT_SIGNIN]", JSON.stringify({
+        userEmail: message.user?.email ?? null,
+        userId: message.user?.id ?? null,
         provider: message.account?.provider ?? null,
+        providerType: message.account?.type ?? null,
         isNewUser: message.isNewUser ?? false,
         timestamp: new Date().toISOString(),
-      });
+      }));
     },
-    async signOut() {
-      console.log("[NEXTAUTH EVENT] signOut", {
+    async signOut(message) {
+      console.log("[NEXTAUTH_EVENT_SIGNOUT]", JSON.stringify({
         timestamp: new Date().toISOString(),
-      });
+      }));
     },
     async session(message) {
-      console.log("[NEXTAUTH EVENT] session", {
-        sessionUser: { email: message.session?.user?.email ?? null },
+      console.log("[NEXTAUTH_EVENT_SESSION]", JSON.stringify({
+        userEmail: message.session?.user?.email ?? null,
+        hasUser: !!message.session?.user,
         timestamp: new Date().toISOString(),
-      });
+      }));
+    },
+    async createUser(message) {
+      console.log("[NEXTAUTH_EVENT_CREATEUSER]", JSON.stringify({
+        userEmail: message.user?.email ?? null,
+        userId: message.user?.id ?? null,
+        timestamp: new Date().toISOString(),
+      }));
+    },
+    async linkAccount(message) {
+      console.log("[NEXTAUTH_EVENT_LINKACCOUNT]", JSON.stringify({
+        provider: message.account?.provider ?? null,
+        userId: message.user?.id ?? null,
+        timestamp: new Date().toISOString(),
+      }));
     },
   },
 });
