@@ -59,7 +59,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \*********************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"name":"levqor-site","commit":"389b6c62d9f0bea7f044d51864f63b9cbe637e8a","commitShort":"389b6c6","branch":"main","generatedAt":"2025-12-02T10:51:32.142Z","runtime":"next.js"}');
+module.exports = /*#__PURE__*/JSON.parse('{"name":"levqor-site","commit":"dac39e16fa20852caf15d9097d40706f66d74679","commitShort":"dac39e1","branch":"main","generatedAt":"2025-12-02T10:57:35.752Z","runtime":"next.js"}');
 
 /***/ })
 
