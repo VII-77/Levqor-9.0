@@ -108,16 +108,42 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
   debug: process.env.NODE_ENV === "development" || process.env.NEXT_PUBLIC_AUTH_DEBUG === "1",
 
+  logger: {
+    error(error: Error) {
+      console.error("[NEXTAUTH LOGGER ERROR]", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        cause: error.cause,
+        timestamp: new Date().toISOString(),
+      });
+    },
+    warn(code: string) {
+      console.warn("[NEXTAUTH LOGGER WARN]", { code, timestamp: new Date().toISOString() });
+    },
+    debug(code: string, metadata: unknown) {
+      console.debug("[NEXTAUTH LOGGER DEBUG]", { code, metadata, timestamp: new Date().toISOString() });
+    },
+  },
+
   events: {
     async signIn(message) {
-      console.log("[AUTH EVENT] signIn", {
+      console.log("[NEXTAUTH EVENT] signIn", {
         user: { email: message.user?.email ?? null, id: message.user?.id ?? null },
-        accountProvider: message.account?.provider ?? null,
+        provider: message.account?.provider ?? null,
+        isNewUser: message.isNewUser ?? false,
+        timestamp: new Date().toISOString(),
+      });
+    },
+    async signOut() {
+      console.log("[NEXTAUTH EVENT] signOut", {
+        timestamp: new Date().toISOString(),
       });
     },
     async session(message) {
-      console.log("[AUTH EVENT] session", {
+      console.log("[NEXTAUTH EVENT] session", {
         sessionUser: { email: message.session?.user?.email ?? null },
+        timestamp: new Date().toISOString(),
       });
     },
   },
