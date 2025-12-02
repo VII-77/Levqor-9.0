@@ -72,6 +72,16 @@ const nextConfig = {
         destination: 'https://www.levqor.ai/:path*',
         permanent: true,
       },
+      {
+        source: '/sign-in',
+        destination: '/signin',
+        permanent: true,
+      },
+      {
+        source: '/:locale/sign-in',
+        destination: '/:locale/signin',
+        permanent: true,
+      },
     ];
   },
   async headers() {
