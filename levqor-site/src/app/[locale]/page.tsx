@@ -40,7 +40,7 @@ export default function LocaleHomePage() {
     name: 'Levqor',
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
-    url: 'https://levqor.ai',
+    url: 'https://www.levqor.ai',
     description: 'AI-powered automation that self-heals and ships faster. Pay only for results.',
     offers: {
       '@type': 'Offer',

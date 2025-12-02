@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/api/', '/dashboard/'],
       }
     ],
-    sitemap: 'https://levqor.ai/sitemap.xml',
+    sitemap: 'https://www.levqor.ai/sitemap.xml',
   }
 }

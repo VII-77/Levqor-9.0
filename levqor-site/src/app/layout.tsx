@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://levqor.ai'),
+  metadataBase: new URL('https://www.levqor.ai'),
   title: {
     default: 'Levqor – Automate work. Ship faster. Pay only for results.',
     template: '%s | Levqor'

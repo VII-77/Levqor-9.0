@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Pricing – Levqor automation plans',
   description: 'Transparent Levqor pricing. Four plans, 7-day free trial on every tier. Only pay for successful automated workflows.',
   alternates: {
-    canonical: 'https://levqor.ai/pricing',
+    canonical: 'https://www.levqor.ai/pricing',
   },
 };
 

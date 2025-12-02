@@ -53,8 +53,8 @@ export default function GrowthPanel({ className = "" }: { className?: string }) 
   const [copied, setCopied] = useState(false);
 
   const referralUrl = referralCode 
-    ? `https://levqor.ai/?ref=${referralCode}` 
-    : "https://levqor.ai/?ref=YOURCODE";
+    ? `https://www.levqor.ai/?ref=${referralCode}` 
+    : "https://www.levqor.ai/?ref=YOURCODE";
 
   const handleCopyReferral = useCallback(async () => {
     try {

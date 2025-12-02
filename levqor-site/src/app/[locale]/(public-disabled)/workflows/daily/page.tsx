@@ -214,12 +214,12 @@ export default function WorkflowOfTheDayPage() {
         <meta property="og:title" content={`Workflow of the Day: ${workflow.name}`} />
         <meta property="og:description" content={workflow.description} />
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://levqor.ai/workflows/daily" />
-        <meta property="og:image" content="https://levqor.ai/og-workflow-daily.png" />
+        <meta property="og:url" content="https://www.levqor.ai/workflows/daily" />
+        <meta property="og:image" content="https://www.levqor.ai/og-workflow-daily.png" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`Workflow of the Day: ${workflow.name}`} />
         <meta name="twitter:description" content={workflow.description} />
-        <meta name="twitter:image" content="https://levqor.ai/og-workflow-daily.png" />
+        <meta name="twitter:image" content="https://www.levqor.ai/og-workflow-daily.png" />
       </Head>
       
       <main className="min-h-screen relative">

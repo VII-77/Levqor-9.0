@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = 'https://levqor.ai'
+  const base = 'https://www.levqor.ai'
   const now = new Date()
   
   return [

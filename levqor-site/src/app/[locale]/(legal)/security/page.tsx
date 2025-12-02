@@ -4,7 +4,7 @@ export const metadata: Metadata = {
   title: 'Security & data protection – Levqor',
   description: 'Learn how Levqor protects your data with encryption, access control, audit logging, and compliance-ready practices.',
   alternates: {
-    canonical: 'https://levqor.ai/security',
+    canonical: 'https://www.levqor.ai/security',
   },
 };
 
