@@ -2,33 +2,40 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-6">
-      <div className="text-center">
-        <div className="text-8xl font-bold text-gray-900 mb-4">404</div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Page not found</h1>
-        <p className="text-gray-600 mb-8 max-w-md">
-          Sorry, we couldn't find the page you're looking for. The link might be broken or the page may have been removed.
+    <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-950 px-4">
+      <div className="max-w-xl w-full text-center text-slate-50 space-y-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-400">
+          404 – Page not found
         </p>
-        <div className="flex gap-4 justify-center flex-wrap">
+
+        <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
+          This page doesn&apos;t exist in Levqor.
+        </h1>
+
+        <p className="text-sm md:text-base text-slate-300">
+          The link may be broken, expired, or the page was moved.
+          Use the actions below to get back to a safe place.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center mt-4">
           <Link
             href="/"
-            className="px-6 py-3 bg-black text-white rounded-xl font-semibold hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg border border-blue-500 bg-blue-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-600 transition"
           >
-            Go Home
+            ← Back to homepage
           </Link>
+
           <Link
-            href="/pricing"
-            className="px-6 py-3 border-2 border-black rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+            href="/signin"
+            className="inline-flex items-center justify-center rounded-lg border border-slate-600 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-slate-800 transition"
           >
-            View Pricing
-          </Link>
-          <Link
-            href="/docs"
-            className="px-6 py-3 border-2 border-gray-400 text-gray-700 rounded-xl font-semibold hover:bg-gray-100 transition-colors"
-          >
-            Documentation
+            Go to sign in
           </Link>
         </div>
+
+        <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mt-4">
+          Levqor • Automation, compliance & control
+        </p>
       </div>
     </main>
   );
