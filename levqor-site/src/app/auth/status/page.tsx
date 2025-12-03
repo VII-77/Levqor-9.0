@@ -5,37 +5,15 @@ import Link from "next/link";
 interface ProviderStatus {
   name: string;
   envPresent: boolean;
-  callbackUrl: string;
-  instructions: string;
+  description: string;
 }
 
 function getProviderStatuses(): ProviderStatus[] {
-  const baseUrl = process.env.NEXTAUTH_URL || "https://www.levqor.ai";
-  
   return [
     {
-      name: "Google",
-      envPresent: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
-      callbackUrl: `${baseUrl}/api/auth/callback/google`,
-      instructions: "In Google Cloud Console, add the callback URL to OAuth 2.0 authorized redirect URIs.",
-    },
-    {
-      name: "Microsoft (Entra ID)",
-      envPresent: !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET),
-      callbackUrl: `${baseUrl}/api/auth/callback/microsoft-entra-id`,
-      instructions: "In Azure Portal, add the callback URL to Authentication > Platform configurations > Web.",
-    },
-    {
-      name: "Email (Resend)",
+      name: "Email (Resend Magic Link)",
       envPresent: !!process.env.RESEND_API_KEY,
-      callbackUrl: "N/A - Email verification",
-      instructions: "Ensure RESEND_API_KEY is set with a valid Resend API key.",
-    },
-    {
-      name: "Credentials (Admin)",
-      envPresent: !!(process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD),
-      callbackUrl: "N/A - Direct login",
-      instructions: "Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables for admin access.",
+      description: "Secure passwordless authentication via email magic links powered by Resend.",
     },
   ];
 }
@@ -49,7 +27,9 @@ export default async function AuthStatusPage() {
   
   const providers = getProviderStatuses();
   const nextAuthUrl = process.env.NEXTAUTH_URL || "Not set";
-  const nextAuthSecret = process.env.NEXTAUTH_SECRET ? "Set" : "Not set";
+  const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET ? "Set" : "Not set";
+  const resendConfigured = !!process.env.RESEND_API_KEY;
+  const authFromEmail = process.env.AUTH_FROM_EMAIL || "login@levqor.ai";
   
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-8">
@@ -60,7 +40,7 @@ export default async function AuthStatusPage() {
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Auth Configuration Status</h1>
           <p className="text-gray-600 mt-2">
-            This page shows the configuration status of authentication providers.
+            Magic Link email authentication configuration status.
           </p>
         </div>
         
@@ -72,25 +52,44 @@ export default async function AuthStatusPage() {
               <code className="text-sm bg-gray-100 px-2 py-1 rounded">{nextAuthUrl}</code>
             </div>
             <div className="flex justify-between items-center py-2 border-b border-gray-100">
-              <span className="font-medium text-gray-700">NEXTAUTH_SECRET</span>
+              <span className="font-medium text-gray-700">AUTH_SECRET</span>
               <span className={`px-2 py-1 rounded text-sm font-medium ${
-                nextAuthSecret === "Set" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                authSecret === "Set" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
               }`}>
-                {nextAuthSecret}
+                {authSecret}
               </span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <span className="font-medium text-gray-700">AUTH_FROM_EMAIL</span>
+              <code className="text-sm bg-gray-100 px-2 py-1 rounded">{authFromEmail}</code>
             </div>
           </div>
         </div>
         
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Provider Status</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Authentication Method</h2>
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-6 h-6 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <div>
+                <h3 className="font-semibold text-blue-900">Magic Link Authentication</h3>
+                <p className="text-sm text-blue-700 mt-1">
+                  Users sign in by entering their email address and clicking a secure link sent to their inbox.
+                  No passwords required.
+                </p>
+              </div>
+            </div>
+          </div>
+          
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 px-4 font-semibold text-gray-700">Provider</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">ENV Present</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Callback URL</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Description</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,13 +111,11 @@ export default async function AuthStatusPage() {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
                         )}
-                        {provider.envPresent ? "Yes" : "No"}
+                        {provider.envPresent ? "Active" : "Not Configured"}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded break-all">
-                        {provider.callbackUrl}
-                      </code>
+                    <td className="py-3 px-4 text-sm text-gray-600">
+                      {provider.description}
                     </td>
                   </tr>
                 ))}
@@ -127,35 +124,32 @@ export default async function AuthStatusPage() {
           </div>
         </div>
         
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">How to Fix</h2>
-          <div className="space-y-4">
-            {providers.filter(p => !p.envPresent).map((provider) => (
-              <div key={provider.name} className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <h3 className="font-semibold text-amber-800">{provider.name}</h3>
-                <p className="text-sm text-amber-700 mt-1">{provider.instructions}</p>
-                {provider.callbackUrl !== "N/A - Email verification" && provider.callbackUrl !== "N/A - Direct login" && (
-                  <div className="mt-2">
-                    <span className="text-xs text-amber-600">Required callback URL:</span>
-                    <code className="block mt-1 text-xs bg-amber-100 p-2 rounded break-all">
-                      {provider.callbackUrl}
-                    </code>
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {providers.every(p => p.envPresent) && (
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h3 className="font-semibold text-green-800">All providers configured</h3>
-                <p className="text-sm text-green-700 mt-1">
-                  All authentication providers have their environment variables set.
-                  If you still experience issues, verify the callback URLs are correctly registered.
-                </p>
-              </div>
-            )}
+        {!resendConfigured && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Configuration Required</h2>
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+              <h3 className="font-semibold text-amber-800">Resend API Key</h3>
+              <p className="text-sm text-amber-700 mt-1">
+                Set the RESEND_API_KEY environment variable with a valid Resend API key to enable magic link emails.
+              </p>
+              <p className="text-xs text-amber-600 mt-2">
+                Get your API key at: <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline">resend.com</a>
+              </p>
+            </div>
           </div>
-        </div>
+        )}
+        
+        {resendConfigured && (
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h3 className="font-semibold text-green-800">All Systems Operational</h3>
+              <p className="text-sm text-green-700 mt-1">
+                Magic link authentication is fully configured and ready to use.
+                Users can sign in by entering their email address.
+              </p>
+            </div>
+          </div>
+        )}
         
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>Logged in as: {session.user?.email}</p>

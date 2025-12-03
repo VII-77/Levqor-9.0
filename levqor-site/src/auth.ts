@@ -1,37 +1,26 @@
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
-import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
+import Resend from "next-auth/providers/resend";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || "https://www.levqor.ai";
-
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
-const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || "";
-const MICROSOFT_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET || "";
-const MICROSOFT_TENANT_ID = process.env.MICROSOFT_TENANT_ID || "common";
+const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const AUTH_FROM_EMAIL = process.env.AUTH_FROM_EMAIL || "login@levqor.ai";
 
 console.log("[NEXTAUTH_BOOT]", JSON.stringify({
   timestamp: new Date().toISOString(),
   NEXTAUTH_URL,
   NODE_ENV: process.env.NODE_ENV,
-  hasGoogleClientId: !!GOOGLE_CLIENT_ID,
-  hasGoogleClientSecret: !!GOOGLE_CLIENT_SECRET,
-  hasMicrosoftClientId: !!MICROSOFT_CLIENT_ID,
-  hasMicrosoftClientSecret: !!MICROSOFT_CLIENT_SECRET,
-  microsoftTenantId: MICROSOFT_TENANT_ID,
+  hasAuthSecret: !!AUTH_SECRET,
+  hasResendApiKey: !!RESEND_API_KEY,
+  authFromEmail: AUTH_FROM_EMAIL,
 }));
-
-if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
-  console.error("[NEXTAUTH_CONFIG_ERROR] Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET");
-}
-if (!MICROSOFT_CLIENT_ID || !MICROSOFT_CLIENT_SECRET) {
-  console.error("[NEXTAUTH_CONFIG_ERROR] Missing MICROSOFT_CLIENT_ID or MICROSOFT_CLIENT_SECRET");
-}
-
-const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 
 if (!AUTH_SECRET) {
   console.error("[NEXTAUTH_CONFIG_ERROR] Missing AUTH_SECRET or NEXTAUTH_SECRET - authentication will fail!");
+}
+
+if (!RESEND_API_KEY) {
+  console.error("[NEXTAUTH_CONFIG_ERROR] Missing RESEND_API_KEY - magic link emails will not work!");
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -39,28 +28,92 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   secret: AUTH_SECRET,
 
   providers: [
-    GoogleProvider({
-      clientId: GOOGLE_CLIENT_ID,
-      clientSecret: GOOGLE_CLIENT_SECRET,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
+    Resend({
+      apiKey: RESEND_API_KEY,
+      from: AUTH_FROM_EMAIL,
+      async sendVerificationRequest({ identifier: email, url, provider }) {
+        const { host } = new URL(url);
+        console.log("[MAGIC_LINK_SEND]", JSON.stringify({
+          timestamp: new Date().toISOString(),
+          email,
+          host,
+          urlPreview: url.substring(0, 80) + "...",
+        }));
 
-    MicrosoftEntraID({
-      clientId: MICROSOFT_CLIENT_ID,
-      clientSecret: MICROSOFT_CLIENT_SECRET,
-      issuer: `https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/v2.0`,
+        try {
+          const res = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${provider.apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: provider.from,
+              to: [email],
+              subject: "Sign in to Levqor",
+              html: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                  <meta charset="utf-8">
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                </head>
+                <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px;">
+                  <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+                    <h1 style="color: #1e293b; font-size: 24px; margin: 0 0 24px; text-align: center;">Sign in to Levqor</h1>
+                    <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                      Click the button below to securely sign in to your Levqor account. This link expires in 24 hours.
+                    </p>
+                    <a href="${url}" style="display: block; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; padding: 16px 24px; border-radius: 8px; font-weight: 600; text-align: center; font-size: 16px;">
+                      Sign in to Levqor
+                    </a>
+                    <p style="color: #94a3b8; font-size: 14px; margin: 24px 0 0; text-align: center;">
+                      If you didn't request this email, you can safely ignore it.
+                    </p>
+                    <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+                    <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">
+                      Levqor - Autonomous Data Backup Platform
+                    </p>
+                  </div>
+                </body>
+                </html>
+              `,
+              text: `Sign in to Levqor\n\nClick this link to sign in: ${url}\n\nThis link expires in 24 hours.\n\nIf you didn't request this email, you can safely ignore it.`,
+            }),
+          });
+
+          const responseText = await res.text();
+          
+          if (!res.ok) {
+            console.error("[MAGIC_LINK_SEND_ERROR]", JSON.stringify({
+              timestamp: new Date().toISOString(),
+              status: res.status,
+              response: responseText,
+            }));
+            throw new Error(`Resend API error: ${res.status}`);
+          }
+
+          console.log("[MAGIC_LINK_SEND_SUCCESS]", JSON.stringify({
+            timestamp: new Date().toISOString(),
+            email,
+            response: responseText,
+          }));
+        } catch (error) {
+          console.error("[MAGIC_LINK_SEND_EXCEPTION]", JSON.stringify({
+            timestamp: new Date().toISOString(),
+            email,
+            error: error instanceof Error ? error.message : String(error),
+          }));
+          throw error;
+        }
+      },
     }),
   ],
 
   pages: {
     signIn: "/signin",
     error: "/signin",
+    verifyRequest: "/verify-request",
   },
 
   session: {
@@ -102,23 +155,20 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     : undefined,
 
   callbacks: {
-    async signIn({ user, account, profile }) {
-      console.log("[AUTH_SIGNIN_CALLBACK]", JSON.stringify({
+    async signIn({ user, account }) {
+      console.log("[MAGIC_LINK_SIGNIN_CALLBACK]", JSON.stringify({
         timestamp: new Date().toISOString(),
         userEmail: user?.email ?? null,
         userId: user?.id ?? null,
         provider: account?.provider ?? null,
-        providerAccountId: account?.providerAccountId ?? null,
-        hasProfile: !!profile,
-        profileEmail: (profile as { email?: string })?.email ?? null,
       }));
-      
+
       if (!user?.email) {
-        console.error("[AUTH_SIGNIN_REJECTED] No email provided by OAuth provider");
+        console.error("[MAGIC_LINK_SIGNIN_REJECTED] No email provided");
         return false;
       }
-      
-      console.log("[AUTH_SIGNIN_ALLOWED]", JSON.stringify({
+
+      console.log("[MAGIC_LINK_SIGNIN_SUCCESS]", JSON.stringify({
         email: user.email,
         provider: account?.provider,
       }));
@@ -165,7 +215,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
 
-  debug: true,
+  debug: process.env.NODE_ENV !== "production",
 
   logger: {
     error(error: Error) {
@@ -205,7 +255,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         timestamp: new Date().toISOString(),
       }));
     },
-    async signOut(message) {
+    async signOut() {
       console.log("[NEXTAUTH_EVENT_SIGNOUT]", JSON.stringify({
         timestamp: new Date().toISOString(),
       }));
@@ -220,13 +270,6 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     async createUser(message) {
       console.log("[NEXTAUTH_EVENT_CREATEUSER]", JSON.stringify({
         userEmail: message.user?.email ?? null,
-        userId: message.user?.id ?? null,
-        timestamp: new Date().toISOString(),
-      }));
-    },
-    async linkAccount(message) {
-      console.log("[NEXTAUTH_EVENT_LINKACCOUNT]", JSON.stringify({
-        provider: message.account?.provider ?? null,
         userId: message.user?.id ?? null,
         timestamp: new Date().toISOString(),
       }));

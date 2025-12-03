@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST='{"app/[locale]/(public-disabled)/workflows/ai-create/page.tsx -> @/components/ai/NaturalLanguageWorkflowBuilder":{"id":5980,"files":["static/chunks/5980.88b5946432acf59d.js"]}}';
