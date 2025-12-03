@@ -28,9 +28,15 @@ if (!MICROSOFT_CLIENT_ID || !MICROSOFT_CLIENT_SECRET) {
   console.error("[NEXTAUTH_CONFIG_ERROR] Missing MICROSOFT_CLIENT_ID or MICROSOFT_CLIENT_SECRET");
 }
 
+const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+
+if (!AUTH_SECRET) {
+  console.error("[NEXTAUTH_CONFIG_ERROR] Missing AUTH_SECRET or NEXTAUTH_SECRET - authentication will fail!");
+}
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: AUTH_SECRET,
 
   providers: [
     GoogleProvider({
@@ -94,12 +100,38 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      console.log("[AUTH_SIGNIN_CALLBACK]", JSON.stringify({
+        timestamp: new Date().toISOString(),
+        userEmail: user?.email ?? null,
+        userId: user?.id ?? null,
+        provider: account?.provider ?? null,
+        providerAccountId: account?.providerAccountId ?? null,
+        hasProfile: !!profile,
+        profileEmail: (profile as { email?: string })?.email ?? null,
+      }));
+      
+      if (!user?.email) {
+        console.error("[AUTH_SIGNIN_REJECTED] No email provided by OAuth provider");
+        return false;
+      }
+      
+      console.log("[AUTH_SIGNIN_ALLOWED]", JSON.stringify({
+        email: user.email,
+        provider: account?.provider,
+      }));
+      return true;
+    },
     async jwt({ token, user, account }) {
       if (user) {
         token.sub = user.id || token.sub;
         token.email = user.email || token.email;
         token.name = user.name || token.name;
-        console.debug("[AUTH] JWT callback - user login:", token.email);
+        console.log("[AUTH_JWT_CALLBACK]", JSON.stringify({
+          timestamp: new Date().toISOString(),
+          email: token.email,
+          provider: account?.provider ?? token.provider ?? null,
+        }));
       }
       if (account) {
         token.provider = account.provider;
