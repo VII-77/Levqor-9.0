@@ -1,5 +1,8 @@
 import NextAuth from "next-auth";
 import Resend from "next-auth/providers/resend";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "./db";
+import { users, accounts, sessions, verificationTokens } from "./db/schema";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || "https://www.levqor.ai";
 const AUTH_SECRET = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
@@ -24,6 +27,12 @@ if (!RESEND_API_KEY) {
 }
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  adapter: DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+  }),
   trustHost: true,
   secret: AUTH_SECRET,
 
@@ -117,7 +126,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
 
   session: {
-    strategy: "jwt",
+    strategy: "database",
     maxAge: 30 * 24 * 60 * 60,
   },
 
@@ -174,27 +183,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }));
       return true;
     },
-    async jwt({ token, user, account }) {
-      if (user) {
-        token.sub = user.id || token.sub;
-        token.email = user.email || token.email;
-        token.name = user.name || token.name;
-        console.log("[AUTH_JWT_CALLBACK]", JSON.stringify({
-          timestamp: new Date().toISOString(),
-          email: token.email,
-          provider: account?.provider ?? token.provider ?? null,
-        }));
-      }
-      if (account) {
-        token.provider = account.provider;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user && token) {
-        (session.user as { id?: string }).id = token.sub;
-        session.user.email = (token.email as string) ?? session.user.email;
-        session.user.name = (token.name as string) ?? session.user.name;
+    async session({ session, user }) {
+      if (session.user && user) {
+        session.user.id = user.id;
+        session.user.email = user.email ?? session.user.email;
+        session.user.name = user.name ?? session.user.name;
       }
       return session;
     },
