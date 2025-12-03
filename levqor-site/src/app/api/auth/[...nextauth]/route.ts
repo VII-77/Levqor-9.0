@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import { handlers } from "@/auth";
 import type { NextRequest } from "next/server";
 
