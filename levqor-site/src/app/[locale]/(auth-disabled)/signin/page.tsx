@@ -34,7 +34,7 @@ function SignInContent() {
         const res = await fetch("/api/auth/providers");
         if (res.ok) {
           const providers = await res.json();
-          setHasMicrosoft(!!providers["azure-ad"]);
+          setHasMicrosoft(!!providers["microsoft-entra-id"]);
         }
       } catch (err) {
         console.error("Failed to fetch providers:", err);
@@ -118,7 +118,7 @@ function SignInContent() {
             
             {hasMicrosoft && (
               <button 
-                onClick={() => handleOAuthSignIn("azure-ad")}
+                onClick={() => handleOAuthSignIn("microsoft-entra-id")}
                 disabled={loading}
                 className="w-full bg-white hover:bg-gray-50 text-gray-800 font-semibold py-3 px-4 rounded-lg border border-gray-300 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
               >

@@ -20,9 +20,9 @@ function getProviderStatuses(): ProviderStatus[] {
       instructions: "In Google Cloud Console, add the callback URL to OAuth 2.0 authorized redirect URIs.",
     },
     {
-      name: "Microsoft (Azure AD)",
+      name: "Microsoft (Entra ID)",
       envPresent: !!(process.env.MICROSOFT_CLIENT_ID && process.env.MICROSOFT_CLIENT_SECRET),
-      callbackUrl: `${baseUrl}/api/auth/callback/azure-ad`,
+      callbackUrl: `${baseUrl}/api/auth/callback/microsoft-entra-id`,
       instructions: "In Azure Portal, add the callback URL to Authentication > Platform configurations > Web.",
     },
     {

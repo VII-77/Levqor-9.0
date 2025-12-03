@@ -461,16 +461,6 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ }),
 
-/***/ "(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/azure-ad.js":
-/*!******************************************************************************!*\
-  !*** ./node_modules/next-auth/node_modules/@auth/core/providers/azure-ad.js ***!
-  \******************************************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ AzureAD)\n/* harmony export */ });\n/* harmony import */ var _microsoft_entra_id_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./microsoft-entra-id.js */ \"(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/microsoft-entra-id.js\");\n/**\n * <div class=\"provider\" style={{backgroundColor: \"#0072c6\", display: \"flex\", justifyContent: \"space-between\", color: \"#fff\", padding: 16}}>\n * <span>Built-in <b>Azure AD</b> integration.</span>\n * <a href=\"https://learn.microsoft.com/en-us/azure/active-directory\">\n *   <img style={{display: \"block\"}} src=\"https://authjs.dev/img/providers/azure-ad.svg\" height=\"48\" width=\"48\"/>\n * </a>\n * </div>\n *\n * @module providers/azure-ad\n */\n\n/**\n * @deprecated\n * Azure Active Directory has been renamed to [Microsoft Entra ID](/getting-started/providers/microsoft-entra-id).\n * Import this provider from the `providers/microsoft-entra-id` submodule instead of `providers/azure-ad`.\n */\nfunction AzureAD(config) {\n    return {\n        ...(0,_microsoft_entra_id_js__WEBPACK_IMPORTED_MODULE_0__[\"default\"])(config),\n        id: \"azure-ad\",\n        name: \"Azure Active Directory\",\n    };\n}\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL25vZGVfbW9kdWxlcy9AYXV0aC9jb3JlL3Byb3ZpZGVycy9henVyZS1hZC5qcyIsIm1hcHBpbmdzIjoiOzs7OztBQUFBO0FBQ0EsaUNBQWlDLDBHQUEwRztBQUMzSTtBQUNBO0FBQ0Esa0JBQWtCLG1CQUFtQjtBQUNyQztBQUNBO0FBQ0E7QUFDQTtBQUNBO0FBQ3VEO0FBQ3ZEO0FBQ0E7QUFDQTtBQUNBO0FBQ0E7QUFDZTtBQUNmO0FBQ0EsV0FBVyxrRUFBZ0I7QUFDM0I7QUFDQTtBQUNBO0FBQ0EiLCJzb3VyY2VzIjpbIndlYnBhY2s6Ly9sZXZxb3Itc2l0ZS8uL25vZGVfbW9kdWxlcy9uZXh0LWF1dGgvbm9kZV9tb2R1bGVzL0BhdXRoL2NvcmUvcHJvdmlkZXJzL2F6dXJlLWFkLmpzP2FiMGEiXSwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiA8ZGl2IGNsYXNzPVwicHJvdmlkZXJcIiBzdHlsZT17e2JhY2tncm91bmRDb2xvcjogXCIjMDA3MmM2XCIsIGRpc3BsYXk6IFwiZmxleFwiLCBqdXN0aWZ5Q29udGVudDogXCJzcGFjZS1iZXR3ZWVuXCIsIGNvbG9yOiBcIiNmZmZcIiwgcGFkZGluZzogMTZ9fT5cbiAqIDxzcGFuPkJ1aWx0LWluIDxiPkF6dXJlIEFEPC9iPiBpbnRlZ3JhdGlvbi48L3NwYW4+XG4gKiA8YSBocmVmPVwiaHR0cHM6Ly9sZWFybi5taWNyb3NvZnQuY29tL2VuLXVzL2F6dXJlL2FjdGl2ZS1kaXJlY3RvcnlcIj5cbiAqICAgPGltZyBzdHlsZT17e2Rpc3BsYXk6IFwiYmxvY2tcIn19IHNyYz1cImh0dHBzOi8vYXV0aGpzLmRldi9pbWcvcHJvdmlkZXJzL2F6dXJlLWFkLnN2Z1wiIGhlaWdodD1cIjQ4XCIgd2lkdGg9XCI0OFwiLz5cbiAqIDwvYT5cbiAqIDwvZGl2PlxuICpcbiAqIEBtb2R1bGUgcHJvdmlkZXJzL2F6dXJlLWFkXG4gKi9cbmltcG9ydCBNaWNyb3NvZnRFbnRyYUlEIGZyb20gXCIuL21pY3Jvc29mdC1lbnRyYS1pZC5qc1wiO1xuLyoqXG4gKiBAZGVwcmVjYXRlZFxuICogQXp1cmUgQWN0aXZlIERpcmVjdG9yeSBoYXMgYmVlbiByZW5hbWVkIHRvIFtNaWNyb3NvZnQgRW50cmEgSURdKC9nZXR0aW5nLXN0YXJ0ZWQvcHJvdmlkZXJzL21pY3Jvc29mdC1lbnRyYS1pZCkuXG4gKiBJbXBvcnQgdGhpcyBwcm92aWRlciBmcm9tIHRoZSBgcHJvdmlkZXJzL21pY3Jvc29mdC1lbnRyYS1pZGAgc3VibW9kdWxlIGluc3RlYWQgb2YgYHByb3ZpZGVycy9henVyZS1hZGAuXG4gKi9cbmV4cG9ydCBkZWZhdWx0IGZ1bmN0aW9uIEF6dXJlQUQoY29uZmlnKSB7XG4gICAgcmV0dXJuIHtcbiAgICAgICAgLi4uTWljcm9zb2Z0RW50cmFJRChjb25maWcpLFxuICAgICAgICBpZDogXCJhenVyZS1hZFwiLFxuICAgICAgICBuYW1lOiBcIkF6dXJlIEFjdGl2ZSBEaXJlY3RvcnlcIixcbiAgICB9O1xufVxuIl0sIm5hbWVzIjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/azure-ad.js\n");
-
-/***/ }),
-
 /***/ "(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/google.js":
 /*!****************************************************************************!*\
   !*** ./node_modules/next-auth/node_modules/@auth/core/providers/google.js ***!
@@ -491,16 +481,6 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 
 /***/ }),
 
-/***/ "(rsc)/./node_modules/next-auth/providers/azure-ad.js":
-/*!******************************************************!*\
-  !*** ./node_modules/next-auth/providers/azure-ad.js ***!
-  \******************************************************/
-/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
-
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* reexport safe */ _auth_core_providers_azure_ad__WEBPACK_IMPORTED_MODULE_0__[\"default\"])\n/* harmony export */ });\n/* harmony import */ var _auth_core_providers_azure_ad__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @auth/core/providers/azure-ad */ \"(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/azure-ad.js\");\n\n\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9henVyZS1hZC5qcyIsIm1hcHBpbmdzIjoiOzs7OztBQUE4QztBQUNVIiwic291cmNlcyI6WyJ3ZWJwYWNrOi8vbGV2cW9yLXNpdGUvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9henVyZS1hZC5qcz85Y2M3Il0sInNvdXJjZXNDb250ZW50IjpbImV4cG9ydCAqIGZyb20gXCJAYXV0aC9jb3JlL3Byb3ZpZGVycy9henVyZS1hZFwiO1xuZXhwb3J0IHsgZGVmYXVsdCB9IGZyb20gXCJAYXV0aC9jb3JlL3Byb3ZpZGVycy9henVyZS1hZFwiO1xuIl0sIm5hbWVzIjpbXSwic291cmNlUm9vdCI6IiJ9\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/providers/azure-ad.js\n");
-
-/***/ }),
-
 /***/ "(rsc)/./node_modules/next-auth/providers/google.js":
 /*!****************************************************!*\
   !*** ./node_modules/next-auth/providers/google.js ***!
@@ -508,6 +488,16 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
 eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* reexport safe */ _auth_core_providers_google__WEBPACK_IMPORTED_MODULE_0__[\"default\"])\n/* harmony export */ });\n/* harmony import */ var _auth_core_providers_google__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @auth/core/providers/google */ \"(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/google.js\");\n\n\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9nb29nbGUuanMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBNEM7QUFDVSIsInNvdXJjZXMiOlsid2VicGFjazovL2xldnFvci1zaXRlLy4vbm9kZV9tb2R1bGVzL25leHQtYXV0aC9wcm92aWRlcnMvZ29vZ2xlLmpzPzY3NjIiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0ICogZnJvbSBcIkBhdXRoL2NvcmUvcHJvdmlkZXJzL2dvb2dsZVwiO1xuZXhwb3J0IHsgZGVmYXVsdCB9IGZyb20gXCJAYXV0aC9jb3JlL3Byb3ZpZGVycy9nb29nbGVcIjtcbiJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/providers/google.js\n");
+
+/***/ }),
+
+/***/ "(rsc)/./node_modules/next-auth/providers/microsoft-entra-id.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/next-auth/providers/microsoft-entra-id.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* reexport safe */ _auth_core_providers_microsoft_entra_id__WEBPACK_IMPORTED_MODULE_0__[\"default\"])\n/* harmony export */ });\n/* harmony import */ var _auth_core_providers_microsoft_entra_id__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @auth/core/providers/microsoft-entra-id */ \"(rsc)/./node_modules/next-auth/node_modules/@auth/core/providers/microsoft-entra-id.js\");\n\n\n//# sourceURL=[module]\n//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiKHJzYykvLi9ub2RlX21vZHVsZXMvbmV4dC1hdXRoL3Byb3ZpZGVycy9taWNyb3NvZnQtZW50cmEtaWQuanMiLCJtYXBwaW5ncyI6Ijs7Ozs7QUFBd0Q7QUFDVSIsInNvdXJjZXMiOlsid2VicGFjazovL2xldnFvci1zaXRlLy4vbm9kZV9tb2R1bGVzL25leHQtYXV0aC9wcm92aWRlcnMvbWljcm9zb2Z0LWVudHJhLWlkLmpzPzY5NDAiXSwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0ICogZnJvbSBcIkBhdXRoL2NvcmUvcHJvdmlkZXJzL21pY3Jvc29mdC1lbnRyYS1pZFwiO1xuZXhwb3J0IHsgZGVmYXVsdCB9IGZyb20gXCJAYXV0aC9jb3JlL3Byb3ZpZGVycy9taWNyb3NvZnQtZW50cmEtaWRcIjtcbiJdLCJuYW1lcyI6W10sInNvdXJjZVJvb3QiOiIifQ==\n//# sourceURL=webpack-internal:///(rsc)/./node_modules/next-auth/providers/microsoft-entra-id.js\n");
 
 /***/ })
 

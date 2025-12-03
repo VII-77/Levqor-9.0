@@ -1,14 +1,32 @@
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import AzureADProvider from "next-auth/providers/azure-ad";
+import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id";
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || "https://www.levqor.ai";
+
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
+const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "";
+const MICROSOFT_CLIENT_ID = process.env.MICROSOFT_CLIENT_ID || "";
+const MICROSOFT_CLIENT_SECRET = process.env.MICROSOFT_CLIENT_SECRET || "";
+const MICROSOFT_TENANT_ID = process.env.MICROSOFT_TENANT_ID || "common";
 
 console.log("[NEXTAUTH_BOOT]", JSON.stringify({
   timestamp: new Date().toISOString(),
   NEXTAUTH_URL,
   NODE_ENV: process.env.NODE_ENV,
+  hasGoogleClientId: !!GOOGLE_CLIENT_ID,
+  hasGoogleClientSecret: !!GOOGLE_CLIENT_SECRET,
+  hasMicrosoftClientId: !!MICROSOFT_CLIENT_ID,
+  hasMicrosoftClientSecret: !!MICROSOFT_CLIENT_SECRET,
+  microsoftTenantId: MICROSOFT_TENANT_ID,
 }));
+
+if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) {
+  console.error("[NEXTAUTH_CONFIG_ERROR] Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET");
+}
+if (!MICROSOFT_CLIENT_ID || !MICROSOFT_CLIENT_SECRET) {
+  console.error("[NEXTAUTH_CONFIG_ERROR] Missing MICROSOFT_CLIENT_ID or MICROSOFT_CLIENT_SECRET");
+}
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -16,8 +34,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: GOOGLE_CLIENT_ID,
+      clientSecret: GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
           prompt: "consent",
@@ -27,9 +45,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       },
     }),
 
-    AzureADProvider({
-      clientId: process.env.MICROSOFT_CLIENT_ID || "",
-      clientSecret: process.env.MICROSOFT_CLIENT_SECRET || "",
+    MicrosoftEntraID({
+      clientId: MICROSOFT_CLIENT_ID,
+      clientSecret: MICROSOFT_CLIENT_SECRET,
+      issuer: `https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/v2.0`,
     }),
   ],
 
