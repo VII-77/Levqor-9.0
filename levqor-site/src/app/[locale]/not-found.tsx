@@ -1,13 +1,11 @@
+"use client";
+
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
-type Props = {
-  params: {
-    locale: string;
-  };
-};
-
-export default function LocaleNotFound({ params }: Props) {
-  const locale = params.locale || "en";
+export default function LocaleNotFound() {
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
 
   return (
     <main className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-950 px-4">
