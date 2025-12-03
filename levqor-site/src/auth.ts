@@ -68,36 +68,38 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     maxAge: 30 * 24 * 60 * 60,
   },
 
-  cookies: {
-    sessionToken: {
-      name: "__Secure-next-auth.session-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-        domain: ".levqor.ai",
-        path: "/",
-      },
-    },
-    callbackUrl: {
-      name: "__Secure-next-auth.callback-url",
-      options: {
-        sameSite: "lax",
-        secure: true,
-        domain: ".levqor.ai",
-        path: "/",
-      },
-    },
-    csrfToken: {
-      name: "__Host-next-auth.csrf-token",
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-        path: "/",
-      },
-    },
-  },
+  cookies: process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.includes("levqor.ai")
+    ? {
+        sessionToken: {
+          name: "__Secure-next-auth.session-token",
+          options: {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: true,
+            domain: ".levqor.ai",
+            path: "/",
+          },
+        },
+        callbackUrl: {
+          name: "__Secure-next-auth.callback-url",
+          options: {
+            sameSite: "lax",
+            secure: true,
+            domain: ".levqor.ai",
+            path: "/",
+          },
+        },
+        csrfToken: {
+          name: "__Host-next-auth.csrf-token",
+          options: {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: true,
+            path: "/",
+          },
+        },
+      }
+    : undefined,
 
   callbacks: {
     async signIn({ user, account, profile }) {
