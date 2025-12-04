@@ -19,6 +19,7 @@ import AIFounderStrip from "@/components/dashboard/AIFounderStrip";
 import AIBriefingCard from "@/components/dashboard/AIBriefingCard";
 import CommandPalette from "@/components/CommandPalette";
 import SuggestionChips from "@/components/dashboard/SuggestionChips";
+import ResourcesPanel from "@/components/dashboard/ResourcesPanel";
 import type { Metadata } from 'next'
 
 export const dynamic = "force-dynamic";
@@ -186,6 +187,8 @@ export default async function Dashboard(){
             <AnalyticsWidget />
             
             <GrowthPanel />
+            
+            <ResourcesPanel />
             
             <div className="bg-white rounded-lg shadow p-6">
               <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
