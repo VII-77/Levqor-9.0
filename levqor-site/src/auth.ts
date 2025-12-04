@@ -40,168 +40,113 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     Resend({
       apiKey: RESEND_API_KEY,
       from: AUTH_FROM_EMAIL,
-      async sendVerificationRequest({ identifier: email, url, provider }) {
+      async sendVerificationRequest({ identifier, url, provider }) {
         const { host } = new URL(url);
-        const fromAddress = process.env.AUTH_FROM_EMAIL ?? provider.from;
-        const apiKey = process.env.RESEND_API_KEY ?? provider.apiKey;
 
-        console.log("========================================");
-        console.log("[MAGIC_LINK_SEND_START]", JSON.stringify({
+        // ===== [MAGIC_LINK_SEND_START] =====
+        console.log("[MAGIC_LINK_SEND_START]", {
           timestamp: new Date().toISOString(),
-          identifier: email,
-          url: url,
-          from: fromAddress,
-          host: host,
-          hasApiKey: !!apiKey,
-          apiKeyPrefix: apiKey ? apiKey.substring(0, 6) + "..." : "MISSING",
-          providerFrom: provider.from,
-          envFrom: process.env.AUTH_FROM_EMAIL,
-        }));
-        console.log("========================================");
+          email: identifier,
+          fromEnv: process.env.AUTH_FROM_EMAIL,
+          resendApiKeyPrefix: process.env.RESEND_API_KEY?.slice(0, 8),
+          url,
+          host,
+        });
 
-        const emailPayload = {
-          from: fromAddress,
-          to: [email],
-          subject: "Sign in to Levqor",
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px;">
-              <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
-                <h1 style="color: #1e293b; font-size: 24px; margin: 0 0 24px; text-align: center;">Sign in to Levqor</h1>
-                <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
-                  Click the button below to securely sign in to your Levqor account. This link expires in 24 hours.
-                </p>
-                <a href="${url}" style="display: block; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; padding: 16px 24px; border-radius: 8px; font-weight: 600; text-align: center; font-size: 16px;">
-                  Sign in to Levqor
-                </a>
-                <p style="color: #94a3b8; font-size: 14px; margin: 24px 0 0; text-align: center;">
-                  If you didn't request this email, you can safely ignore it.
-                </p>
-                <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
-                <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">
-                  Levqor - Autonomous Data Backup Platform
-                </p>
-              </div>
-            </body>
-            </html>
-          `,
-          text: `Sign in to Levqor\n\nClick this link to sign in: ${url}\n\nThis link expires in 24 hours.\n\nIf you didn't request this email, you can safely ignore it.`,
-        };
+        const html = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; padding: 40px 20px;">
+            <div style="max-width: 480px; margin: 0 auto; background: white; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);">
+              <h1 style="color: #1e293b; font-size: 24px; margin: 0 0 24px; text-align: center;">Sign in to Levqor</h1>
+              <p style="color: #64748b; font-size: 16px; line-height: 1.6; margin: 0 0 24px;">
+                Click the button below to securely sign in to your Levqor account. This link expires in 24 hours.
+              </p>
+              <a href="${url}" style="display: block; background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: white; text-decoration: none; padding: 16px 24px; border-radius: 8px; font-weight: 600; text-align: center; font-size: 16px;">
+                Sign in to Levqor
+              </a>
+              <p style="color: #94a3b8; font-size: 14px; margin: 24px 0 0; text-align: center;">
+                If you didn't request this email, you can safely ignore it.
+              </p>
+              <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;">
+              <p style="color: #94a3b8; font-size: 12px; margin: 0; text-align: center;">
+                Levqor - Autonomous Data Backup Platform
+              </p>
+            </div>
+          </body>
+          </html>
+        `;
 
-        console.log("[MAGIC_LINK_PAYLOAD]", JSON.stringify({
-          from: emailPayload.from,
-          to: emailPayload.to,
-          subject: emailPayload.subject,
-          htmlLength: emailPayload.html.length,
-          textLength: emailPayload.text.length,
-        }));
+        const text = `Sign in to Levqor\n\nClick this link to sign in: ${url}\n\nThis link expires in 24 hours.\n\nIf you didn't request this email, you can safely ignore it.`;
+
+        // ===== [MAGIC_LINK_PAYLOAD] =====
+        console.log("[MAGIC_LINK_PAYLOAD]", {
+          from: process.env.AUTH_FROM_EMAIL,
+          to: identifier,
+          subject: "Your Levqor sign-in link",
+          htmlLength: html.length,
+          textLength: text.length,
+        });
 
         try {
-          const res = await fetch("https://api.resend.com/emails", {
+          const send = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${apiKey}`,
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify(emailPayload),
+            body: JSON.stringify({
+              from: process.env.AUTH_FROM_EMAIL,
+              to: [identifier],
+              subject: "Your Levqor sign-in link",
+              html,
+              text,
+            }),
           });
 
-          const responseText = await res.text();
-          
-          console.log("[MAGIC_LINK_RESEND_RESPONSE]", JSON.stringify({
-            timestamp: new Date().toISOString(),
-            status: res.status,
-            statusText: res.statusText,
-            headers: Object.fromEntries(res.headers.entries()),
-            body: responseText,
-          }));
+          const responseBody = await send.text();
 
-          if (!res.ok) {
-            console.error("========================================");
-            console.error("[MAGIC_LINK_SEND_ERROR]", JSON.stringify({
-              timestamp: new Date().toISOString(),
-              status: res.status,
-              statusText: res.statusText,
-              responseBody: responseText,
-              fromAddress: fromAddress,
-              toAddress: email,
-              apiKeyUsed: apiKey ? apiKey.substring(0, 6) + "..." : "MISSING",
-            }));
-            console.error("========================================");
-            throw new Error(`Resend API error: ${res.status} - ${responseText}`);
+          // ===== [MAGIC_LINK_RESEND_RESPONSE] =====
+          console.log("[MAGIC_LINK_RESEND_RESPONSE]", {
+            status: send.status,
+            statusText: send.statusText,
+            ok: send.ok,
+            headers: Object.fromEntries(send.headers.entries()),
+            body: responseBody,
+          });
+
+          if (!send.ok) {
+            throw new Error(`Resend API error: ${send.status} - ${responseBody}`);
           }
 
-          console.log("========================================");
-          console.log("[MAGIC_LINK_SEND_SUCCESS]", JSON.stringify({
-            timestamp: new Date().toISOString(),
-            identifier: email,
-            from: fromAddress,
-            responseBody: responseText,
-          }));
-          console.log("========================================");
+          // ===== [MAGIC_LINK_SEND_SUCCESS] =====
+          console.log("[MAGIC_LINK_SEND_SUCCESS]", {
+            email: identifier,
+            url,
+            from: process.env.AUTH_FROM_EMAIL,
+          });
 
         } catch (error: unknown) {
-          const err = error as Error & { 
-            cause?: unknown; 
-            status?: number; 
-            response?: { status?: number; body?: unknown };
-          };
-          
-          let errorBody: unknown = null;
-          try {
-            if (err?.response?.body) {
-              errorBody = err.response.body;
-            } else if (err?.cause && typeof err.cause === 'object' && 'response' in err.cause) {
-              const causeResp = (err.cause as { response?: { body?: unknown } }).response;
-              errorBody = causeResp?.body;
-            }
-          } catch {
-            errorBody = "BODY_PARSE_FAILED";
-          }
+          const err = error as Error;
 
-          console.error("========================================");
-          console.error("[MAGIC_LINK_SEND_EXCEPTION]", JSON.stringify({
-            timestamp: new Date().toISOString(),
-            identifier: email,
-            from: fromAddress,
-            errorMessage: err?.message ?? "Unknown error",
-            errorName: err?.name ?? "UnknownError",
-            errorStack: err?.stack ?? "No stack trace",
-            errorCause: err?.cause ? String(err.cause) : null,
-            errorStatus: err?.status ?? err?.response?.status ?? null,
-            errorBody: errorBody,
-            errorFull: String(err),
-          }));
-          console.error("========================================");
+          // ===== [MAGIC_LINK_SEND_EXCEPTION] =====
+          console.error("[MAGIC_LINK_SEND_EXCEPTION]", {
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            cause: err.cause || null,
+            resendKeyPrefix: process.env.RESEND_API_KEY?.slice(0, 8),
+            email: identifier,
+            url,
+          });
 
           throw error;
         }
       },
-
-      // ================================================================
-      // TEMPORARY FALLBACK (enable ONLY if Resend is completely broken):
-      // Uncomment this block and comment out the above sendVerificationRequest
-      // to bypass Resend entirely and just log the magic link URL.
-      // ================================================================
-      // async sendVerificationRequest({ identifier: email, url, provider }) {
-      //   console.log("========================================");
-      //   console.log("[MAGIC_LINK_FAKE_SEND] FALLBACK MODE ACTIVE");
-      //   console.log("[MAGIC_LINK_FAKE_SEND]", JSON.stringify({
-      //     timestamp: new Date().toISOString(),
-      //     identifier: email,
-      //     url: url,
-      //     from: provider.from,
-      //     message: "EMAIL NOT SENT - Copy URL from logs to sign in manually",
-      //   }));
-      //   console.log("========================================");
-      //   // In fallback mode we pretend the email was sent successfully.
-      //   return;
-      // },
     }),
   ],
 
