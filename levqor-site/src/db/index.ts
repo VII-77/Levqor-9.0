@@ -10,7 +10,7 @@ if (!connectionString) {
 
 const client = postgres(connectionString, { 
   max: 1,
-  ssl: process.env.NODE_ENV === "production" ? "require" : false,
+  ssl: "require",
 });
 
 export const db = drizzle(client, { schema });
