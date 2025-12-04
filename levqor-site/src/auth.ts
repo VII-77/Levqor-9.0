@@ -157,7 +157,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   },
 
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60,
   },
 
@@ -214,11 +214,19 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }));
       return true;
     },
-    async session({ session, user }) {
-      if (session.user && user) {
-        session.user.id = user.id;
-        session.user.email = user.email ?? session.user.email;
-        session.user.name = user.name ?? session.user.name;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        session.user.email = token.email ?? session.user.email;
+        session.user.name = (token.name as string) ?? session.user.name;
       }
       return session;
     },
