@@ -1,6 +1,0 @@
-User-Agent: *
-Allow: /
-Disallow: /api/
-Disallow: /dashboard/
-
-Sitemap: https://www.levqor.ai/sitemap.xml
