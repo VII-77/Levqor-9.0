@@ -18,6 +18,49 @@ export const metadata: Metadata = {
     template: '%s | Levqor'
   },
   description: 'Levqor is the AI-powered automation layer for agencies and teams. Automate workflows, ship client work faster, and only pay for successful results.',
+  keywords: ['automation', 'workflows', 'AI', 'agencies', 'productivity', 'SaaS', 'no-code', 'business automation'],
+  authors: [{ name: 'Levqor' }],
+  creator: 'Levqor',
+  publisher: 'Levqor',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://www.levqor.ai',
+    siteName: 'Levqor',
+    title: 'Levqor – Automate work. Ship faster. Pay only for results.',
+    description: 'Levqor is the AI-powered automation layer for agencies and teams. Automate workflows, ship client work faster, and only pay for successful results.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Levqor - AI-Powered Automation Platform',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Levqor – Automate work. Ship faster. Pay only for results.',
+    description: 'AI-powered automation layer for agencies and teams. Automate workflows and only pay for successful results.',
+    images: ['/og-image.png'],
+    creator: '@levqor',
+  },
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+  manifest: '/site.webmanifest',
 }
 
 export default async function RootLayout({
