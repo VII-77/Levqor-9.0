@@ -1,6 +1,6 @@
 "use client";
 import { useState, Suspense } from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getCsrfToken } from "next-auth/react";
 import { useSearchParams, useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -12,6 +12,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   Configuration: "Sign-in failed. Please try again.",
   Default: "An unexpected error occurred. Please try again.",
   Verification: "The login link has expired or already been used. Please request a new one.",
+  MissingCSRF: "Session expired. Please refresh and try again.",
 };
 
 function SignInContent() {
@@ -35,22 +36,52 @@ function SignInContent() {
     setLoading(true);
     setError(null);
 
+    console.log("[SIGNIN_FORM_SUBMIT]", { email, callbackUrl, timestamp: new Date().toISOString() });
+
     try {
+      const csrfToken = await getCsrfToken();
+      console.log("[SIGNIN_CSRF_TOKEN]", { hasToken: !!csrfToken, tokenPrefix: csrfToken?.slice(0, 8) });
+
+      if (!csrfToken) {
+        console.error("[SIGNIN_NO_CSRF]", { timestamp: new Date().toISOString() });
+        setError("Session expired. Please refresh the page and try again.");
+        setLoading(false);
+        return;
+      }
+
+      console.log("[SIGNIN_CALLING_SIGNIN]", { provider: "resend", email, callbackUrl });
+      
       const result = await signIn("resend", {
         email,
         callbackUrl,
         redirect: false,
       });
 
+      console.log("[SIGNIN_RESULT]", {
+        ok: result?.ok,
+        error: result?.error,
+        status: result?.status,
+        url: result?.url,
+      });
+
       if (result?.error) {
+        console.error("[SIGNIN_ERROR]", { error: result.error, status: result.status });
         setError(result.error);
         setLoading(false);
+      } else if (result?.ok) {
+        console.log("[SIGNIN_SUCCESS]", { email, redirectUrl: result.url });
+        setSent(true);
+        setLoading(false);
       } else {
+        console.warn("[SIGNIN_UNEXPECTED]", { result });
         setSent(true);
         setLoading(false);
       }
     } catch (err) {
-      console.error("Magic link error:", err);
+      console.error("[SIGNIN_EXCEPTION]", { 
+        error: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
       setError("Failed to send login link. Please try again.");
       setLoading(false);
     }
