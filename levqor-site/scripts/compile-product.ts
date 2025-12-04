@@ -1,6 +1,6 @@
 #!/usr/bin/env npx tsx
 /**
- * PRODUCT COMPILER — BEAST MODE PIPELINE
+ * PRODUCT COMPILER — BEAST MODE PIPELINE (Google Drive Edition)
  * 
  * Usage: npx tsx scripts/compile-product.ts --slug=automation-accelerator
  * 
@@ -8,17 +8,18 @@
  * 1. Reads products/<slug>.product.json
  * 2. Generates product pack folder with README, guides, etc.
  * 3. Creates ZIP file in dist/products/<slug>/
- * 4. Calls Gumroad API to create/update product and upload ZIP
- * 5. Updates src/config/products.ts with Gumroad URL and metadata
+ * 4. Uploads ZIP to Google Drive (public "anyone with link" access)
+ * 5. Updates src/config/products.ts with Drive download URL and metadata
  * 
  * Environment variables:
- * - GUMROAD_API_KEY: Your Gumroad API access token (required for Gumroad sync)
- * - DRY_RUN: Set to "true" to skip Gumroad API calls (for testing)
+ * - GOOGLE_SERVICE_ACCOUNT_JSON: Full JSON string of your service account key (required)
+ * - DRY_RUN: Set to "true" to skip Drive upload (for testing)
  */
 
 import * as fs from "fs";
 import * as path from "path";
-import { execSync } from "child_process";
+import archiver from "archiver";
+import { google } from "googleapis";
 
 interface ProductSpec {
   slug: string;
@@ -50,7 +51,8 @@ interface ProductConfig {
   priceUsd: number;
   shortDescription: string;
   longDescription: string;
-  gumroadUrl: string;
+  driveDownloadUrl: string;
+  gumroadUrl?: string;
   docsUrl?: string;
   tags: string[];
   bonuses?: string[];
@@ -199,7 +201,7 @@ If you're drowning in repetitive tasks, let's talk.
 
 INSTAGRAM (Casual)
 ------------------
-New service alert 🚀
+New service alert
 
 Helping businesses automate their boring tasks so they can focus on what matters.
 
@@ -340,7 +342,7 @@ PRICING CALCULATOR
 ------------------
 Time saved per week: ___ hours
 Client's hourly cost: $___ 
-Annual savings: Time × Cost × 52 = $___
+Annual savings: Time x Cost x 52 = $___
 Your fee (10-20% of savings): $___
 
 EXAMPLE
@@ -348,7 +350,7 @@ EXAMPLE
 - Task: Manual report generation
 - Time: 5 hours/week
 - Cost: $50/hour
-- Savings: 5 × 50 × 52 = $13,000/year
+- Savings: 5 x 50 x 52 = $13,000/year
 - Your fee: $1,300-2,600 one-time
 `
     );
@@ -417,123 +419,121 @@ NEXT STEPS
   }
 }
 
-function createZip(sourceDir: string, outputPath: string): void {
-  const zipDir = path.dirname(outputPath);
-  fs.mkdirSync(zipDir, { recursive: true });
+async function createZipArchive(sourceDir: string, outputPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const zipDir = path.dirname(outputPath);
+    fs.mkdirSync(zipDir, { recursive: true });
 
-  try {
-    const zipCmd = `cd "${sourceDir}" && zip -r "${outputPath}" . -x "*.DS_Store"`;
-    execSync(zipCmd, { stdio: "pipe" });
-    console.log(`✅ Created ZIP: ${outputPath}`);
-  } catch (error) {
-    console.log("Shell zip not available, creating simple tar.gz instead...");
-    try {
-      const tarCmd = `cd "${path.dirname(sourceDir)}" && tar -czvf "${outputPath.replace('.zip', '.tar.gz')}" "${path.basename(sourceDir)}"`;
-      execSync(tarCmd, { stdio: "pipe" });
-      console.log(`✅ Created archive: ${outputPath.replace('.zip', '.tar.gz')}`);
-    } catch (tarError) {
-      console.log("⚠️  Archive creation skipped (no zip/tar available)");
-      console.log("   ZIP will be created in GitHub Actions environment");
-    }
-  }
+    const output = fs.createWriteStream(outputPath);
+    const archive = archiver("zip", { zlib: { level: 9 } });
+
+    output.on("close", () => {
+      console.log(`   Created ZIP: ${outputPath} (${archive.pointer()} bytes)`);
+      resolve();
+    });
+
+    archive.on("error", (err) => {
+      reject(err);
+    });
+
+    archive.pipe(output);
+    archive.directory(sourceDir, false);
+    archive.finalize();
+  });
 }
 
-async function syncToGumroad(
-  spec: ProductSpec,
-  zipPath: string
+async function uploadToGoogleDrive(
+  zipPath: string,
+  fileName: string
 ): Promise<string> {
-  const apiKey = process.env.GUMROAD_API_KEY;
+  const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
   const dryRun = process.env.DRY_RUN === "true";
 
-  if (dryRun || !apiKey) {
-    console.log("⚠️  DRY RUN: Skipping Gumroad API (no GUMROAD_API_KEY or DRY_RUN=true)");
-    const fallbackUrl = `https://levqor.gumroad.com/l/${spec.slug}`;
-    console.log(`   Using fallback URL: ${fallbackUrl}`);
-    return fallbackUrl;
+  if (dryRun) {
+    console.log("   DRY RUN: Skipping Google Drive upload");
+    const placeholderUrl = `https://drive.google.com/file/d/DRY_RUN_${fileName}/view`;
+    console.log(`   Placeholder URL: ${placeholderUrl}`);
+    return placeholderUrl;
   }
 
-  console.log("📤 Syncing to Gumroad...");
+  if (!serviceAccountJson) {
+    console.log("   WARNING: GOOGLE_SERVICE_ACCOUNT_JSON not set");
+    console.log("   To enable Drive uploads, set this environment variable");
+    const placeholderUrl = `https://drive.google.com/file/d/PENDING_${fileName}/view`;
+    return placeholderUrl;
+  }
 
   try {
-    const listResponse = await fetch("https://api.gumroad.com/v2/products", {
-      headers: { Authorization: `Bearer ${apiKey}` },
+    const credentials = JSON.parse(serviceAccountJson);
+
+    const auth = new google.auth.GoogleAuth({
+      credentials,
+      scopes: ["https://www.googleapis.com/auth/drive.file"],
     });
-    const listData = await listResponse.json();
 
-    if (!listData.success) {
-      throw new Error(`Gumroad API error: ${JSON.stringify(listData)}`);
-    }
+    const drive = google.drive({ version: "v3", auth });
 
-    const existingProduct = listData.products?.find(
-      (p: any) => p.custom_permalink === spec.slug
-    );
+    console.log("   Checking for existing file...");
+    const searchResponse = await drive.files.list({
+      q: `name='${fileName}' and trashed=false`,
+      fields: "files(id, name)",
+      spaces: "drive",
+    });
 
-    let productId: string;
-    let productUrl: string;
+    let fileId: string;
 
-    if (existingProduct) {
-      console.log(`   Found existing product: ${existingProduct.id}`);
-      productId = existingProduct.id;
-      productUrl = existingProduct.short_url;
+    if (searchResponse.data.files && searchResponse.data.files.length > 0) {
+      fileId = searchResponse.data.files[0].id!;
+      console.log(`   Updating existing file: ${fileId}`);
 
-      const updateResponse = await fetch(
-        `https://api.gumroad.com/v2/products/${productId}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
-          body: new URLSearchParams({
-            name: spec.name,
-            description: spec.longDescription,
-            price: String(spec.priceUsd * 100),
-            custom_permalink: spec.slug,
-          }),
-        }
-      );
-      const updateData = await updateResponse.json();
-      if (!updateData.success) {
-        console.warn(`   Warning: Could not update product: ${JSON.stringify(updateData)}`);
-      } else {
-        console.log(`   ✅ Updated product metadata`);
-      }
-    } else {
-      console.log("   Creating new Gumroad product...");
-      const createResponse = await fetch("https://api.gumroad.com/v2/products", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/x-www-form-urlencoded",
+      await drive.files.update({
+        fileId,
+        media: {
+          mimeType: "application/zip",
+          body: fs.createReadStream(zipPath),
         },
-        body: new URLSearchParams({
-          name: spec.name,
-          description: spec.longDescription,
-          price: String(spec.priceUsd * 100),
-          custom_permalink: spec.slug,
-        }),
       });
-      const createData = await createResponse.json();
-      if (!createData.success) {
-        throw new Error(`Failed to create product: ${JSON.stringify(createData)}`);
-      }
-      productId = createData.product.id;
-      productUrl = createData.product.short_url;
-      console.log(`   ✅ Created product: ${productId}`);
+    } else {
+      console.log("   Uploading new file...");
+
+      const createResponse = await drive.files.create({
+        requestBody: {
+          name: fileName,
+          mimeType: "application/zip",
+        },
+        media: {
+          mimeType: "application/zip",
+          body: fs.createReadStream(zipPath),
+        },
+        fields: "id",
+      });
+
+      fileId = createResponse.data.id!;
+      console.log(`   Created file: ${fileId}`);
     }
 
-    console.log(`   Gumroad URL: ${productUrl}`);
-    return productUrl;
+    console.log("   Setting public permissions...");
+    await drive.permissions.create({
+      fileId,
+      requestBody: {
+        role: "reader",
+        type: "anyone",
+      },
+    });
+
+    const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+    console.log(`   Public download URL: ${downloadUrl}`);
+
+    return downloadUrl;
   } catch (error) {
-    console.error("❌ Gumroad sync failed:", error);
-    const fallbackUrl = `https://levqor.gumroad.com/l/${spec.slug}`;
-    console.log(`   Using fallback URL: ${fallbackUrl}`);
+    console.error("   Drive upload failed:", error);
+    const fallbackUrl = `https://drive.google.com/file/d/ERROR_${fileName}/view`;
     return fallbackUrl;
   }
 }
 
-function updateProductsConfig(spec: ProductSpec, gumroadUrl: string): void {
-  console.log("📝 Updating src/config/products.ts...");
+function updateProductsConfig(spec: ProductSpec, driveDownloadUrl: string): void {
+  console.log("   Updating src/config/products.ts...");
 
   const productConfig: ProductConfig = {
     id: spec.slug,
@@ -542,7 +542,8 @@ function updateProductsConfig(spec: ProductSpec, gumroadUrl: string): void {
     priceUsd: spec.priceUsd,
     shortDescription: spec.shortDescription,
     longDescription: spec.longDescription,
-    gumroadUrl,
+    driveDownloadUrl,
+    gumroadUrl: `https://levqor.gumroad.com/l/${spec.slug}`,
     docsUrl: spec.docsUrl,
     tags: spec.tags,
     bonuses: spec.bonuses,
@@ -578,7 +579,7 @@ function updateProductsConfig(spec: ProductSpec, gumroadUrl: string): void {
  * DO NOT EDIT MANUALLY — Updated by scripts/compile-product.ts
  * 
  * Source of truth: products/*.product.json files
- * Pipeline: JSON spec → compile-product.ts → Gumroad API → this file → Vercel deploy
+ * Pipeline: JSON spec → compile-product.ts → Google Drive → this file → Vercel deploy
  */
 
 export type ProductId = string;
@@ -590,7 +591,8 @@ export interface ProductConfig {
   priceUsd: number;
   shortDescription: string;
   longDescription: string;
-  gumroadUrl: string;
+  driveDownloadUrl: string;
+  gumroadUrl?: string;
   docsUrl?: string;
   tags: string[];
   bonuses?: string[];
@@ -632,59 +634,55 @@ export function getProductBySlug(slug: string): ProductConfig | undefined {
 `;
 
   fs.writeFileSync(CONFIG_FILE, newConfig);
-  console.log(`   ✅ Updated: ${CONFIG_FILE}`);
+  console.log(`   Updated: ${CONFIG_FILE}`);
 }
 
 async function main(): Promise<void> {
-  console.log("🚀 PRODUCT COMPILER — BEAST MODE");
-  console.log("================================\n");
+  console.log("PRODUCT COMPILER — BEAST MODE (Google Drive Edition)");
+  console.log("=====================================================\n");
 
   const { slug } = parseArgs();
-  console.log(`📦 Compiling product: ${slug}\n`);
+  console.log(`Compiling product: ${slug}\n`);
 
-  console.log("1️⃣  Reading product spec...");
+  console.log("1. Reading product spec...");
   const spec = readProductSpec(slug);
   console.log(`   Name: ${spec.name}`);
   console.log(`   Price: $${spec.priceUsd}`);
   console.log(`   Version: ${spec.version}\n`);
 
-  console.log("2️⃣  Generating pack structure...");
+  console.log("2. Generating pack structure...");
   const productDistDir = path.join(DIST_DIR, slug);
   const packDir = path.join(productDistDir, "ProductPack");
   generatePackStructure(spec, productDistDir);
-  console.log(`   ✅ Generated: ${packDir}\n`);
+  console.log(`   Generated: ${packDir}\n`);
 
-  console.log("3️⃣  Creating ZIP file...");
+  console.log("3. Creating ZIP archive...");
   const zipFilename = `Levqor_${slug.replace(/-/g, "_")}_v${spec.version}.zip`;
   const zipPath = path.join(productDistDir, zipFilename);
-  createZip(packDir, zipPath);
+  await createZipArchive(packDir, zipPath);
   console.log("");
 
-  console.log("4️⃣  Syncing to Gumroad...");
-  const gumroadUrl = await syncToGumroad(spec, zipPath);
+  console.log("4. Uploading to Google Drive...");
+  const driveDownloadUrl = await uploadToGoogleDrive(zipPath, zipFilename);
   console.log("");
 
-  console.log("5️⃣  Updating products config...");
-  updateProductsConfig(spec, gumroadUrl);
+  console.log("5. Updating products config...");
+  updateProductsConfig(spec, driveDownloadUrl);
   console.log("");
 
-  const actualArchive = fs.existsSync(zipPath)
-    ? zipPath
-    : fs.existsSync(zipPath.replace(".zip", ".tar.gz"))
-    ? zipPath.replace(".zip", ".tar.gz")
-    : "(archive will be created in GitHub Actions)";
-
-  console.log("✅ COMPILATION COMPLETE");
-  console.log("=======================");
+  console.log("COMPILATION COMPLETE");
+  console.log("====================");
   console.log(`Product: ${spec.name}`);
-  console.log(`Archive: ${actualArchive}`);
-  console.log(`Gumroad: ${gumroadUrl}`);
+  console.log(`Archive: ${zipPath}`);
+  console.log(`Drive URL: ${driveDownloadUrl}`);
   console.log(`Config: src/config/products.ts (updated)`);
   console.log("");
-  console.log("Next: Push to GitHub → Vercel auto-deploys → Live on site");
+  console.log("Next steps:");
+  console.log("1. Push to GitHub → Vercel auto-deploys");
+  console.log("2. Paste Drive URL into Gumroad's 'content URL' field (one-time)");
 }
 
 main().catch((error) => {
-  console.error("❌ Compilation failed:", error);
+  console.error("Compilation failed:", error);
   process.exit(1);
 });

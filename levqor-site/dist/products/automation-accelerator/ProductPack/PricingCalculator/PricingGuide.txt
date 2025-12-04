@@ -24,7 +24,7 @@ PRICING CALCULATOR
 ------------------
 Time saved per week: ___ hours
 Client's hourly cost: $___ 
-Annual savings: Time × Cost × 52 = $___
+Annual savings: Time x Cost x 52 = $___
 Your fee (10-20% of savings): $___
 
 EXAMPLE
@@ -32,5 +32,5 @@ EXAMPLE
 - Task: Manual report generation
 - Time: 5 hours/week
 - Cost: $50/hour
-- Savings: 5 × 50 × 52 = $13,000/year
+- Savings: 5 x 50 x 52 = $13,000/year
 - Your fee: $1,300-2,600 one-time

@@ -12,7 +12,9 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   const handleBuyClick = () => {
-    window.open(product.gumroadUrl, "_blank");
+    if (product.gumroadUrl) {
+      window.open(product.gumroadUrl, "_blank");
+    }
   };
 
   return (
@@ -67,7 +69,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                   <ul className="space-y-1 text-sm text-amber-700">
                     {product.bonuses.map((bonus, i) => (
                       <li key={i} className="flex items-start gap-2">
-                        <span>🎁</span>
+                        <span>+</span>
                         {bonus}
                       </li>
                     ))}
@@ -99,15 +101,15 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
 
               <div className="mt-6 pt-4 border-t border-blue-500 space-y-2 text-sm text-blue-100">
                 <div className="flex items-center gap-2">
-                  <span>⚡</span>
+                  <span>*</span>
                   <span>Instant download</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>🔒</span>
-                  <span>Secure checkout via Gumroad</span>
+                  <span>*</span>
+                  <span>Secure checkout</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>♻️</span>
+                  <span>*</span>
                   <span>Lifetime updates included</span>
                 </div>
               </div>
@@ -134,7 +136,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
             <div className="grid md:grid-cols-3 gap-6">
               {product.testimonials.map((t, i) => (
                 <div key={i} className="bg-white rounded-xl p-6 shadow">
-                  <div className="text-yellow-400 mb-3">★★★★★</div>
+                  <div className="text-yellow-400 mb-3">*****</div>
                   <p className="text-gray-700 mb-4 italic">"{t.quote}"</p>
                   <div className="text-sm">
                     <div className="font-semibold text-gray-900">{t.author}</div>
@@ -161,7 +163,7 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
                 >
                   <span className="font-medium text-gray-900">{faq.q}</span>
                   <span className="text-gray-400">
-                    {openFaq === i ? "−" : "+"}
+                    {openFaq === i ? "-" : "+"}
                   </span>
                 </button>
                 {openFaq === i && (
@@ -197,17 +199,17 @@ export default function ProductPageClient({ product }: ProductPageClientProps) {
             <Link href="/terms" className="hover:underline">
               Terms
             </Link>
-            {" · "}
+            {" | "}
             <Link href="/privacy" className="hover:underline">
               Privacy
             </Link>
-            {" · "}
+            {" | "}
             <Link href="/refunds" className="hover:underline">
               Refund Policy
             </Link>
           </p>
           <p className="mt-2">
-            © {new Date().getFullYear()} Levqor. All rights reserved.
+            (c) {new Date().getFullYear()} Levqor. All rights reserved.
           </p>
         </div>
       </footer>

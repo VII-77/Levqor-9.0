@@ -11,6 +11,8 @@ interface ProductCardProps {
 export default function ProductCard({ product, variant = "compact" }: ProductCardProps) {
   const isCompact = variant === "compact";
 
+  const buyUrl = product.gumroadUrl || "#";
+
   if (isCompact) {
     return (
       <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100 hover:shadow-md transition-shadow">
@@ -41,7 +43,7 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
             Learn More
           </Link>
           <a
-            href={product.gumroadUrl}
+            href={buyUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
@@ -101,7 +103,7 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
             View Details
           </Link>
           <a
-            href={product.gumroadUrl}
+            href={buyUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 text-center py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"

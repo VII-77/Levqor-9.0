@@ -1,4 +1,4 @@
-name: Products Pipeline — Beast Mode
+name: Products Pipeline — Beast Mode (Google Drive Edition)
 
 on:
   push:
@@ -12,9 +12,6 @@ on:
         description: 'Product slug to compile (leave empty for all changed)'
         required: false
         type: string
-
-env:
-  GUMROAD_API_KEY: ${{ secrets.GUMROAD_API_KEY }}
 
 jobs:
   compile-products:
@@ -67,7 +64,7 @@ jobs:
             echo ""
           done
         env:
-          GUMROAD_API_KEY: ${{ secrets.GUMROAD_API_KEY }}
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
 
       - name: Verify build
         run: npm run build
@@ -101,7 +98,10 @@ jobs:
             echo "### Files Updated:" >> $GITHUB_STEP_SUMMARY
             echo "- \`src/config/products.ts\`" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Vercel will auto-deploy the changes." >> $GITHUB_STEP_SUMMARY
+            echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+            echo "1. Vercel will auto-deploy the changes" >> $GITHUB_STEP_SUMMARY
+            echo "2. Copy the Drive URL from the logs" >> $GITHUB_STEP_SUMMARY
+            echo "3. Paste it into Gumroad's 'content URL' field (one-time per product)" >> $GITHUB_STEP_SUMMARY
           else
             echo "No products compiled (no changes detected)." >> $GITHUB_STEP_SUMMARY
           fi
