@@ -1727,6 +1727,60 @@
       },
       "estimated_cost_today": 0.0,
       "estimated_cost_month": 0.0
+    },
+    {
+      "timestamp": "2025-12-04T15:11:51.489406+00:00",
+      "openai": {
+        "tokens_today": 0,
+        "tokens_hour": 0,
+        "requests_today": 0,
+        "cost_today": 0.0
+      },
+      "api": {
+        "requests_today": 0,
+        "requests_hour": 0,
+        "errors_today": 0,
+        "avg_latency_ms": 0
+      },
+      "stripe": {
+        "transactions_today": 0,
+        "volume_today_usd": 0.0,
+        "fees_today_usd": 0.0
+      },
+      "compute": {
+        "cpu_percent": 71.4,
+        "memory_percent": 60.3,
+        "memory_used_mb": 38791.21484375
+      },
+      "estimated_cost_today": 0.0,
+      "estimated_cost_month": 0.0
+    },
+    {
+      "timestamp": "2025-12-04T15:16:51.463400+00:00",
+      "openai": {
+        "tokens_today": 0,
+        "tokens_hour": 0,
+        "requests_today": 0,
+        "cost_today": 0.0
+      },
+      "api": {
+        "requests_today": 0,
+        "requests_hour": 0,
+        "errors_today": 0,
+        "avg_latency_ms": 0
+      },
+      "stripe": {
+        "transactions_today": 0,
+        "volume_today_usd": 0.0,
+        "fees_today_usd": 0.0
+      },
+      "compute": {
+        "cpu_percent": 56.6,
+        "memory_percent": 59.4,
+        "memory_used_mb": 38204.56640625
+      },
+      "estimated_cost_today": 0.0,
+      "estimated_cost_month": 0.0
     }
   ]
 }
