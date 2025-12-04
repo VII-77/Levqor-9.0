@@ -1,0 +1,53 @@
+AUTOMATION PROPOSAL TEMPLATE
+============================
+
+[YOUR_COMPANY_LOGO]
+
+PROPOSAL FOR: [CLIENT_NAME]
+DATE: [DATE]
+PREPARED BY: [YOUR_NAME]
+
+---
+
+EXECUTIVE SUMMARY
+-----------------
+[CLIENT_NAME] currently spends approximately [X] hours per week on 
+[MANUAL_PROCESS]. This proposal outlines an automation solution that 
+will reduce this to [Y] hours, saving an estimated $[AMOUNT] annually.
+
+CURRENT STATE
+-------------
+- Process: [DESCRIPTION]
+- Time: [HOURS] per [WEEK/MONTH]
+- Pain points: [LIST]
+
+PROPOSED SOLUTION
+-----------------
+We will implement an automated workflow that:
+1. [AUTOMATION_STEP_1]
+2. [AUTOMATION_STEP_2]
+3. [AUTOMATION_STEP_3]
+
+INVESTMENT
+----------
+Option A: Basic Automation - $[PRICE]
+Option B: Full Suite - $[PRICE]
+Option C: Premium + Support - $[PRICE]
+
+TIMELINE
+--------
+Week 1: Discovery and design
+Week 2: Build and test
+Week 3: Deploy and train
+
+NEXT STEPS
+----------
+1. Review this proposal
+2. Schedule kickoff call: [CALENDAR_LINK]
+3. Sign agreement and begin
+
+---
+
+[YOUR_NAME]
+[YOUR_EMAIL]
+[YOUR_PHONE]

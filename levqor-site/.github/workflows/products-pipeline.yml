@@ -1,0 +1,107 @@
+name: Products Pipeline — Beast Mode
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'products/**/*.product.json'
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: 'Product slug to compile (leave empty for all changed)'
+        required: false
+        type: string
+
+env:
+  GUMROAD_API_KEY: ${{ secrets.GUMROAD_API_KEY }}
+
+jobs:
+  compile-products:
+    name: Compile Product Packs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install zip utility
+        run: sudo apt-get update && sudo apt-get install -y zip
+
+      - name: Detect changed products
+        id: detect
+        run: |
+          if [ -n "${{ inputs.slug }}" ]; then
+            echo "slugs=${{ inputs.slug }}" >> $GITHUB_OUTPUT
+            echo "Manual trigger for: ${{ inputs.slug }}"
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'products/*.product.json' | sed 's|products/||g' | sed 's|.product.json||g' | tr '\n' ' ')
+            if [ -z "$CHANGED" ]; then
+              echo "No product files changed"
+              echo "slugs=" >> $GITHUB_OUTPUT
+            else
+              echo "slugs=$CHANGED" >> $GITHUB_OUTPUT
+              echo "Changed products: $CHANGED"
+            fi
+          fi
+
+      - name: Compile products
+        if: steps.detect.outputs.slugs != ''
+        run: |
+          for slug in ${{ steps.detect.outputs.slugs }}; do
+            echo "=== Compiling: $slug ==="
+            npx tsx scripts/compile-product.ts --slug="$slug"
+            echo ""
+          done
+        env:
+          GUMROAD_API_KEY: ${{ secrets.GUMROAD_API_KEY }}
+
+      - name: Verify build
+        run: npm run build
+
+      - name: Commit and push changes
+        if: steps.detect.outputs.slugs != ''
+        run: |
+          git config user.name "Levqor Bot"
+          git config user.email "bot@levqor.ai"
+          
+          git add src/config/products.ts
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: Auto-update products config [skip ci]"
+            git push
+            echo "Changes pushed successfully"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## Products Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -n "${{ steps.detect.outputs.slugs }}" ]; then
+            echo "### Compiled Products:" >> $GITHUB_STEP_SUMMARY
+            for slug in ${{ steps.detect.outputs.slugs }}; do
+              echo "- \`$slug\`" >> $GITHUB_STEP_SUMMARY
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Files Updated:" >> $GITHUB_STEP_SUMMARY
+            echo "- \`src/config/products.ts\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Vercel will auto-deploy the changes." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No products compiled (no changes detected)." >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,59 @@
+{
+  "slug": "automation-accelerator",
+  "name": "Automation Accelerator Pack",
+  "priceUsd": 47,
+  "shortDescription": "25 workflow templates + SOPs + swipe files. Ship your first automation service in 48 hours.",
+  "longDescription": "The complete toolkit for founders and agencies who want to ship automation fast. Includes 25 production-ready workflow templates, copy-paste SOPs for client onboarding, a swipe file with 50+ automation prompts, pricing calculator, client proposal template, onboarding checklists, and everything you need to go from zero to revenue.\n\nPerfect for:\n• Solo founders launching their first automation service\n• Agencies adding workflow automation to their offerings\n• Consultants who want productized templates\n• Anyone tired of building from scratch\n\nIncludes Quick Start Guide, video walkthrough, Notion dashboard template, and 5 email templates. Plus limited-time bonuses: 30-min strategy call booking, private Slack community access, and monthly template updates for 1 year.",
+  "tags": ["automation", "workflows", "templates", "agency", "saas", "no-code", "ai", "productivity"],
+  "docsUrl": "/docs/automation-accelerator",
+  "packStructure": {
+    "includeMarketingKit": true,
+    "includePromptPack": true,
+    "includeNotionTemplate": true,
+    "includeEmailTemplates": true,
+    "includePricingCalculator": true,
+    "includeClientProposal": true
+  },
+  "bonuses": [
+    "30-min strategy call booking link",
+    "Private Slack community access",
+    "Monthly template updates (1 year)"
+  ],
+  "testimonials": [
+    {
+      "quote": "Saved me 20+ hours of setup. Worth every penny.",
+      "author": "Sarah K.",
+      "role": "Agency Founder"
+    },
+    {
+      "quote": "Finally shipped my first automation service in a weekend.",
+      "author": "Marcus T.",
+      "role": "Freelance Consultant"
+    },
+    {
+      "quote": "The templates alone are worth 10x the price.",
+      "author": "Priya M.",
+      "role": "Ops Manager"
+    }
+  ],
+  "faqs": [
+    {
+      "q": "What format are the templates?",
+      "a": "Everything is delivered as editable files: JSON for workflows, Google Docs/Notion for SOPs, and spreadsheets for calculators. Import directly into Levqor or adapt for any platform."
+    },
+    {
+      "q": "Do I need a Levqor subscription?",
+      "a": "No. The templates work standalone. However, they're optimized for Levqor's workflow builder—import with one click if you're a user."
+    },
+    {
+      "q": "Is there a refund policy?",
+      "a": "Yes. 30-day no-questions-asked refund. If it doesn't help you ship faster, get your money back."
+    },
+    {
+      "q": "How do I access the files?",
+      "a": "Instant download after purchase. You'll receive a .zip file and a link to the Notion dashboard."
+    }
+  ],
+  "version": "1.0.0",
+  "status": "active"
+}

@@ -1,0 +1,28 @@
+50+ AUTOMATION PROMPTS
+======================
+
+DISCOVERY PROMPTS
+-----------------
+1. "List the 10 most time-consuming manual tasks in [DEPARTMENT]"
+2. "What processes require copy-pasting between systems?"
+3. "Which tasks do employees complain about most?"
+4. "What would you automate if you had unlimited budget?"
+5. "Show me your weekly/monthly recurring tasks"
+
+ANALYSIS PROMPTS
+----------------
+6. "How many hours per week does [TASK] take?"
+7. "What's the error rate on manual [PROCESS]?"
+8. "Who needs to approve [WORKFLOW]?"
+9. "What triggers this process to start?"
+10. "What are the exceptions/edge cases?"
+
+SOLUTION DESIGN PROMPTS
+-----------------------
+11. "Design a workflow that automates [PROCESS]"
+12. "What integrations would connect [SYSTEM_A] to [SYSTEM_B]?"
+13. "Create an error-handling flow for [AUTOMATION]"
+14. "Build a notification system for [EVENT]"
+15. "Design an approval workflow for [DECISION]"
+
+... (45 more prompts in full pack)

@@ -1,0 +1,36 @@
+AUTOMATION SERVICE PRICING GUIDE
+=================================
+
+PRICING MODELS
+--------------
+
+1. HOURLY ($75-200/hr)
+   Good for: Discovery, ad-hoc work
+   Risk: Scope creep, unpredictable revenue
+
+2. PROJECT-BASED ($500-5,000+)
+   Good for: Defined deliverables
+   Example: "Automate your invoice workflow" = $1,500
+
+3. RETAINER ($500-2,000/mo)
+   Good for: Ongoing optimization
+   Include: X hours of support, Y automations
+
+4. VALUE-BASED (% of savings)
+   Good for: High-impact automations
+   Example: Save $50k/year → Charge $10k one-time
+
+PRICING CALCULATOR
+------------------
+Time saved per week: ___ hours
+Client's hourly cost: $___ 
+Annual savings: Time × Cost × 52 = $___
+Your fee (10-20% of savings): $___
+
+EXAMPLE
+-------
+- Task: Manual report generation
+- Time: 5 hours/week
+- Cost: $50/hour
+- Savings: 5 × 50 × 52 = $13,000/year
+- Your fee: $1,300-2,600 one-time

@@ -1,0 +1,25 @@
+WELCOME EMAIL TEMPLATE
+======================
+
+Subject: Welcome to [YOUR_SERVICE] — Here's how to get started
+
+---
+
+Hey [FIRST_NAME],
+
+Thanks for signing up for [YOUR_SERVICE]!
+
+Here's what happens next:
+
+1. I'll review your requirements (already on it)
+2. You'll get a custom automation proposal within 48 hours
+3. We'll hop on a quick call to finalize
+
+In the meantime, here are some resources:
+- [LINK] How automation saves our clients 10+ hours/week
+- [LINK] Case study: [CLIENT] went from manual to automated in 1 week
+
+Questions? Just reply to this email.
+
+Talk soon,
+[YOUR_NAME]

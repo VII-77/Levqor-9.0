@@ -1,0 +1,40 @@
+QUICK START GUIDE
+=================
+Automation Accelerator Pack
+
+STEP 1: ORIENT (5 min)
+----------------------
+- Review the README.txt
+- Scan the folder contents
+- Identify what you need first
+
+STEP 2: CHOOSE YOUR PATH (2 min)
+--------------------------------
+A) I want to launch an automation service
+   → Start with ClientProposal/ and PricingCalculator/
+
+B) I want templates for my existing clients
+   → Go straight to the workflow templates
+
+C) I'm exploring options
+   → Browse PromptPack/ for inspiration
+
+STEP 3: CUSTOMIZE (30-60 min)
+-----------------------------
+- Replace [YOUR_COMPANY] placeholders
+- Add your logo and colors
+- Adjust pricing to your market
+
+STEP 4: LAUNCH
+--------------
+- Use MarketingKit/ for your first campaign
+- Send EmailTemplates/ to your list
+- Track results and iterate
+
+NEED HELP?
+----------
+- Docs: https://www.levqor.ai/docs/automation-accelerator
+- Support: support@levqor.ai
+- Community: [Slack link in your purchase email]
+
+You've got this!

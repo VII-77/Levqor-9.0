@@ -13,9 +13,11 @@ export default function ResourcesPanel() {
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">Resources & Tools</h2>
+        <h2 className="text-lg font-semibold text-gray-900">
+          Resources & Tools
+        </h2>
         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
-          New
+          {products.length} available
         </span>
       </div>
       <p className="text-sm text-gray-600 mb-4">
