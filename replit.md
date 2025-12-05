@@ -60,3 +60,89 @@ Levqor X employs a clean separation of concerns with a Next.js frontend deployed
 -   **Content Engine Template**: `levqor-site/templates/content-engine-template.md` — Reusable template for generating 6 content assets (video script, Twitter thread, LinkedIn post, email, Instagram carousel, mini-article) from a single idea seed. All content drives traffic to the £47 Automation Accelerator Pack.
 -   **Product Pages**: Dynamic product pages at `/[locale]/products/[slug]` with modular components and telemetry tracking.
 -   **Product Config**: `levqor-site/src/config/products.ts` — Auto-generated from JSON specs in `levqor-site/products/*.product.json`.
+
+## Repeatable Launch Pattern v1.0
+
+The locked-in machine for launching any new product. One slug in → everything out.
+
+### Pipeline Flow
+
+```
+products/<slug>.product.json
+    ↓
+npx tsx scripts/compile-product.ts --slug=<slug>
+    ↓
+├── ZIP archive → dist/products/<slug>/
+├── Google Drive upload → driveDownloadUrl in config
+├── src/config/products.ts updated with all fields
+└── public/assets/Levqor-Omega-Empire-Pack/products/<slug>/ created
+    ↓
+Drop real PNGs into Omega folders
+    ↓
+git push → Vercel deploys → Product page live
+    ↓
+Create Gumroad listing with Drive URL as content
+```
+
+### Required Inputs Per Product
+
+1. **slug** — Machine name (e.g., `ascend-launch-system`)
+2. **name** — Human name (e.g., `Ascend Launch System`)
+3. **price** — USD amount (e.g., `17`)
+4. **description** — What it does (plain English)
+5. **tags** — Comma-separated categories
+
+### Key Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/compile-product.ts` | Master compiler: ZIP, Drive upload, config update, Omega tree |
+| `scripts/omega-assets.ts` | Creates per-product Omega folder structure |
+| `scripts/generate-omega-pack.ts` | Creates root Omega pack structure |
+| `scripts/creator-panel.ts` | CLI with 34 commands for product/content management |
+
+### Omega Asset Structure (Per Product)
+
+```
+public/assets/Levqor-Omega-Empire-Pack/products/<slug>/
+├── Product-Cover/          (3 variants)
+├── Thumbnails/             (6 variants)
+├── Hero-Banners/           (2 variants)
+├── Social-Posts/           (15 posts across 3 styles)
+├── Carousel-Posts/         (5 slides)
+├── CTA-Cards/              (6 variants)
+├── Ad-Creatives/           (8 ads)
+├── Video-Frames/           (12 frames)
+└── Brand-Geometry-Pack/    (13 elements)
+```
+
+### Frontend Wiring
+
+- **ProductConfig** auto-populates `coverImage`, `thumbnailImage`, `heroImage`
+- **ProductCard** shows thumbnail with graceful fallback
+- **ProductHero** shows hero/cover with graceful fallback
+- URLs: `/assets/Levqor-Omega-Empire-Pack/products/<slug>/...`
+- Filesystem: `public/assets/Levqor-Omega-Empire-Pack/products/<slug>/...`
+
+### HYBRID FLUX WAVE Brand Style
+
+| Element | Hex |
+|---------|-----|
+| Deep Space Black | #000000 |
+| Midnight Graphite | #0C0F14 |
+| Neon Flux Blue | #3A8CFF |
+| Aurora Pulse Teal | #31F7D9 |
+| Plasma Purple | #8F5BFF |
+
+### Human Checklist Per Launch
+
+1. Run agent prompt with slug/name/price/description/tags
+2. Generate real PNGs using Omega Empire prompts → drop into `public/assets/.../products/<slug>/`
+3. Create Gumroad listing: title, price, description, Content URL = Drive URL
+4. Optional: `npm run creator:panel status` or `metrics:today`
+
+### Session Strategy
+
+- **CRITICAL**: NextAuth must use `strategy: "jwt"` (middleware uses `getToken()`)
+- **CRITICAL**: Static assets MUST live in `public/` directory
+- **CRITICAL**: Google Drive uploads require `supportsAllDrives: true`
