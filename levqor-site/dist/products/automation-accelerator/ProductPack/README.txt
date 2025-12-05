@@ -3,7 +3,7 @@ Automation Accelerator Pack
 
 25 workflow templates + SOPs + swipe files. Ship your first automation service in 48 hours.
 
-VERSION: 1.0.0
+VERSION: 1.0.2
 SUPPORT: support@levqor.ai
 DOCS: https://www.levqor.ai/docs/automation-accelerator
 

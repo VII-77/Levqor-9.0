@@ -447,6 +447,7 @@ async function uploadToGoogleDrive(
   fileName: string
 ): Promise<string> {
   const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  const sharedFolderId = process.env.GOOGLE_DRIVE_SHARED_FOLDER_ID;
   const dryRun = process.env.DRY_RUN === "true";
 
   if (dryRun) {
@@ -463,70 +464,94 @@ async function uploadToGoogleDrive(
     return placeholderUrl;
   }
 
+  if (!sharedFolderId) {
+    console.log("   WARNING: GOOGLE_DRIVE_SHARED_FOLDER_ID not set");
+    console.log("   Service accounts MUST use a Shared Drive folder (no personal quota).");
+    console.log("   Skipping upload and returning ERROR_ placeholder URL.");
+    const placeholderUrl = `https://drive.google.com/file/d/ERROR_${fileName}/view`;
+    return placeholderUrl;
+  }
+
   try {
     const credentials = JSON.parse(serviceAccountJson);
 
     const auth = new google.auth.GoogleAuth({
       credentials,
-      scopes: ["https://www.googleapis.com/auth/drive.file"],
+      scopes: ["https://www.googleapis.com/auth/drive"],
     });
 
     const drive = google.drive({ version: "v3", auth });
 
-    console.log("   Checking for existing file...");
+    console.log(`   Using Shared Drive folder: ${sharedFolderId.substring(0, 4)}...`);
+    console.log("   Checking for existing file in Shared Drive...");
+
     const searchResponse = await drive.files.list({
-      q: `name='${fileName}' and trashed=false`,
+      q: `name='${fileName}' and '${sharedFolderId}' in parents and trashed=false`,
       fields: "files(id, name)",
-      spaces: "drive",
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
     });
 
     let fileId: string;
 
     if (searchResponse.data.files && searchResponse.data.files.length > 0) {
       fileId = searchResponse.data.files[0].id!;
-      console.log(`   Updating existing file: ${fileId}`);
+      console.log(`   Updating existing file in Shared Drive: ${fileId}`);
 
       await drive.files.update({
         fileId,
+        supportsAllDrives: true,
         media: {
           mimeType: "application/zip",
           body: fs.createReadStream(zipPath),
         },
       });
+      console.log("   File updated successfully.");
     } else {
-      console.log("   Uploading new file...");
+      console.log("   Uploading new file to Shared Drive...");
 
       const createResponse = await drive.files.create({
         requestBody: {
           name: fileName,
           mimeType: "application/zip",
+          parents: [sharedFolderId],
         },
         media: {
           mimeType: "application/zip",
           body: fs.createReadStream(zipPath),
         },
         fields: "id",
+        supportsAllDrives: true,
       });
 
       fileId = createResponse.data.id!;
-      console.log(`   Created file: ${fileId}`);
+      console.log(`   Created file in Shared Drive: ${fileId}`);
     }
 
     console.log("   Setting public permissions...");
     await drive.permissions.create({
       fileId,
+      supportsAllDrives: true,
       requestBody: {
         role: "reader",
         type: "anyone",
       },
     });
+    console.log("   Permissions set successfully.");
 
     const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
     console.log(`   Public download URL: ${downloadUrl}`);
 
     return downloadUrl;
-  } catch (error) {
-    console.error("   Drive upload failed:", error);
+  } catch (error: any) {
+    const errMsg = error?.message || String(error);
+    console.error("   Drive upload failed:", errMsg);
+
+    if (errMsg.includes("storage quota") || errMsg.includes("storageQuotaExceeded")) {
+      console.error("   HINT: Ensure GOOGLE_DRIVE_SHARED_FOLDER_ID is set to a Shared Drive folder ID.");
+      console.error("   Service accounts cannot upload to My Drive (no quota).");
+    }
+
     const fallbackUrl = `https://drive.google.com/file/d/ERROR_${fileName}/view`;
     return fallbackUrl;
   }
