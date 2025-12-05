@@ -25,12 +25,15 @@
  *   tracking:plan      - Show simple posting + logging routine
  *   experiments:copy   - Show A/B promo copy variants
  *   experiments:status - Show experiment overview + usage tips
+ *   email:buyers       - Show 3-email sequence for pack buyers
+ *   email:prospects    - Show 3-email sequence for non-buyers
+ *   email:calendar     - Show when to send each email
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
- *   npm run creator:panel tracking:links
- *   npm run creator:panel experiments:copy
+ *   npm run creator:panel email:buyers
+ *   npm run creator:panel email:calendar
  */
 
 import * as fs from "fs";
@@ -108,12 +111,15 @@ function printUsage() {
   log("  tracking:plan        Show simple posting + logging routine");
   log("  experiments:copy     Show A/B promo copy variants");
   log("  experiments:status   Show experiment overview + usage tips");
+  log("  email:buyers         Show 3-email sequence for pack buyers");
+  log("  email:prospects      Show 3-email sequence for non-buyers");
+  log("  email:calendar       Show when to send each email");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
-  log("  npm run creator:panel tracking:links");
-  log("  npm run creator:panel experiments:copy");
+  log("  npm run creator:panel email:buyers");
+  log("  npm run creator:panel email:calendar");
 }
 
 interface ProductData {
@@ -1201,6 +1207,258 @@ async function cmdExperimentsStatus() {
   log("");
 }
 
+async function cmdEmailBuyers() {
+  header("Email Sequence — Buyers (Automation Accelerator Pack)");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}EMAIL 1 — Welcome + First Win${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} Within 24 hours after purchase`);
+  log(`${COLORS.bright}Subject:${COLORS.reset} Your Automation Accelerator Pack + a quick win`);
+  log("");
+  log(`${COLORS.dim}--- EMAIL BODY ---${COLORS.reset}`);
+  log("");
+  log("Hey there,");
+  log("");
+  log("Thanks for grabbing the Automation Accelerator Pack. You now have");
+  log("everything you need to stop doing things manually and start building");
+  log("systems that run without you.");
+  log("");
+  log("Here is where to start:");
+  log("");
+  log("Open the \"Quick Win Workflow\" template. It is designed to be set up in");
+  log("10-15 minutes. Pick one repetitive task you do every week and apply it.");
+  log("");
+  log("Do not try to automate everything at once. Start with one workflow.");
+  log("Get it running. Then move to the next.");
+  log("");
+  log("If you want help implementing or want me to review your setup, I offer");
+  log("a Pro Session where we work through your specific workflows together.");
+  log("");
+  log("[Pro Session link goes here]");
+  log("");
+  log("Reply to this email if you have any questions.");
+  log("");
+  log("Talk soon.");
+  log("");
+  log(`${COLORS.dim}--- END EMAIL ---${COLORS.reset}`);
+  log("");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}EMAIL 2 — Before / After + Nudge${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} 3-4 days after purchase`);
+  log(`${COLORS.bright}Subject:${COLORS.reset} Before automation vs after automation`);
+  log("");
+  log(`${COLORS.dim}--- EMAIL BODY ---${COLORS.reset}`);
+  log("");
+  log("Quick check-in.");
+  log("");
+  log("Before automation: you spend hours on tasks that feel urgent but add");
+  log("no real value. Copy-pasting, updating spreadsheets, sending reminders");
+  log("manually. Every week feels like you are running but not moving forward.");
+  log("");
+  log("After automation: one workflow runs in the background while you focus");
+  log("on actual work. You open your laptop and things are already done.");
+  log("");
+  log("The pack you have gives you the templates to get there. But templates");
+  log("only work if you use them.");
+  log("");
+  log("What are you trying to automate right now? Hit reply and tell me. I can");
+  log("point you to the right template or give you a quick tip.");
+  log("");
+  log("If you are stuck or want hands-on help, the Pro Session is designed");
+  log("exactly for that. We will map your workflows together and get one live.");
+  log("");
+  log("[Pro Session link goes here]");
+  log("");
+  log("Talk soon.");
+  log("");
+  log(`${COLORS.dim}--- END EMAIL ---${COLORS.reset}`);
+  log("");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}EMAIL 3 — Light Deadline / Check-in${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} 7-10 days after purchase`);
+  log(`${COLORS.bright}Subject:${COLORS.reset} Still planning to automate this?`);
+  log("");
+  log(`${COLORS.dim}--- EMAIL BODY ---${COLORS.reset}`);
+  log("");
+  log("Hey,");
+  log("");
+  log("Just a quick note.");
+  log("");
+  log("I know life gets busy. You bought the pack with good intentions, and");
+  log("then something else took priority. Happens to everyone.");
+  log("");
+  log("But here is the thing: the time you spend on manual work is not coming");
+  log("back. Every week you delay is another week of doing things the hard way.");
+  log("");
+  log("If you prefer someone to help you get it done instead of figuring it");
+  log("out alone, I am opening a few Pro Session slots. We will work through");
+  log("your specific setup together, and you will leave with at least one");
+  log("automation running.");
+  log("");
+  log("I am focusing on a small group first, so if this sounds useful, grab");
+  log("a slot before they fill up.");
+  log("");
+  log("[Pro Session link goes here]");
+  log("");
+  log("Or just hit reply if you want to chat first.");
+  log("");
+  log("Talk soon.");
+  log("");
+  log(`${COLORS.dim}--- END EMAIL ---${COLORS.reset}`);
+  log("");
+}
+
+async function cmdEmailProspects() {
+  header("Email Sequence — Prospects (Not Yet Buyers)");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}EMAIL 1 — Problem + Insight${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} Day 0 (when they first join or request info)`);
+  log(`${COLORS.bright}Subject:${COLORS.reset} Why \"I'll automate later\" never works`);
+  log("");
+  log(`${COLORS.dim}--- EMAIL BODY ---${COLORS.reset}`);
+  log("");
+  log("Most founders know they should automate.");
+  log("");
+  log("They have a list of repetitive tasks draining their time. They tell");
+  log("themselves they will get to it \"when things slow down.\" But things");
+  log("never slow down. And \"later\" turns into months of doing the same");
+  log("manual work over and over.");
+  log("");
+  log("The problem is not knowing what to automate. The problem is not having");
+  log("a ready-made system to start with.");
+  log("");
+  log("That is why I built the Automation Accelerator Pack. It gives you 25");
+  log("plug-and-play workflow templates, pricing calculators, and client");
+  log("scripts so you can skip the setup and start running real automations");
+  log("this week.");
+  log("");
+  log("If you are tired of doing things manually, this is your starting point:");
+  log("");
+  log("https://www.levqor.ai/en/products/automation-accelerator");
+  log("");
+  log("Talk soon.");
+  log("");
+  log(`${COLORS.dim}--- END EMAIL ---${COLORS.reset}`);
+  log("");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}EMAIL 2 — Story + Soft CTA${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} Day 2-3`);
+  log(`${COLORS.bright}Subject:${COLORS.reset} How one small automation changes everything`);
+  log("");
+  log(`${COLORS.dim}--- EMAIL BODY ---${COLORS.reset}`);
+  log("");
+  log("Let me tell you about a founder I worked with.");
+  log("");
+  log("Every Monday, she spent two hours copying data from one spreadsheet to");
+  log("another. Then she sent manual reminders to her team. Then she updated");
+  log("her client tracker by hand. By noon, she was already behind on the");
+  log("work that actually mattered.");
+  log("");
+  log("We set up one simple automation. Data syncs automatically. Reminders");
+  log("go out on schedule. The tracker updates itself.");
+  log("");
+  log("Now her Mondays start with focus time instead of admin. She told me it");
+  log("feels like she hired an assistant without the overhead.");
+  log("");
+  log("One automation. That is all it took.");
+  log("");
+  log("If you have not implemented anything yet, the Automation Accelerator");
+  log("Pack gives you the templates to get your first one running fast:");
+  log("");
+  log("https://www.levqor.ai/en/products/automation-accelerator");
+  log("");
+  log("Talk soon.");
+  log("");
+  log(`${COLORS.dim}--- END EMAIL ---${COLORS.reset}`);
+  log("");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}EMAIL 3 — Direct Offer${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} Day 5-7`);
+  log(`${COLORS.bright}Subject:${COLORS.reset} If you're serious about automating, start here`);
+  log("");
+  log(`${COLORS.dim}--- EMAIL BODY ---${COLORS.reset}`);
+  log("");
+  log("I will keep this short.");
+  log("");
+  log("You can keep doing things manually. Spend hours on tasks that should");
+  log("take minutes. Tell yourself you will fix it later.");
+  log("");
+  log("Or you can use a ready-made pack and get one automation running this");
+  log("week.");
+  log("");
+  log("The Automation Accelerator Pack includes:");
+  log("");
+  log("- 25 plug-and-play workflow templates");
+  log("- Pricing calculator for automation services");
+  log("- Client proposal templates");
+  log("- Onboarding scripts that actually work");
+  log("");
+  log("It is designed to remove the \"what do I build first\" problem. You");
+  log("pick a template, follow the steps, and you have a working system.");
+  log("");
+  log("If you want a plug-and-play start, here is the link:");
+  log("");
+  log("https://levqor.gumroad.com/l/doeitr");
+  log("");
+  log("Talk soon.");
+  log("");
+  log(`${COLORS.dim}--- END EMAIL ---${COLORS.reset}`);
+  log("");
+}
+
+async function cmdEmailCalendar() {
+  header("Email Calendar — Buyers & Prospects");
+  
+  log(`${COLORS.bright}BUYERS (people who bought the pack)${COLORS.reset}`);
+  log("");
+  log("  Day 0-1:   Email 1 — Welcome + First Win");
+  log("  Day 3-4:   Email 2 — Before / After + Nudge");
+  log("  Day 7-10:  Email 3 — Check-in + Pro Session reminder");
+  log("");
+  
+  log(`${COLORS.bright}PROSPECTS (people who have not bought yet)${COLORS.reset}`);
+  log("");
+  log("  Day 0:     Email 1 — Problem + Insight");
+  log("  Day 2-3:   Email 2 — Story + Soft CTA");
+  log("  Day 5-7:   Email 3 — Direct Offer");
+  log("");
+  
+  log(`${COLORS.dim}──────────────────────────────────────────${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}How to manage this:${COLORS.reset}`);
+  info("Copy the emails from email:buyers and email:prospects.");
+  info("Send manually via Gmail/Workspace to the right segment.");
+  info("Track who bought vs who is still a prospect.");
+  info("Automation can be added later with Loops or ConvertKit.");
+  log("");
+  
+  log(`${COLORS.bright}Commands:${COLORS.reset}`);
+  log("  email:buyers     - Get the full buyer sequence");
+  log("  email:prospects  - Get the full prospect sequence");
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -1270,6 +1528,15 @@ async function main() {
       break;
     case "experiments:status":
       await cmdExperimentsStatus();
+      break;
+    case "email:buyers":
+      await cmdEmailBuyers();
+      break;
+    case "email:prospects":
+      await cmdEmailProspects();
+      break;
+    case "email:calendar":
+      await cmdEmailCalendar();
       break;
     default:
       fail(`Unknown command: ${command}`);
