@@ -12,7 +12,7 @@ import * as fs from "fs";
 import * as path from "path";
 
 const ROOT_DIR = path.resolve(__dirname, "..");
-const OMEGA_PACK_DIR = path.join(ROOT_DIR, "assets", "Levqor-Omega-Empire-Pack", "products");
+const OMEGA_PACK_DIR = path.join(ROOT_DIR, "public", "assets", "Levqor-Omega-Empire-Pack", "products");
 
 interface AssetDefinition {
   folder: string;
