@@ -20,6 +20,7 @@ import * as fs from "fs";
 import * as path from "path";
 import archiver from "archiver";
 import { google } from "googleapis";
+import { ensureOmegaAssetsForProduct } from "./omega-assets";
 
 interface ProductSpec {
   slug: string;
@@ -708,6 +709,10 @@ async function main(): Promise<void> {
 
   console.log("5. Updating products config...");
   updateProductsConfig(spec, driveDownloadUrl);
+  console.log("");
+
+  console.log("6. Ensuring Omega asset tree...");
+  ensureOmegaAssetsForProduct(slug);
   console.log("");
 
   console.log("COMPILATION COMPLETE");
