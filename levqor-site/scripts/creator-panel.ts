@@ -31,12 +31,16 @@
  *   crm:segments       - Show core CRM segments and goals
  *   crm:playbook       - Show segment to actions matrix
  *   crm:next           - Show scenario to next-step cheat sheet
+ *   money:log          - Append a money event to the log
+ *   money:day          - Show today's money summary
+ *   money:week         - Show 7-day trend analysis
+ *   money:brain        - Pattern detection + recommendations
  * 
  * Examples:
  *   npm run creator:panel status
- *   npm run creator:panel health:products automation-accelerator
- *   npm run creator:panel crm:segments
- *   npm run creator:panel crm:next
+ *   npm run creator:panel money:log "Sale: Automation Accelerator £47"
+ *   npm run creator:panel money:day
+ *   npm run creator:panel money:brain
  */
 
 import * as fs from "fs";
@@ -50,6 +54,7 @@ const PRODUCTS_DIR = path.join(ROOT_DIR, "products");
 const COMPILER_SCRIPT = path.join(ROOT_DIR, "scripts", "compile-product.ts");
 const WORKFLOW_FILE = path.join(WORKSPACE_ROOT, ".github", "workflows", "products-pipeline.yml");
 const COSTS_CONFIG_FILE = path.join(ROOT_DIR, "config", "costs.config.json");
+const MONEY_EVENTS_FILE = path.join(ROOT_DIR, "data", "money.events.jsonl");
 
 const COLORS = {
   reset: "\x1b[0m",
@@ -120,12 +125,16 @@ function printUsage() {
   log("  crm:segments         Show core CRM segments and goals");
   log("  crm:playbook         Show segment to actions matrix");
   log("  crm:next             Show scenario to next-step cheat sheet");
+  log("  money:log            Append a money event to the log");
+  log("  money:day            Show today's money summary");
+  log("  money:week           Show 7-day trend analysis");
+  log("  money:brain          Pattern detection + recommendations");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
-  log("  npm run creator:panel health:products automation-accelerator");
-  log("  npm run creator:panel crm:segments");
-  log("  npm run creator:panel crm:next");
+  log("  npm run creator:panel money:log \"Sale: Automation Accelerator £47\"");
+  log("  npm run creator:panel money:day");
+  log("  npm run creator:panel money:brain");
 }
 
 interface ProductData {
@@ -1629,6 +1638,345 @@ async function cmdCrmNext() {
   log("");
 }
 
+interface MoneyEvent {
+  timestamp: string;
+  type: "sale" | "lead" | "content" | "note";
+  product: string | null;
+  amount: number | null;
+  notes: string;
+}
+
+function ensureMoneyEventsFile(): void {
+  const dataDir = path.dirname(MONEY_EVENTS_FILE);
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  if (!fs.existsSync(MONEY_EVENTS_FILE)) {
+    fs.writeFileSync(MONEY_EVENTS_FILE, "");
+  }
+}
+
+function readMoneyEvents(): MoneyEvent[] {
+  ensureMoneyEventsFile();
+  const content = fs.readFileSync(MONEY_EVENTS_FILE, "utf-8").trim();
+  if (!content) return [];
+  
+  const events: MoneyEvent[] = [];
+  const lines = content.split("\n");
+  for (const line of lines) {
+    if (line.trim()) {
+      try {
+        events.push(JSON.parse(line));
+      } catch {
+        // Skip invalid lines
+      }
+    }
+  }
+  return events;
+}
+
+function appendMoneyEvent(event: MoneyEvent): void {
+  ensureMoneyEventsFile();
+  fs.appendFileSync(MONEY_EVENTS_FILE, JSON.stringify(event) + "\n");
+}
+
+function parseMoneyMessage(message: string): { type: MoneyEvent["type"]; product: string | null; amount: number | null } {
+  let type: MoneyEvent["type"] = "note";
+  let product: string | null = null;
+  let amount: number | null = null;
+  
+  const lowerMsg = message.toLowerCase();
+  
+  if (lowerMsg.startsWith("sale:")) {
+    type = "sale";
+    if (lowerMsg.includes("automation accelerator") || lowerMsg.includes("pack")) {
+      product = "automation-accelerator";
+    } else if (lowerMsg.includes("pro session")) {
+      product = "pro-session";
+    }
+  } else if (lowerMsg.startsWith("lead:")) {
+    type = "lead";
+  } else if (lowerMsg.startsWith("posted:") || lowerMsg.startsWith("content:")) {
+    type = "content";
+  }
+  
+  const amountMatch = message.match(/[£$](\d+(?:\.\d{2})?)/);
+  if (amountMatch) {
+    amount = parseFloat(amountMatch[1]);
+  }
+  
+  return { type, product, amount };
+}
+
+function getTodayDateString(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+function getEventsForDate(events: MoneyEvent[], dateStr: string): MoneyEvent[] {
+  return events.filter(e => e.timestamp.startsWith(dateStr));
+}
+
+function getEventsForLastNDays(events: MoneyEvent[], days: number): MoneyEvent[] {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  cutoff.setHours(0, 0, 0, 0);
+  return events.filter(e => new Date(e.timestamp) >= cutoff);
+}
+
+async function cmdMoneyLog(message: string) {
+  if (!message) {
+    fail("Please provide a message. Example: money:log \"Sale: Automation Accelerator £47\"");
+    return;
+  }
+  
+  const parsed = parseMoneyMessage(message);
+  const event: MoneyEvent = {
+    timestamp: new Date().toISOString(),
+    type: parsed.type,
+    product: parsed.product,
+    amount: parsed.amount,
+    notes: message
+  };
+  
+  appendMoneyEvent(event);
+  
+  header("Money Event Logged");
+  log(`${COLORS.bright}Timestamp:${COLORS.reset} ${event.timestamp}`);
+  log(`${COLORS.bright}Type:${COLORS.reset} ${event.type}`);
+  if (event.product) log(`${COLORS.bright}Product:${COLORS.reset} ${event.product}`);
+  if (event.amount) log(`${COLORS.bright}Amount:${COLORS.reset} £${event.amount}`);
+  log(`${COLORS.bright}Notes:${COLORS.reset} ${event.notes}`);
+  log("");
+  success("Event saved to money.events.jsonl");
+  log("");
+}
+
+async function cmdMoneyDay() {
+  header("Money Summary — Today");
+  
+  const events = readMoneyEvents();
+  const todayStr = getTodayDateString();
+  const todayEvents = getEventsForDate(events, todayStr);
+  
+  const sales = todayEvents.filter(e => e.type === "sale");
+  const leads = todayEvents.filter(e => e.type === "lead");
+  const content = todayEvents.filter(e => e.type === "content");
+  const totalAmount = sales.reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  log(`${COLORS.bright}Date:${COLORS.reset} ${todayStr}`);
+  log("");
+  log(`${COLORS.bright}${COLORS.cyan}Stats${COLORS.reset}`);
+  log(`  Sales:        ${sales.length}`);
+  log(`  Revenue:      £${totalAmount.toFixed(2)}`);
+  log(`  Leads:        ${leads.length}`);
+  log(`  Content:      ${content.length}`);
+  log(`  Total Events: ${todayEvents.length}`);
+  log("");
+  
+  if (todayEvents.length > 0) {
+    log(`${COLORS.bright}Recent Events:${COLORS.reset}`);
+    const recentEvents = todayEvents.slice(-5);
+    for (const e of recentEvents) {
+      const time = e.timestamp.split("T")[1].substring(0, 5);
+      log(`  [${time}] ${e.type.toUpperCase()}: ${e.notes.substring(0, 50)}`);
+    }
+    log("");
+  }
+  
+  log(`${COLORS.bright}${COLORS.yellow}Recommended Next Action:${COLORS.reset}`);
+  if (content.length === 0) {
+    info("Post one short-form video or tweet today.");
+  } else if (leads.length > 0 && sales.length === 0) {
+    info("Send follow-up email to warm leads.");
+  } else if (sales.length > 0 && sales.every(s => s.product === "automation-accelerator")) {
+    info("Send Pro Session upsell email to today's Pack buyers.");
+  } else if (todayEvents.length === 0) {
+    info("Log your first action: content, lead, or sale.");
+  } else {
+    info("Keep momentum — schedule tomorrow's content now.");
+  }
+  log("");
+}
+
+async function cmdMoneyWeek() {
+  header("Money Summary — Last 7 Days");
+  
+  const events = readMoneyEvents();
+  const weekEvents = getEventsForLastNDays(events, 7);
+  const last3Days = getEventsForLastNDays(events, 3);
+  const prev3Days = weekEvents.filter(e => !last3Days.includes(e));
+  
+  const sales = weekEvents.filter(e => e.type === "sale");
+  const leads = weekEvents.filter(e => e.type === "lead");
+  const content = weekEvents.filter(e => e.type === "content");
+  const totalRevenue = sales.reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  const last3Sales = last3Days.filter(e => e.type === "sale").length;
+  const prev3Sales = prev3Days.filter(e => e.type === "sale").length;
+  
+  log(`${COLORS.bright}${COLORS.cyan}7-Day Overview${COLORS.reset}`);
+  log("");
+  log(`  Total Revenue:    £${totalRevenue.toFixed(2)}`);
+  log(`  Total Sales:      ${sales.length}`);
+  log(`  Total Leads:      ${leads.length}`);
+  log(`  Content Posted:   ${content.length}`);
+  log(`  Total Actions:    ${weekEvents.length}`);
+  log("");
+  
+  log(`${COLORS.bright}Breakdown by Type:${COLORS.reset}`);
+  const byType: Record<string, number> = {};
+  for (const e of weekEvents) {
+    byType[e.type] = (byType[e.type] || 0) + 1;
+  }
+  for (const [type, count] of Object.entries(byType)) {
+    log(`  ${type}: ${count}`);
+  }
+  log("");
+  
+  log(`${COLORS.bright}Trend Analysis:${COLORS.reset}`);
+  log(`  Last 3 days sales:     ${last3Sales}`);
+  log(`  Previous 3 days sales: ${prev3Sales}`);
+  log("");
+  
+  if (last3Sales > prev3Sales) {
+    success("UPWARD TREND — Sales momentum is building.");
+  } else if (last3Sales < prev3Sales) {
+    warn("DOWNWARD TREND — Sales slowing. Time to push content + follow-ups.");
+  } else {
+    info("STABLE — Maintain current activity level.");
+  }
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.yellow}Weekly Focus:${COLORS.reset}`);
+  if (content.length < 5) {
+    info("Increase content output — aim for at least 1 post per day.");
+  }
+  if (leads.length > sales.length * 2) {
+    info("Many leads, few sales — focus on conversion emails.");
+  }
+  if (sales.length > 0 && sales.every(s => s.product === "automation-accelerator")) {
+    info("All sales from Pack — push Pro Session upsells harder.");
+  }
+  if (weekEvents.length < 7) {
+    info("Log more events — track every action for better insights.");
+  }
+  log("");
+}
+
+async function cmdMoneyBrain() {
+  header("Money Brain — Pattern Detection");
+  
+  const events = readMoneyEvents();
+  const recentEvents = events.slice(-30);
+  
+  if (recentEvents.length < 3) {
+    warn("Not enough data yet. Log more events to enable pattern detection.");
+    log("");
+    info("Log sales: money:log \"Sale: Automation Accelerator £47\"");
+    info("Log leads: money:log \"Lead: replied on Instagram\"");
+    info("Log content: money:log \"Posted: content on X\"");
+    log("");
+    return;
+  }
+  
+  const sales = recentEvents.filter(e => e.type === "sale");
+  const leads = recentEvents.filter(e => e.type === "lead");
+  const content = recentEvents.filter(e => e.type === "content");
+  
+  const packSales = sales.filter(s => s.product === "automation-accelerator");
+  const proSales = sales.filter(s => s.product === "pro-session");
+  const totalRevenue = sales.reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  log(`${COLORS.bright}${COLORS.cyan}Patterns Observed:${COLORS.reset}`);
+  log("");
+  
+  const patterns: string[] = [];
+  
+  if (content.length > 0 && sales.length > 0) {
+    const contentDates = new Set(content.map(c => c.timestamp.split("T")[0]));
+    const salesAfterContent = sales.filter(s => {
+      const saleDate = s.timestamp.split("T")[0];
+      return contentDates.has(saleDate);
+    });
+    if (salesAfterContent.length > 0) {
+      patterns.push("Content posts correlate with sales — keep posting daily.");
+    }
+  }
+  
+  if (packSales.length > 0 && proSales.length === 0) {
+    patterns.push("Pack sales strong, but no Pro Session conversions — upsell harder.");
+  }
+  
+  if (leads.length > sales.length * 2) {
+    patterns.push("High lead volume, low conversion — improve follow-up sequence.");
+  }
+  
+  if (leads.length < content.length / 2) {
+    patterns.push("Content not generating leads — add stronger CTAs.");
+  }
+  
+  if (sales.length > 0 && totalRevenue / sales.length < 50) {
+    patterns.push("Average order value is low — push higher-tier products.");
+  }
+  
+  if (proSales.length > packSales.length) {
+    patterns.push("Pro Session outselling Pack — consider adjusting funnel focus.");
+  }
+  
+  if (patterns.length === 0) {
+    patterns.push("System is balanced — maintain current activity.");
+  }
+  
+  for (const pattern of patterns) {
+    info(pattern);
+  }
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.yellow}Recommended Actions:${COLORS.reset}`);
+  log("");
+  
+  const actions: string[] = [];
+  
+  if (content.length < 5) {
+    actions.push("Publish 1 short-form video or post today.");
+  }
+  
+  if (packSales.length > 0 && proSales.length === 0) {
+    actions.push("Send Buyer Email 2 to Pack-only customers with Pro Session CTA.");
+  }
+  
+  if (leads.length > 0 && sales.length === 0) {
+    actions.push("Send Email 3 from prospects sequence to warm leads.");
+  }
+  
+  if (leads.length > sales.length * 2) {
+    actions.push("Review and strengthen follow-up email copy.");
+  }
+  
+  if (content.length > 0 && leads.length < content.length / 3) {
+    actions.push("Add a CTA to each content piece linking to the Pack page.");
+  }
+  
+  if (actions.length === 0) {
+    actions.push("Keep current momentum — log today's actions and review tomorrow.");
+  }
+  
+  for (const action of actions) {
+    log(`  - ${action}`);
+  }
+  log("");
+  
+  log(`${COLORS.dim}──────────────────────────────────────────${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Data Summary (last 30 events):${COLORS.reset}`);
+  log(`  Sales: ${sales.length} (£${totalRevenue.toFixed(2)})`);
+  log(`  Leads: ${leads.length}`);
+  log(`  Content: ${content.length}`);
+  log(`  Pack Sales: ${packSales.length}`);
+  log(`  Pro Session Sales: ${proSales.length}`);
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -1716,6 +2064,18 @@ async function main() {
       break;
     case "crm:next":
       await cmdCrmNext();
+      break;
+    case "money:log":
+      await cmdMoneyLog(arg1);
+      break;
+    case "money:day":
+      await cmdMoneyDay();
+      break;
+    case "money:week":
+      await cmdMoneyWeek();
+      break;
+    case "money:brain":
+      await cmdMoneyBrain();
       break;
     default:
       fail(`Unknown command: ${command}`);
