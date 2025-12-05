@@ -5,20 +5,22 @@
  * Usage: npm run creator:panel <command>
  * 
  * Commands:
- *   status          - Empire status overview
- *   health:products - Product pipeline health check
- *   health:site     - Site build/lint health check
- *   money:today     - Daily money action plan
- *   ops:summary     - Operations summary
- *   metrics:today   - Quick operational metrics snapshot
- *   costs:summary   - Config-driven cost overview
- *   guardian:check  - Composite system health check
+ *   status           - Empire status overview
+ *   health:products  - Product pipeline health check
+ *   health:site      - Site build/lint health check
+ *   money:today      - Daily money action plan
+ *   ops:summary      - Operations summary
+ *   metrics:today    - Quick operational metrics snapshot
+ *   costs:summary    - Config-driven cost overview
+ *   guardian:check   - Composite system health check
+ *   traffic:generate - Generate daily traffic content
+ *   traffic:schedule - Show daily posting schedule
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
  *   npm run creator:panel money:today
- *   npm run creator:panel guardian:check
+ *   npm run creator:panel traffic:generate
  */
 
 import * as fs from "fs";
@@ -84,12 +86,14 @@ function printUsage() {
   log("  metrics:today       Quick operational metrics snapshot");
   log("  costs:summary       Config-driven cost overview");
   log("  guardian:check      Composite system health check");
+  log("  traffic:generate    Generate daily traffic content");
+  log("  traffic:schedule    Show daily posting schedule");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
   log("  npm run creator:panel money:today");
-  log("  npm run creator:panel guardian:check");
+  log("  npm run creator:panel traffic:generate");
 }
 
 interface ProductData {
@@ -707,6 +711,103 @@ async function cmdGuardianCheck() {
   log("");
 }
 
+async function cmdTrafficGenerate() {
+  header("Traffic Engine — Daily Content");
+  
+  const today = new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  
+  log(`${COLORS.dim}${today}${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}SHORT-FORM SCRIPT (30 seconds)${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Hook:${COLORS.reset}`);
+  info("Stop wasting hours on repetitive tasks.");
+  log("");
+  log(`${COLORS.bright}Problem:${COLORS.reset}`);
+  info("Most founders spend 10+ hours a week on manual work —");
+  info("copying data, sending follow-ups, updating spreadsheets.");
+  info("That's time you could spend growing your business.");
+  log("");
+  log(`${COLORS.bright}Breakdown:${COLORS.reset}`);
+  info("The Automation Accelerator Pack gives you 25 workflow templates,");
+  info("client proposals, pricing calculators, and onboarding scripts.");
+  info("Everything you need to launch an automation service in 48 hours.");
+  log("");
+  log(`${COLORS.bright}Call-to-action:${COLORS.reset}`);
+  info("Link in bio. Stop doing manual work. Start automating.");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}TIP POST${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Problem:${COLORS.reset}`);
+  info("You're copying lead data from forms into your CRM by hand.");
+  info("Every. Single. Time.");
+  log("");
+  log(`${COLORS.bright}Tip:${COLORS.reset}`);
+  info("Set up a Zapier/Make automation:");
+  info("Form submission → Create CRM contact → Notify Slack.");
+  info("Takes 15 minutes. Saves 5+ hours/week.");
+  log("");
+  log(`${COLORS.bright}CTA:${COLORS.reset}`);
+  info("Want 24 more workflows like this? Check the link below.");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}CTA${COLORS.reset}`);
+  log("");
+  success("Build your automations with the Automation Accelerator Pack");
+  log(`${COLORS.green}→${COLORS.reset} https://levqor.ai/products/automation-accelerator`);
+  log("");
+}
+
+async function cmdTrafficSchedule() {
+  header("Traffic Engine — Daily Schedule");
+  
+  const today = new Date().toLocaleDateString("en-GB", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  
+  log(`${COLORS.dim}${today}${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}Daily Posting Schedule:${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.green}10:00${COLORS.reset} — ${COLORS.bright}Post Tip${COLORS.reset}`);
+  info("Share one automation tip on Twitter/LinkedIn.");
+  info("Use the TIP POST from traffic:generate.");
+  log("");
+  
+  log(`${COLORS.green}12:00${COLORS.reset} — ${COLORS.bright}Send CTA${COLORS.reset}`);
+  info("Post the CTA link to your main channel.");
+  info("\"Build your automations with the Automation Accelerator Pack\"");
+  info("→ https://levqor.ai/products/automation-accelerator");
+  log("");
+  
+  log(`${COLORS.green}16:00${COLORS.reset} — ${COLORS.bright}Post Short-form Script${COLORS.reset}`);
+  info("Record or post the 30-second script.");
+  info("Use the SHORT-FORM SCRIPT from traffic:generate.");
+  info("Platforms: TikTok, Instagram Reels, YouTube Shorts.");
+  log("");
+  
+  log(`${COLORS.green}20:00${COLORS.reset} — ${COLORS.bright}Evening Reminder CTA${COLORS.reset}`);
+  info("Final push of the day — repost the CTA.");
+  info("\"Last chance today: Automation Accelerator Pack\"");
+  info("→ https://levqor.ai/products/automation-accelerator");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}Consistency beats intensity. Post daily.${COLORS.reset}`);
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -740,6 +841,12 @@ async function main() {
       break;
     case "guardian:check":
       await cmdGuardianCheck();
+      break;
+    case "traffic:generate":
+      await cmdTrafficGenerate();
+      break;
+    case "traffic:schedule":
+      await cmdTrafficSchedule();
       break;
     default:
       fail(`Unknown command: ${command}`);
