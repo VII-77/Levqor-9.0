@@ -52,7 +52,7 @@ export const PRODUCTS: ProductsMap = {
     "shortDescription": "AI-powered automation engine that turns your workflows into sellable products fast.",
     "longDescription": "Omega Automation Engine is your done-for-you automation system starter kit.\n\nYou get pre-built workflows, plug-and-play SOPs, and a clear structure for turning what you already know into a sellable automation offer.\n\nUse it to:\n• Launch your first automation service quickly\n• Standardize your delivery with battle-tested templates\n• Show clients something real instead of talking in theory\n\nEverything is built to be simple, fast, and practical. No fluff. Just what you need to start charging for automation work.",
     "driveDownloadUrl": "https://drive.google.com/file/d/DRY_RUN_Levqor_automation_accelerator_v1.0.2.zip/view",
-    "gumroadUrl": "https://levqor.gumroad.com/l/automation-accelerator",
+    "gumroadUrl": "https://levqor.gumroad.com/l/doeitr",
     "docsUrl": "/docs/automation-accelerator",
     "tags": [
       "automation",
