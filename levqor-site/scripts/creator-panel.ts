@@ -19,12 +19,14 @@
  *   traffic:schedule   - Show daily posting schedule
  *   loops:referral-link - Show your referral link pattern
  *   loops:share-kit    - Get ready-made viral share copy
+ *   content:idea       - Show today's content angle
+ *   content:post       - Print a ready-to-copy promo post
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
  *   npm run creator:panel money:ladder
- *   npm run creator:panel loops:referral-link
+ *   npm run creator:panel content:idea
  */
 
 import * as fs from "fs";
@@ -96,12 +98,14 @@ function printUsage() {
   log("  traffic:schedule     Show daily posting schedule");
   log("  loops:referral-link  Show your referral link pattern");
   log("  loops:share-kit      Get ready-made viral share copy");
+  log("  content:idea         Show today's content angle");
+  log("  content:post         Print a ready-to-copy promo post");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
   log("  npm run creator:panel money:ladder");
-  log("  npm run creator:panel loops:referral-link");
+  log("  npm run creator:panel content:idea");
 }
 
 interface ProductData {
@@ -953,6 +957,96 @@ async function cmdMoneyFollowup() {
   log("");
 }
 
+const CONTENT_IDEA_PATTERNS = [
+  {
+    theme: "Before/After story",
+    prompt: "Share a before/after scenario showing how manual chaos transforms into automated flow with the Automation Accelerator Pack."
+  },
+  {
+    theme: "Mistake people make with automation",
+    prompt: "Explain one common way people overcomplicate automation and how the Automation Accelerator Pack keeps it simple."
+  },
+  {
+    theme: "Quick win tutorial",
+    prompt: "Walk through one specific automation you can set up in under 15 minutes using the templates in the pack."
+  },
+  {
+    theme: "Behind the scenes of how I automate X",
+    prompt: "Show the actual workflow you use to automate a repetitive task, and how the pack provides a ready-made version."
+  },
+  {
+    theme: "Client story / hypothetical scenario",
+    prompt: "Describe a founder drowning in manual work and how using the Automation Accelerator Pack freed up 10+ hours a week."
+  },
+  {
+    theme: "The hidden cost of manual work",
+    prompt: "Calculate how much time/money is wasted on repetitive tasks and position the pack as the fix."
+  },
+  {
+    theme: "One automation that changed everything",
+    prompt: "Share the single most impactful automation from the pack and why it works so well for busy founders."
+  }
+];
+
+async function cmdContentIdea() {
+  header("Content Idea — Today");
+  
+  const today = new Date();
+  const dateStr = today.toISOString().split("T")[0];
+  const dayOfMonth = today.getDate();
+  const patternIndex = dayOfMonth % CONTENT_IDEA_PATTERNS.length;
+  const pattern = CONTENT_IDEA_PATTERNS[patternIndex];
+  
+  log(`${COLORS.bright}Date:${COLORS.reset} ${dateStr}`);
+  log("");
+  log(`${COLORS.bright}Theme:${COLORS.reset} "${pattern.theme}"`);
+  log("");
+  log(`${COLORS.bright}Prompt to write about:${COLORS.reset}`);
+  info(`"${pattern.prompt}"`);
+  log("");
+  log(`${COLORS.bright}Core message:${COLORS.reset}`);
+  info("Always tie back to the Automation Accelerator Pack:");
+  info("Save time, automate manual workflows, reduce chaos.");
+  log("");
+  success(`Next: run \`npm run creator:panel content:post\` to get a draft post.`);
+  log("");
+}
+
+async function cmdContentPost() {
+  header("Ready-to-Copy Post — Automation Accelerator");
+  
+  const today = new Date();
+  const dateStr = today.toISOString().split("T")[0];
+  
+  log(`${COLORS.dim}Generated: ${dateStr}${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}${COLORS.cyan}--- COPY BELOW THIS LINE ---${COLORS.reset}`);
+  log("");
+  log("Most solo founders drown in repetitive tasks.");
+  log("");
+  log("They tell themselves they'll 'automate later' but later never comes.");
+  log("");
+  log("I built the Automation Accelerator Pack so you can ship one real automation this week instead of reading another thread.");
+  log("");
+  log("Inside:");
+  log("- 25 plug-and-play workflow templates");
+  log("- Pricing calculator for automation services");
+  log("- Client proposal templates");
+  log("- Onboarding scripts that actually work");
+  log("");
+  log("If you want a shortcut to automated operations, grab it here:");
+  log("https://levqor.gumroad.com/l/doeitr");
+  log("");
+  log(`${COLORS.bright}${COLORS.cyan}--- COPY ABOVE THIS LINE ---${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Where to post:${COLORS.reset}`);
+  info("X / Twitter");
+  info("LinkedIn");
+  info("Instagram story/reel (adapt as spoken script)");
+  info("YouTube Shorts (read as voiceover)");
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -1004,6 +1098,12 @@ async function main() {
       break;
     case "loops:share-kit":
       await cmdLoopsShareKit();
+      break;
+    case "content:idea":
+      await cmdContentIdea();
+      break;
+    case "content:post":
+      await cmdContentPost();
       break;
     default:
       fail(`Unknown command: ${command}`);
