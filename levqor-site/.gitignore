@@ -1,3 +1,8 @@
 
 # Generated version file
 src/config/version.json
+
+# build artifacts
+.next
+dist/
+node_modules
