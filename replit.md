@@ -54,3 +54,9 @@ Levqor X employs a clean separation of concerns with a Next.js frontend deployed
 -   **Cloudflare**: DNS management.
 -   **Resend**: Email service for authentication (magic links).
 -   **OpenAI**: Provides GPT-4o-mini for AI functionalities.
+
+## Marketing & Content
+
+-   **Content Engine Template**: `levqor-site/templates/content-engine-template.md` — Reusable template for generating 6 content assets (video script, Twitter thread, LinkedIn post, email, Instagram carousel, mini-article) from a single idea seed. All content drives traffic to the £47 Automation Accelerator Pack.
+-   **Product Pages**: Dynamic product pages at `/[locale]/products/[slug]` with modular components and telemetry tracking.
+-   **Product Config**: `levqor-site/src/config/products.ts` — Auto-generated from JSON specs in `levqor-site/products/*.product.json`.
