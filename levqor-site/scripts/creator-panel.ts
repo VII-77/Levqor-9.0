@@ -28,12 +28,15 @@
  *   email:buyers       - Show 3-email sequence for pack buyers
  *   email:prospects    - Show 3-email sequence for non-buyers
  *   email:calendar     - Show when to send each email
+ *   crm:segments       - Show core CRM segments and goals
+ *   crm:playbook       - Show segment to actions matrix
+ *   crm:next           - Show scenario to next-step cheat sheet
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
- *   npm run creator:panel email:buyers
- *   npm run creator:panel email:calendar
+ *   npm run creator:panel crm:segments
+ *   npm run creator:panel crm:next
  */
 
 import * as fs from "fs";
@@ -114,12 +117,15 @@ function printUsage() {
   log("  email:buyers         Show 3-email sequence for pack buyers");
   log("  email:prospects      Show 3-email sequence for non-buyers");
   log("  email:calendar       Show when to send each email");
+  log("  crm:segments         Show core CRM segments and goals");
+  log("  crm:playbook         Show segment to actions matrix");
+  log("  crm:next             Show scenario to next-step cheat sheet");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
-  log("  npm run creator:panel email:buyers");
-  log("  npm run creator:panel email:calendar");
+  log("  npm run creator:panel crm:segments");
+  log("  npm run creator:panel crm:next");
 }
 
 interface ProductData {
@@ -1459,6 +1465,170 @@ async function cmdEmailCalendar() {
   log("");
 }
 
+async function cmdCrmSegments() {
+  header("CRM Segments — Levqor");
+  
+  log(`${COLORS.bright}[Segment] Prospect — Cold${COLORS.reset}`);
+  log("  Description: Has never bought anything. Not engaged recently.");
+  log("  Goal: Convert to Automation Accelerator Pack buyer.");
+  log("");
+  
+  log(`${COLORS.bright}[Segment] Prospect — Warm${COLORS.reset}`);
+  log("  Description: Has shown interest (clicked, replied, asked questions).");
+  log("               Has NOT bought the Automation Accelerator Pack yet.");
+  log("  Goal: Push them over the line to buy the Pack.");
+  log("");
+  
+  log(`${COLORS.bright}[Segment] Buyer — Pack Only${COLORS.reset}`);
+  log("  Description: Bought the Automation Accelerator Pack.");
+  log("               Has NOT bought the Pro Session.");
+  log("  Goal: Upsell to Pro Session.");
+  log("");
+  
+  log(`${COLORS.bright}[Segment] Buyer — Pack + Pro Session${COLORS.reset}`);
+  log("  Description: Bought both the Pack and the Pro Session.");
+  log("  Goal: Get testimonials + build long-term relationship.");
+  log("");
+  
+  log(`${COLORS.bright}[Segment] Dormant Buyer${COLORS.reset}`);
+  log("  Description: Bought something in the past.");
+  log("               No engagement or replies for 30+ days.");
+  log("  Goal: Reactivate and get them back into automation.");
+  log("");
+  
+  log(`${COLORS.dim}──────────────────────────────────────────${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Next steps:${COLORS.reset}`);
+  info("Run crm:playbook to see which commands to use for each segment.");
+  info("Run crm:next for scenario-based decision making.");
+  log("");
+}
+
+async function cmdCrmPlaybook() {
+  header("CRM Playbook — Segment to Actions Matrix");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}Segment: Prospect — Cold${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log("Primary objective: Get first purchase of Automation Accelerator Pack.");
+  log("");
+  log("Use:");
+  log("  email:prospects   Send the 3-email mini-funnel");
+  log("  tracking:links    Get correct promo links with UTM tags");
+  log("  content:post      Create public posts that pull them in");
+  log("  experiments:copy  Test Variant A/B messaging");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}Segment: Prospect — Warm${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log("Primary objective: Push them over the line to buy the Pack.");
+  log("");
+  log("Use:");
+  log("  email:prospects   Focus on Email 2 and 3 especially");
+  log("  experiments:copy  Test Variant A/B to find what resonates");
+  log("  tracking:links    Keep UTM clean for attribution");
+  log("  content:post      Re-engage with fresh content angles");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}Segment: Buyer — Pack Only${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log("Primary objective: Upsell to Pro Session.");
+  log("");
+  log("Use:");
+  log("  email:buyers      Send the 3-email buyer sequence");
+  log("  money:followup    Plan follow-up nudges");
+  log("  money:ladder      See the Pack to Pro ladder");
+  log("  email:calendar    Time your emails correctly");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}Segment: Buyer — Pack + Pro Session${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log("Primary objective: Get testimonials + long-term relationship.");
+  log("");
+  log("Use:");
+  log("  money:ladder      Plan any future higher-tier offers");
+  log("  email:buyers      Adapt as post-session follow-up");
+  log("  content:post      Feature their success story (with permission)");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log(`${COLORS.bright}Segment: Dormant Buyer${COLORS.reset}`);
+  log(`${COLORS.bright}${COLORS.cyan}══════════════════════════════════════════${COLORS.reset}`);
+  log("");
+  log("Primary objective: Reactivate and get them back into automation.");
+  log("");
+  log("Use:");
+  log("  email:buyers      Adapt Email 3 as reactivation message");
+  log("  content:post      Send a \"what changed since you bought\" email");
+  log("  content:idea      Get fresh angles to re-engage them");
+  log("");
+}
+
+async function cmdCrmNext() {
+  header("CRM Next-Step Cheat Sheet");
+  
+  log(`${COLORS.bright}Scenario 1 — Someone just joined your list (no purchase)${COLORS.reset}`);
+  log("");
+  log("  Treat as: Prospect — Warm");
+  log("  Do next:");
+  log("    1. Run: email:prospects");
+  log("    2. Send Email 1 within 24h");
+  log("    3. Use tracking:links in all CTAs");
+  log("");
+  
+  log(`${COLORS.bright}Scenario 2 — Someone just bought the Automation Accelerator Pack${COLORS.reset}`);
+  log("");
+  log("  Treat as: Buyer — Pack Only");
+  log("  Do next:");
+  log("    1. Run: email:buyers");
+  log("    2. Send Buyer Email 1 within 24h");
+  log("    3. Tag them as \"Pack Buyer\" in your email tool");
+  log("");
+  
+  log(`${COLORS.bright}Scenario 3 — Pack buyer opened emails but no Pro Session booking${COLORS.reset}`);
+  log("");
+  log("  Treat as: Buyer — Pack Only (stuck)");
+  log("  Do next:");
+  log("    1. Re-send Buyer Email 2 with a more direct CTA");
+  log("    2. Optionally send a short personal Gmail note");
+  log("    3. Link directly to the Pro Session booking page");
+  log("");
+  
+  log(`${COLORS.bright}Scenario 4 — Old buyer, no contact for 30+ days${COLORS.reset}`);
+  log("");
+  log("  Treat as: Dormant Buyer");
+  log("  Do next:");
+  log("    1. Send a personal-style reactivation email");
+  log("    2. Use the Buyer Email 3 style as a template");
+  log("    3. Offer to help them implement one automation if they reply");
+  log("");
+  
+  log(`${COLORS.bright}Scenario 5 — Highly engaged prospect (replies, clicks, no purchase)${COLORS.reset}`);
+  log("");
+  log("  Treat as: Prospect — Warm");
+  log("  Do next:");
+  log("    1. Send Email 2 from prospects with a more direct CTA");
+  log("    2. Optionally send a manual Gmail message");
+  log("    3. Reference their specific situation or question");
+  log("");
+  
+  log(`${COLORS.dim}──────────────────────────────────────────${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Quick reference:${COLORS.reset}`);
+  info("crm:segments   - See all segment definitions");
+  info("crm:playbook   - See which commands to use per segment");
+  info("email:buyers   - Get buyer email templates");
+  info("email:prospects - Get prospect email templates");
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -1537,6 +1707,15 @@ async function main() {
       break;
     case "email:calendar":
       await cmdEmailCalendar();
+      break;
+    case "crm:segments":
+      await cmdCrmSegments();
+      break;
+    case "crm:playbook":
+      await cmdCrmPlaybook();
+      break;
+    case "crm:next":
+      await cmdCrmNext();
       break;
     default:
       fail(`Unknown command: ${command}`);
