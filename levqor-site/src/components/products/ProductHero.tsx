@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { ProductConfig } from "@/config/products";
 
 interface ProductHeroProps {
@@ -7,8 +8,24 @@ interface ProductHeroProps {
 }
 
 export default function ProductHero({ product }: ProductHeroProps) {
+  const [imageError, setImageError] = useState(false);
+  const imageSrc = product.heroImage ?? product.coverImage ?? null;
+
   return (
     <div className="text-center mb-8">
+      {imageSrc && !imageError ? (
+        <img
+          src={imageSrc}
+          alt={product.name}
+          className="w-full max-h-72 object-cover rounded-xl mb-6"
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      ) : (
+        <div className="w-full h-48 rounded-xl mb-6 bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center text-sm text-slate-300">
+          {product.name}
+        </div>
+      )}
       {product.status === "active" && (
         <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full mb-4">
           Available Now

@@ -38,6 +38,21 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
   if (isCompact) {
     return (
       <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100 hover:shadow-md transition-shadow">
+        {product.thumbnailImage ? (
+          <img
+            src={product.thumbnailImage}
+            alt={product.name}
+            className="w-full h-32 object-cover rounded-md mb-3"
+            loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+              (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+            }}
+          />
+        ) : null}
+        <div className={`w-full h-32 rounded-md mb-3 bg-gradient-to-r from-slate-800 to-slate-700 flex items-center justify-center text-xs text-slate-300 ${product.thumbnailImage ? "hidden" : ""}`}>
+          {product.name}
+        </div>
         <div className="flex items-start justify-between mb-3">
           <div>
             {product.status === "active" && (
@@ -89,6 +104,21 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
 
   return (
     <div className="bg-white rounded-2xl shadow-lg border overflow-hidden">
+      {product.thumbnailImage ? (
+        <img
+          src={product.thumbnailImage}
+          alt={product.name}
+          className="w-full h-48 object-cover"
+          loading="lazy"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = "none";
+            (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+          }}
+        />
+      ) : null}
+      <div className={`w-full h-48 bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center ${product.thumbnailImage ? "hidden" : ""}`}>
+        <span className="text-white/60 text-sm">{product.name}</span>
+      </div>
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
