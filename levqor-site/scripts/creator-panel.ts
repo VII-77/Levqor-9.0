@@ -5,22 +5,24 @@
  * Usage: npm run creator:panel <command>
  * 
  * Commands:
- *   status           - Empire status overview
- *   health:products  - Product pipeline health check
- *   health:site      - Site build/lint health check
- *   money:today      - Daily money action plan
- *   ops:summary      - Operations summary
- *   metrics:today    - Quick operational metrics snapshot
- *   costs:summary    - Config-driven cost overview
- *   guardian:check   - Composite system health check
- *   traffic:generate - Generate daily traffic content
- *   traffic:schedule - Show daily posting schedule
+ *   status             - Empire status overview
+ *   health:products    - Product pipeline health check
+ *   health:site        - Site build/lint health check
+ *   money:today        - Daily money action plan
+ *   ops:summary        - Operations summary
+ *   metrics:today      - Quick operational metrics snapshot
+ *   costs:summary      - Config-driven cost overview
+ *   guardian:check     - Composite system health check
+ *   traffic:generate   - Generate daily traffic content
+ *   traffic:schedule   - Show daily posting schedule
+ *   loops:referral-link - Show your referral link pattern
+ *   loops:share-kit    - Get ready-made viral share copy
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
  *   npm run creator:panel money:today
- *   npm run creator:panel traffic:generate
+ *   npm run creator:panel loops:referral-link
  */
 
 import * as fs from "fs";
@@ -78,22 +80,24 @@ function printUsage() {
   log("Usage: npm run creator:panel <command> [options]");
   log("");
   log("Commands:");
-  log("  status              Empire status overview");
-  log("  health:products     Product pipeline health check");
-  log("  health:site         Site build/lint health check");
-  log("  money:today         Daily money action plan");
-  log("  ops:summary         Operations summary");
-  log("  metrics:today       Quick operational metrics snapshot");
-  log("  costs:summary       Config-driven cost overview");
-  log("  guardian:check      Composite system health check");
-  log("  traffic:generate    Generate daily traffic content");
-  log("  traffic:schedule    Show daily posting schedule");
+  log("  status               Empire status overview");
+  log("  health:products      Product pipeline health check");
+  log("  health:site          Site build/lint health check");
+  log("  money:today          Daily money action plan");
+  log("  ops:summary          Operations summary");
+  log("  metrics:today        Quick operational metrics snapshot");
+  log("  costs:summary        Config-driven cost overview");
+  log("  guardian:check       Composite system health check");
+  log("  traffic:generate     Generate daily traffic content");
+  log("  traffic:schedule     Show daily posting schedule");
+  log("  loops:referral-link  Show your referral link pattern");
+  log("  loops:share-kit      Get ready-made viral share copy");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
   log("  npm run creator:panel money:today");
-  log("  npm run creator:panel traffic:generate");
+  log("  npm run creator:panel loops:referral-link");
 }
 
 interface ProductData {
@@ -808,6 +812,49 @@ async function cmdTrafficSchedule() {
   log("");
 }
 
+async function cmdLoopsReferralLink() {
+  header("Referral Link — Automation Accelerator");
+  
+  log(`${COLORS.bright}Base product page:${COLORS.reset}`);
+  log(`${COLORS.green}→${COLORS.reset} https://levqor.ai/products/automation-accelerator`);
+  log("");
+  
+  log(`${COLORS.bright}Your referral template:${COLORS.reset}`);
+  log(`${COLORS.green}→${COLORS.reset} https://levqor.ai/products/automation-accelerator?ref=YOURNAME`);
+  log("");
+  
+  log(`${COLORS.bright}Notes:${COLORS.reset}`);
+  info("Replace YOURNAME with your handle.");
+  info("Anyone who lands via your link and buys is counted as your referral.");
+  log("");
+}
+
+async function cmdLoopsShareKit() {
+  header("Viral Loop — Share Kit");
+  
+  log(`${COLORS.bright}${COLORS.cyan}POST${COLORS.reset}`);
+  log("");
+  log(`${COLORS.dim}"I'm done wasting hours on busywork. I'm building automations with the`);
+  log(`Automation Accelerator Pack from @Levqor — templates, workflows, and a money`);
+  log(`engine in a box. Grab it here: https://levqor.ai/products/automation-accelerator?ref=YOURNAME"${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}DM${COLORS.reset}`);
+  log("");
+  log(`${COLORS.dim}"Thought of you — this Automation Accelerator Pack shows exactly how to turn`);
+  log(`your manual grind into an automated flow. If you grab it via this link, I'll know`);
+  log(`it was you: https://levqor.ai/products/automation-accelerator?ref=YOURNAME"${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}CTA${COLORS.reset}`);
+  log("");
+  log(`${COLORS.dim}"Turn your manual grind into a money engine → https://levqor.ai/products/automation-accelerator?ref=YOURNAME"${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}Replace YOURNAME with your handle before sharing.${COLORS.reset}`);
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -847,6 +894,12 @@ async function main() {
       break;
     case "traffic:schedule":
       await cmdTrafficSchedule();
+      break;
+    case "loops:referral-link":
+      await cmdLoopsReferralLink();
+      break;
+    case "loops:share-kit":
+      await cmdLoopsShareKit();
       break;
     default:
       fail(`Unknown command: ${command}`);
