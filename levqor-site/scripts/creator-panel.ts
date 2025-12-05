@@ -10,11 +10,15 @@
  *   health:site     - Site build/lint health check
  *   money:today     - Daily money action plan
  *   ops:summary     - Operations summary
+ *   metrics:today   - Quick operational metrics snapshot
+ *   costs:summary   - Config-driven cost overview
+ *   guardian:check  - Composite system health check
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
  *   npm run creator:panel money:today
+ *   npm run creator:panel guardian:check
  */
 
 import * as fs from "fs";
@@ -27,6 +31,7 @@ const CONFIG_FILE = path.join(ROOT_DIR, "src", "config", "products.ts");
 const PRODUCTS_DIR = path.join(ROOT_DIR, "products");
 const COMPILER_SCRIPT = path.join(ROOT_DIR, "scripts", "compile-product.ts");
 const WORKFLOW_FILE = path.join(WORKSPACE_ROOT, ".github", "workflows", "products-pipeline.yml");
+const COSTS_CONFIG_FILE = path.join(ROOT_DIR, "config", "costs.config.json");
 
 const COLORS = {
   reset: "\x1b[0m",
@@ -76,11 +81,15 @@ function printUsage() {
   log("  health:site         Site build/lint health check");
   log("  money:today         Daily money action plan");
   log("  ops:summary         Operations summary");
+  log("  metrics:today       Quick operational metrics snapshot");
+  log("  costs:summary       Config-driven cost overview");
+  log("  guardian:check      Composite system health check");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
   log("  npm run creator:panel money:today");
+  log("  npm run creator:panel guardian:check");
 }
 
 interface ProductData {
@@ -90,6 +99,20 @@ interface ProductData {
   version: string;
   status: string;
   priceUsd: number;
+}
+
+interface CostsConfig {
+  currency: string;
+  services: Array<{
+    name: string;
+    type: string;
+    estimatedDaily: number;
+    notes: string;
+  }>;
+  targets: {
+    dailyMax: number;
+    monthlyMax: number;
+  };
 }
 
 function parseProductsFromConfig(): ProductData[] {
@@ -136,6 +159,66 @@ function getProductSpecFiles(): string[] {
     return [];
   }
   return fs.readdirSync(PRODUCTS_DIR).filter(f => f.endsWith(".product.json"));
+}
+
+function checkProductionPage(): { ok: boolean; status: string; message: string } {
+  try {
+    const result = spawnSync("curl", [
+      "-sS", "-o", "/dev/null", "-w", "%{http_code}",
+      "--max-time", "10",
+      "https://www.levqor.ai/en/products/automation-accelerator"
+    ], {
+      encoding: "utf-8",
+      timeout: 15000,
+    });
+    
+    if (result.error || result.status !== 0) {
+      return { ok: false, status: "ERROR", message: "curl/network error" };
+    }
+    
+    const httpCode = parseInt(result.stdout.trim(), 10);
+    if (httpCode >= 200 && httpCode < 400) {
+      return { ok: true, status: String(httpCode), message: "OK" };
+    } else {
+      return { ok: false, status: String(httpCode), message: "POSSIBLE ISSUE" };
+    }
+  } catch (err) {
+    return { ok: false, status: "ERROR", message: "curl not available or network error" };
+  }
+}
+
+function runCompilerDryRun(slug: string): { passed: boolean; exitCode: number } {
+  try {
+    const result = spawnSync("npx", ["tsx", COMPILER_SCRIPT, `--slug=${slug}`], {
+      cwd: ROOT_DIR,
+      env: { ...process.env, DRY_RUN: "true" },
+      encoding: "utf-8",
+      timeout: 60000,
+    });
+    return { passed: result.status === 0, exitCode: result.status || -1 };
+  } catch (err) {
+    return { passed: false, exitCode: -1 };
+  }
+}
+
+function runLintQuiet(): { passed: boolean; skipped: boolean } {
+  const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, "package.json"), "utf-8"));
+  const scripts = packageJson.scripts || {};
+  
+  if (!scripts.lint) {
+    return { passed: false, skipped: true };
+  }
+  
+  try {
+    const result = spawnSync("npm", ["run", "lint"], {
+      cwd: ROOT_DIR,
+      encoding: "utf-8",
+      timeout: 120000,
+    });
+    return { passed: result.status === 0, skipped: false };
+  } catch (err) {
+    return { passed: false, skipped: false };
+  }
 }
 
 async function cmdStatus() {
@@ -439,6 +522,191 @@ async function cmdOpsSummary() {
   log("");
 }
 
+async function cmdMetricsToday() {
+  header("Metrics — Today");
+  
+  const today = new Date().toISOString().split("T")[0];
+  log(`${COLORS.bright}Date:${COLORS.reset} ${today}`);
+  log("");
+  
+  const products = parseProductsFromConfig();
+  const activeProducts = products.filter(p => p.status === "active");
+  
+  log(`${COLORS.bright}Active Products:${COLORS.reset}`);
+  if (activeProducts.length === 0) {
+    warn("No active products");
+  } else {
+    success(`${activeProducts.length} active`);
+    activeProducts.forEach(p => {
+      info(`${p.slug} v${p.version}`);
+    });
+  }
+  
+  log("");
+  log(`${COLORS.bright}Production Page Check:${COLORS.reset}`);
+  const prodCheck = checkProductionPage();
+  if (prodCheck.ok) {
+    success(`OK (${prodCheck.status})`);
+  } else {
+    if (prodCheck.status === "ERROR") {
+      warn(`UNAVAILABLE (${prodCheck.message})`);
+    } else {
+      fail(`${prodCheck.message} (${prodCheck.status})`);
+    }
+  }
+  
+  log("");
+  log(`${COLORS.bright}Environment:${COLORS.reset}`);
+  const driveEnv = process.env.GOOGLE_DRIVE_SHARED_FOLDER_ID;
+  if (driveEnv) {
+    success("GOOGLE_DRIVE_SHARED_FOLDER_ID: [SET]");
+  } else {
+    warn("GOOGLE_DRIVE_SHARED_FOLDER_ID: [NOT SET]");
+  }
+  
+  log("");
+}
+
+async function cmdCostsSummary() {
+  header("Costs — Summary");
+  
+  if (!fs.existsSync(COSTS_CONFIG_FILE)) {
+    fail("costs.config.json not found.");
+    info(`Please create: ${COSTS_CONFIG_FILE}`);
+    return;
+  }
+  
+  let config: CostsConfig;
+  try {
+    const content = fs.readFileSync(COSTS_CONFIG_FILE, "utf-8");
+    config = JSON.parse(content) as CostsConfig;
+  } catch (err) {
+    fail("costs.config.json is invalid or unreadable.");
+    info(`Error: ${err}`);
+    return;
+  }
+  
+  log(`${COLORS.bright}Currency:${COLORS.reset} ${config.currency}`);
+  log("");
+  
+  log(`${COLORS.bright}Services:${COLORS.reset}`);
+  let totalDaily = 0;
+  
+  config.services.forEach(svc => {
+    totalDaily += svc.estimatedDaily;
+    info(`${svc.name}: £${svc.estimatedDaily.toFixed(2)}/day (${svc.type}) — ${svc.notes}`);
+  });
+  
+  const estimatedMonthly = totalDaily * 30;
+  
+  log("");
+  log(`${COLORS.bright}Totals:${COLORS.reset}`);
+  
+  const dailyStatus = totalDaily <= config.targets.dailyMax
+    ? `${COLORS.green}WITHIN${COLORS.reset}`
+    : `${COLORS.red}ABOVE${COLORS.reset}`;
+  const monthlyStatus = estimatedMonthly <= config.targets.monthlyMax
+    ? `${COLORS.green}WITHIN${COLORS.reset}`
+    : `${COLORS.red}ABOVE${COLORS.reset}`;
+  
+  log(`  Estimated daily: £${totalDaily.toFixed(2)} (${dailyStatus} daily target £${config.targets.dailyMax.toFixed(2)})`);
+  log(`  Estimated monthly: £${estimatedMonthly.toFixed(2)} (${monthlyStatus} monthly target £${config.targets.monthlyMax.toFixed(2)})`);
+  
+  log("");
+  info(`Edit config/costs.config.json to update estimates.`);
+  log("");
+}
+
+async function cmdGuardianCheck() {
+  header("Guardian Check — Levqor System");
+  
+  let criticalIssues = 0;
+  let warnings = 0;
+  
+  log(`${COLORS.bright}Products:${COLORS.reset}`);
+  
+  const products = parseProductsFromConfig();
+  const activeProducts = products.filter(p => p.status === "active");
+  
+  if (activeProducts.length > 0) {
+    success(`Active products: ${activeProducts.length} (OK)`);
+  } else {
+    fail("Active products: 0 (CRITICAL)");
+    criticalIssues++;
+  }
+  
+  const specFile = path.join(PRODUCTS_DIR, "automation-accelerator.product.json");
+  if (fs.existsSync(specFile)) {
+    success("automation-accelerator spec: FOUND");
+  } else {
+    fail("automation-accelerator spec: NOT FOUND");
+    criticalIssues++;
+  }
+  
+  log("");
+  log("Running compile-product dry-run...");
+  const compilerResult = runCompilerDryRun("automation-accelerator");
+  if (compilerResult.passed) {
+    success("compile-product dry-run: PASS");
+  } else {
+    fail(`compile-product dry-run: FAIL (exit ${compilerResult.exitCode})`);
+    criticalIssues++;
+  }
+  
+  log("");
+  log(`${COLORS.bright}Site:${COLORS.reset}`);
+  
+  const lintResult = runLintQuiet();
+  if (lintResult.skipped) {
+    warn("lint: SKIPPED (script missing)");
+  } else if (lintResult.passed) {
+    success("lint: PASS");
+  } else {
+    warn("lint: FAIL (non-critical)");
+    warnings++;
+  }
+  
+  const prodCheck = checkProductionPage();
+  if (prodCheck.ok) {
+    success(`Production page: OK (${prodCheck.status})`);
+  } else {
+    if (prodCheck.status === "ERROR") {
+      warn(`Production page: UNAVAILABLE (${prodCheck.message})`);
+      warnings++;
+    } else {
+      fail(`Production page: ${prodCheck.message} (${prodCheck.status})`);
+      criticalIssues++;
+    }
+  }
+  
+  log("");
+  log(`${COLORS.bright}Environment:${COLORS.reset}`);
+  
+  const driveEnv = process.env.GOOGLE_DRIVE_SHARED_FOLDER_ID;
+  if (driveEnv) {
+    success("GOOGLE_DRIVE_SHARED_FOLDER_ID: [SET]");
+  } else {
+    warn("GOOGLE_DRIVE_SHARED_FOLDER_ID: [NOT SET]");
+    warnings++;
+  }
+  
+  log("");
+  log(`${COLORS.bright}Overall:${COLORS.reset}`);
+  
+  if (criticalIssues === 0) {
+    if (warnings === 0) {
+      log(`${COLORS.green}${COLORS.bright}  STATUS: GREEN — All systems operational${COLORS.reset}`);
+    } else {
+      log(`${COLORS.yellow}${COLORS.bright}  STATUS: YELLOW — ${warnings} warning(s), no critical issues${COLORS.reset}`);
+    }
+  } else {
+    log(`${COLORS.red}${COLORS.bright}  STATUS: RED — ${criticalIssues} critical issue(s) detected${COLORS.reset}`);
+    info("Review issues above before sending traffic.");
+  }
+  
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -463,6 +731,15 @@ async function main() {
       break;
     case "ops:summary":
       await cmdOpsSummary();
+      break;
+    case "metrics:today":
+      await cmdMetricsToday();
+      break;
+    case "costs:summary":
+      await cmdCostsSummary();
+      break;
+    case "guardian:check":
+      await cmdGuardianCheck();
       break;
     default:
       fail(`Unknown command: ${command}`);

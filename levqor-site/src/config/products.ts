@@ -38,7 +38,7 @@ export type ProductsMap = Record<ProductId, ProductConfig>;
 
 /**
  * PRODUCTS MAP — AUTO-GENERATED FROM JSON SPECS
- * Last updated: 2025-12-05T20:11:52.949Z
+ * Last updated: 2025-12-05T20:35:05.499Z
  */
 export const PRODUCTS: ProductsMap = {
   "automation-accelerator": {
@@ -103,7 +103,7 @@ export const PRODUCTS: ProductsMap = {
     ],
     "version": "1.0.2",
     "status": "active",
-    "lastUpdated": "2025-12-05T20:11:52.948Z"
+    "lastUpdated": "2025-12-05T20:35:05.498Z"
   }
 };
 

@@ -1,0 +1,33 @@
+{
+  "currency": "GBP",
+  "services": [
+    {
+      "name": "Replit",
+      "type": "runtime",
+      "estimatedDaily": 5.0,
+      "notes": "Levqor/EchoPilot dev + agents, target < £10/day."
+    },
+    {
+      "name": "Vercel",
+      "type": "hosting",
+      "estimatedDaily": 1.5,
+      "notes": "Production hosting + bandwidth."
+    },
+    {
+      "name": "OpenAI",
+      "type": "api",
+      "estimatedDaily": 3.0,
+      "notes": "Inference + automation workflows."
+    },
+    {
+      "name": "Stripe/Fees",
+      "type": "payments",
+      "estimatedDaily": 1.0,
+      "notes": "Card fees on product sales."
+    }
+  ],
+  "targets": {
+    "dailyMax": 10.0,
+    "monthlyMax": 300.0
+  }
+}
