@@ -2,10 +2,12 @@ name: Products Pipeline
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - 'levqor-site/products/**'
-      - 'levqor-site/scripts/compile-product.ts'
-      - '.github/workflows/products-pipeline.yml'
+      - "levqor-site/products/**"
+      - "levqor-site/scripts/compile-product.ts"
+      - ".github/workflows/products-pipeline.yml"
 
 jobs:
   build:
@@ -19,16 +21,34 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
 
       - name: Run product compiler
         env:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GOOGLE_DRIVE_SHARED_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_SHARED_FOLDER_ID }}
         run: |
+          echo "Running product compiler..."
           npx tsx scripts/compile-product.ts --slug=automation-accelerator
+          echo "Compiler finished."
+
+      - name: Show updated product config
+        run: |
+          echo "Dumping config:"
+          sed -n '1,260p' src/config/products.ts
+
+      - name: Upload artifacts for debugging
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: compiled-product
+          path: |
+            levqor-site/**/*.zip
+            levqor-site/src/config/products.ts
