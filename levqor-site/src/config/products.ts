@@ -41,7 +41,7 @@ export type ProductsMap = Record<ProductId, ProductConfig>;
 
 /**
  * PRODUCTS MAP — AUTO-GENERATED FROM JSON SPECS
- * Last updated: 2025-12-05T22:27:29.763Z
+ * Last updated: 2025-12-05T22:44:21.627Z
  */
 export const PRODUCTS: ProductsMap = {
   "automation-accelerator": {
@@ -106,7 +106,10 @@ export const PRODUCTS: ProductsMap = {
     ],
     "version": "1.0.2",
     "status": "active",
-    "lastUpdated": "2025-12-05T22:27:29.761Z"
+    "lastUpdated": "2025-12-05T22:44:21.626Z",
+    "coverImage": "/assets/Levqor-Omega-Empire-Pack/products/automation-accelerator/Product-Cover/levqor-cover-v1.png",
+    "thumbnailImage": "/assets/Levqor-Omega-Empire-Pack/products/automation-accelerator/Thumbnails/thumb-build-automations-fast.png",
+    "heroImage": "/assets/Levqor-Omega-Empire-Pack/products/automation-accelerator/Hero-Banners/website-hero-v1.png"
   }
 };
 
