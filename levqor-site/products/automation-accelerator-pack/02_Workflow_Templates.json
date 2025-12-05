@@ -1,0 +1,309 @@
+{
+  "version": "1.0.0",
+  "description": "5 automation workflow templates ready for Zapier/Make integrations",
+  "templates": [
+    {
+      "id": "lead-capture-to-crm",
+      "name": "Lead Capture to CRM Pipeline",
+      "description": "Automatically capture form submissions and create CRM records with follow-up tasks",
+      "category": "Sales",
+      "difficulty": "Beginner",
+      "estimatedBuildTime": "30 minutes",
+      "tools": ["Typeform", "HubSpot", "Slack"],
+      "trigger": {
+        "app": "Typeform",
+        "event": "New Entry",
+        "description": "When a new form submission is received"
+      },
+      "actions": [
+        {
+          "step": 1,
+          "app": "HubSpot",
+          "action": "Create Contact",
+          "fields": {
+            "email": "{{typeform.email}}",
+            "firstName": "{{typeform.first_name}}",
+            "lastName": "{{typeform.last_name}}",
+            "company": "{{typeform.company}}",
+            "source": "Website Form"
+          }
+        },
+        {
+          "step": 2,
+          "app": "HubSpot",
+          "action": "Create Deal",
+          "fields": {
+            "dealName": "{{typeform.company}} - New Lead",
+            "pipeline": "Sales Pipeline",
+            "stage": "Qualified Lead",
+            "amount": 2000
+          }
+        },
+        {
+          "step": 3,
+          "app": "Slack",
+          "action": "Send Channel Message",
+          "fields": {
+            "channel": "#sales-leads",
+            "message": "New lead: {{typeform.first_name}} {{typeform.last_name}} from {{typeform.company}}. Check HubSpot for details."
+          }
+        }
+      ],
+      "clientValue": "Eliminates manual data entry, ensures no lead is missed, and alerts sales team instantly"
+    },
+    {
+      "id": "invoice-payment-reminder",
+      "name": "Invoice Payment Reminder Sequence",
+      "description": "Automated email reminders for unpaid invoices with escalation",
+      "category": "Finance",
+      "difficulty": "Beginner",
+      "estimatedBuildTime": "45 minutes",
+      "tools": ["Stripe", "Gmail", "Slack"],
+      "trigger": {
+        "app": "Stripe",
+        "event": "Invoice Payment Failed",
+        "description": "When an invoice payment fails or is overdue"
+      },
+      "actions": [
+        {
+          "step": 1,
+          "app": "Delay",
+          "action": "Wait",
+          "fields": {
+            "duration": "1 day"
+          }
+        },
+        {
+          "step": 2,
+          "app": "Gmail",
+          "action": "Send Email",
+          "fields": {
+            "to": "{{stripe.customer_email}}",
+            "subject": "Friendly Reminder: Invoice #{{stripe.invoice_number}} is due",
+            "body": "Hi {{stripe.customer_name}},\n\nJust a quick reminder that invoice #{{stripe.invoice_number}} for {{stripe.amount}} is now due. Please process payment at your earliest convenience.\n\nBest regards"
+          }
+        },
+        {
+          "step": 3,
+          "app": "Filter",
+          "action": "Continue if",
+          "fields": {
+            "condition": "{{stripe.days_overdue}} > 7"
+          }
+        },
+        {
+          "step": 4,
+          "app": "Slack",
+          "action": "Send Direct Message",
+          "fields": {
+            "user": "@accounts",
+            "message": "Invoice #{{stripe.invoice_number}} is 7+ days overdue. Customer: {{stripe.customer_name}}. Amount: {{stripe.amount}}. Consider direct outreach."
+          }
+        }
+      ],
+      "clientValue": "Reduces late payments by 60%, saves 2+ hours/week on manual follow-ups"
+    },
+    {
+      "id": "client-onboarding-sequence",
+      "name": "New Client Onboarding Workflow",
+      "description": "Automate welcome emails, task creation, and calendar scheduling for new clients",
+      "category": "Operations",
+      "difficulty": "Intermediate",
+      "estimatedBuildTime": "60 minutes",
+      "tools": ["Stripe", "Gmail", "Notion", "Calendly"],
+      "trigger": {
+        "app": "Stripe",
+        "event": "Checkout Session Completed",
+        "description": "When a new client completes payment"
+      },
+      "actions": [
+        {
+          "step": 1,
+          "app": "Gmail",
+          "action": "Send Email",
+          "fields": {
+            "to": "{{stripe.customer_email}}",
+            "subject": "Welcome to {{company_name}}! Here's what happens next",
+            "body": "Hi {{stripe.customer_name}},\n\nThank you for choosing us! Your purchase is confirmed.\n\nNext steps:\n1. Book your kickoff call: {{calendly_link}}\n2. Complete our onboarding form: {{form_link}}\n3. Join our client Slack channel: {{slack_invite}}\n\nWe're excited to work with you!"
+          }
+        },
+        {
+          "step": 2,
+          "app": "Notion",
+          "action": "Create Database Item",
+          "fields": {
+            "database": "Client Projects",
+            "properties": {
+              "Name": "{{stripe.customer_name}}",
+              "Status": "Onboarding",
+              "Start Date": "{{current_date}}",
+              "Email": "{{stripe.customer_email}}",
+              "Value": "{{stripe.amount}}"
+            }
+          }
+        },
+        {
+          "step": 3,
+          "app": "Notion",
+          "action": "Create Tasks",
+          "fields": {
+            "tasks": [
+              "Send welcome kit",
+              "Schedule kickoff call",
+              "Complete discovery questionnaire",
+              "Set up project workspace",
+              "Deliver first milestone"
+            ]
+          }
+        },
+        {
+          "step": 4,
+          "app": "Calendly",
+          "action": "Send Scheduling Link",
+          "fields": {
+            "to": "{{stripe.customer_email}}",
+            "eventType": "30-Minute Kickoff Call"
+          }
+        }
+      ],
+      "clientValue": "Reduces onboarding time from 2 hours to 5 minutes, creates consistent client experience"
+    },
+    {
+      "id": "social-media-content-pipeline",
+      "name": "Content Repurposing Pipeline",
+      "description": "Transform blog posts into social media content across platforms",
+      "category": "Marketing",
+      "difficulty": "Intermediate",
+      "estimatedBuildTime": "90 minutes",
+      "tools": ["WordPress", "OpenAI", "Buffer", "Notion"],
+      "trigger": {
+        "app": "WordPress",
+        "event": "New Post Published",
+        "description": "When a new blog post is published"
+      },
+      "actions": [
+        {
+          "step": 1,
+          "app": "OpenAI",
+          "action": "Generate Text",
+          "fields": {
+            "model": "gpt-4o-mini",
+            "prompt": "Convert this blog post into a Twitter thread (5-7 tweets). Blog title: {{wordpress.title}}. Blog content: {{wordpress.content}}. Make it engaging, add emojis, end with a CTA to read the full post.",
+            "output": "twitter_thread"
+          }
+        },
+        {
+          "step": 2,
+          "app": "OpenAI",
+          "action": "Generate Text",
+          "fields": {
+            "model": "gpt-4o-mini",
+            "prompt": "Convert this blog post into a LinkedIn post (300 words max). Blog title: {{wordpress.title}}. Blog content: {{wordpress.content}}. Professional tone, include key insights, end with engagement question.",
+            "output": "linkedin_post"
+          }
+        },
+        {
+          "step": 3,
+          "app": "Buffer",
+          "action": "Create Post",
+          "fields": {
+            "platforms": ["twitter", "linkedin"],
+            "content": {
+              "twitter": "{{twitter_thread}}",
+              "linkedin": "{{linkedin_post}}"
+            },
+            "scheduleTime": "{{next_business_day_9am}}"
+          }
+        },
+        {
+          "step": 4,
+          "app": "Notion",
+          "action": "Update Database Item",
+          "fields": {
+            "database": "Content Calendar",
+            "filter": "Title = {{wordpress.title}}",
+            "update": {
+              "Social Status": "Scheduled",
+              "Platforms": "Twitter, LinkedIn",
+              "Scheduled Date": "{{next_business_day}}"
+            }
+          }
+        }
+      ],
+      "clientValue": "Saves 3+ hours per blog post, ensures consistent social presence, maximizes content ROI"
+    },
+    {
+      "id": "support-ticket-triage",
+      "name": "AI Support Ticket Triage",
+      "description": "Automatically categorize, prioritize, and route support tickets using AI",
+      "category": "Support",
+      "difficulty": "Advanced",
+      "estimatedBuildTime": "120 minutes",
+      "tools": ["Intercom", "OpenAI", "Slack", "Notion"],
+      "trigger": {
+        "app": "Intercom",
+        "event": "New Conversation",
+        "description": "When a new support conversation is created"
+      },
+      "actions": [
+        {
+          "step": 1,
+          "app": "OpenAI",
+          "action": "Generate Text",
+          "fields": {
+            "model": "gpt-4o-mini",
+            "prompt": "Analyze this support ticket and respond with JSON: {\"category\": \"billing|technical|feature_request|general\", \"priority\": \"high|medium|low\", \"sentiment\": \"positive|neutral|negative\", \"suggestedResponse\": \"draft response\"}. Ticket: {{intercom.message}}",
+            "output": "analysis"
+          }
+        },
+        {
+          "step": 2,
+          "app": "Intercom",
+          "action": "Add Tags",
+          "fields": {
+            "tags": ["{{analysis.category}}", "{{analysis.priority}}-priority"]
+          }
+        },
+        {
+          "step": 3,
+          "app": "Filter",
+          "action": "Continue if",
+          "fields": {
+            "condition": "{{analysis.priority}} = 'high' OR {{analysis.sentiment}} = 'negative'"
+          }
+        },
+        {
+          "step": 4,
+          "app": "Slack",
+          "action": "Send Channel Message",
+          "fields": {
+            "channel": "#support-urgent",
+            "message": "High priority ticket from {{intercom.customer_name}}\nCategory: {{analysis.category}}\nSentiment: {{analysis.sentiment}}\nMessage: {{intercom.message}}\n\nSuggested response: {{analysis.suggestedResponse}}"
+          }
+        },
+        {
+          "step": 5,
+          "app": "Notion",
+          "action": "Create Database Item",
+          "fields": {
+            "database": "Support Tickets",
+            "properties": {
+              "Customer": "{{intercom.customer_name}}",
+              "Category": "{{analysis.category}}",
+              "Priority": "{{analysis.priority}}",
+              "Sentiment": "{{analysis.sentiment}}",
+              "Status": "Triaged",
+              "Created": "{{current_timestamp}}"
+            }
+          }
+        }
+      ],
+      "clientValue": "Reduces first response time by 80%, ensures high-priority issues never slip through, improves customer satisfaction"
+    }
+  ],
+  "usage": {
+    "zapier": "Import each template as a new Zap. Replace placeholder values with your actual app connections.",
+    "make": "Create scenarios matching the trigger and action sequence. Use the Make app integrations for each step.",
+    "customization": "All templates are starting points. Adjust fields, add filters, and extend with additional steps as needed."
+  }
+}
