@@ -8,8 +8,8 @@
  * Usage: import { ensureOmegaAssetsForProduct } from "./omega-assets";
  */
 
-import fs from "fs";
-import path from "path";
+import * as fs from "fs";
+import * as path from "path";
 
 const ROOT_DIR = path.resolve(__dirname, "..");
 const OMEGA_PACK_DIR = path.join(ROOT_DIR, "assets", "Levqor-Omega-Empire-Pack", "products");
