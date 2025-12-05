@@ -32,6 +32,9 @@ export interface ProductConfig {
   version: string;
   status: "active" | "draft" | "archived";
   lastUpdated: string;
+  coverImage?: string;
+  thumbnailImage?: string;
+  heroImage?: string;
 }
 
 export type ProductsMap = Record<ProductId, ProductConfig>;

@@ -62,6 +62,18 @@ interface ProductConfig {
   version: string;
   status: "active" | "draft" | "archived";
   lastUpdated: string;
+  coverImage?: string;
+  thumbnailImage?: string;
+  heroImage?: string;
+}
+
+function getOmegaAssetPaths(slug: string) {
+  const base = `/assets/Levqor-Omega-Empire-Pack/products/${slug}`;
+  return {
+    coverImage: `${base}/Product-Cover/levqor-cover-v1.png`,
+    thumbnailImage: `${base}/Thumbnails/thumb-build-automations-fast.png`,
+    heroImage: `${base}/Hero-Banners/website-hero-v1.png`,
+  };
 }
 
 const ROOT_DIR = path.resolve(__dirname, "..");
@@ -561,6 +573,7 @@ async function uploadToGoogleDrive(
 function updateProductsConfig(spec: ProductSpec, driveDownloadUrl: string): void {
   console.log("   Updating src/config/products.ts...");
 
+  const omega = getOmegaAssetPaths(spec.slug);
   const productConfig: ProductConfig = {
     id: spec.slug,
     slug: spec.slug,
@@ -578,6 +591,7 @@ function updateProductsConfig(spec: ProductSpec, driveDownloadUrl: string): void
     version: spec.version,
     status: spec.status,
     lastUpdated: new Date().toISOString(),
+    ...omega,
   };
 
   let existingProducts: Record<string, ProductConfig> = {};
@@ -634,6 +648,9 @@ export interface ProductConfig {
   version: string;
   status: "active" | "draft" | "archived";
   lastUpdated: string;
+  coverImage?: string;
+  thumbnailImage?: string;
+  heroImage?: string;
 }
 
 export type ProductsMap = Record<ProductId, ProductConfig>;
