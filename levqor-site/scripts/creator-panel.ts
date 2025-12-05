@@ -21,12 +21,16 @@
  *   loops:share-kit    - Get ready-made viral share copy
  *   content:idea       - Show today's content angle
  *   content:post       - Print a ready-to-copy promo post
+ *   tracking:links     - Show UTM-tagged links per channel
+ *   tracking:plan      - Show simple posting + logging routine
+ *   experiments:copy   - Show A/B promo copy variants
+ *   experiments:status - Show experiment overview + usage tips
  * 
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
- *   npm run creator:panel money:ladder
- *   npm run creator:panel content:idea
+ *   npm run creator:panel tracking:links
+ *   npm run creator:panel experiments:copy
  */
 
 import * as fs from "fs";
@@ -100,12 +104,16 @@ function printUsage() {
   log("  loops:share-kit      Get ready-made viral share copy");
   log("  content:idea         Show today's content angle");
   log("  content:post         Print a ready-to-copy promo post");
+  log("  tracking:links       Show UTM-tagged links per channel");
+  log("  tracking:plan        Show simple posting + logging routine");
+  log("  experiments:copy     Show A/B promo copy variants");
+  log("  experiments:status   Show experiment overview + usage tips");
   log("");
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
-  log("  npm run creator:panel money:ladder");
-  log("  npm run creator:panel content:idea");
+  log("  npm run creator:panel tracking:links");
+  log("  npm run creator:panel experiments:copy");
 }
 
 interface ProductData {
@@ -1047,6 +1055,152 @@ async function cmdContentPost() {
   log("");
 }
 
+const TRACKING_CHANNELS = [
+  {
+    name: "X / Twitter",
+    source: "twitter",
+    medium: "social"
+  },
+  {
+    name: "LinkedIn",
+    source: "linkedin",
+    medium: "social"
+  },
+  {
+    name: "Email",
+    source: "email",
+    medium: "newsletter"
+  },
+  {
+    name: "DM",
+    source: "dm",
+    medium: "outreach"
+  }
+];
+
+const BASE_SITE_URL = "https://www.levqor.ai/en/products/automation-accelerator";
+const BASE_GUMROAD_URL = "https://levqor.gumroad.com/l/doeitr";
+const CAMPAIGN = "automation_pack";
+
+async function cmdTrackingLinks() {
+  header("Tracking Links — Automation Accelerator");
+  
+  for (const channel of TRACKING_CHANNELS) {
+    const utmParams = `utm_source=${channel.source}&utm_medium=${channel.medium}&utm_campaign=${CAMPAIGN}`;
+    const siteUrl = `${BASE_SITE_URL}?${utmParams}`;
+    const gumroadUrl = `${BASE_GUMROAD_URL}?${utmParams}`;
+    
+    log(`${COLORS.bright}${channel.name}:${COLORS.reset}`);
+    log(`  Site:    ${siteUrl}`);
+    log(`  Gumroad: ${gumroadUrl}`);
+    log("");
+  }
+  
+  log(`${COLORS.dim}Tip: Use the Site URL for content posts, Gumroad URL for direct sales pushes.${COLORS.reset}`);
+  log("");
+}
+
+async function cmdTrackingPlan() {
+  header("Tracking Plan — Daily Routine");
+  
+  log(`${COLORS.bright}1) Post${COLORS.reset}`);
+  info("Choose 1-2 channels per day (e.g. X, LinkedIn).");
+  info("Use content from `content:post` and links from `tracking:links`.");
+  log("");
+  
+  log(`${COLORS.bright}2) Log${COLORS.reset}`);
+  info("After posting, open Gumroad analytics once per day.");
+  info("Note the following:");
+  log("   - Total views");
+  log("   - Total sales");
+  log("   - Top referrers (utm_source)");
+  info("Write this into a simple Notion page or Google Doc.");
+  log("");
+  
+  log(`${COLORS.bright}3) Review (Weekly)${COLORS.reset}`);
+  info("Which channel had more clicks or sales?");
+  info("Which type of copy got more engagement (hook vs story)?");
+  info("Double down on what works, drop what doesn't.");
+  log("");
+  
+  log(`${COLORS.dim}Keep it simple: 5 minutes daily, 15 minutes weekly review.${COLORS.reset}`);
+  log("");
+}
+
+async function cmdExperimentsCopy() {
+  header("Experiments — Promo Copy Variants");
+  
+  log(`${COLORS.bright}${COLORS.cyan}VARIANT A — Pain > Solution > CTA${COLORS.reset}`);
+  log("");
+  log(`${COLORS.dim}--- COPY BELOW ---${COLORS.reset}`);
+  log("");
+  log("Spending hours on tasks that should take minutes?");
+  log("");
+  log("Most founders know they need to automate but never start.");
+  log("The Automation Accelerator Pack gives you 25 ready-made workflow templates.");
+  log("No setup paralysis. Just pick one and run it.");
+  log("");
+  log("Grab it here:");
+  log("https://www.levqor.ai/en/products/automation-accelerator");
+  log("");
+  log(`${COLORS.dim}--- COPY ABOVE ---${COLORS.reset}`);
+  log("");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}VARIANT B — Story > Outcome > CTA${COLORS.reset}`);
+  log("");
+  log(`${COLORS.dim}--- COPY BELOW ---${COLORS.reset}`);
+  log("");
+  log("Last year I was drowning in copy-paste work.");
+  log("");
+  log("Every week felt like running on a treadmill. Busy but going nowhere.");
+  log("I built automation templates that now run in the background while I focus on growth.");
+  log("Packaged them into the Automation Accelerator Pack.");
+  log("");
+  log("If you want the same shortcut:");
+  log("https://levqor.gumroad.com/l/doeitr");
+  log("");
+  log(`${COLORS.dim}--- COPY ABOVE ---${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}Usage:${COLORS.reset}`);
+  info("Alternate between Variant A and B on different days.");
+  info("Track which gets more engagement in Gumroad analytics.");
+  log("");
+}
+
+async function cmdExperimentsStatus() {
+  header("Experiments — Status & Usage");
+  
+  log(`${COLORS.bright}Available Experimental Levers:${COLORS.reset}`);
+  log("");
+  log("  Copy Variants:");
+  log("    A = Pain/Solution style (direct, problem-focused)");
+  log("    B = Story/Outcome style (narrative, relatable)");
+  log("");
+  log("  Channels:");
+  log("    twitter, linkedin, email, dm");
+  log("");
+  log("  Links:");
+  log("    UTM-tagged Site URL + Gumroad URL per channel");
+  log("");
+  
+  log(`${COLORS.bright}Simple Rotation:${COLORS.reset}`);
+  log("");
+  info("Odd days: post Variant A on X and LinkedIn.");
+  info("Even days: post Variant B on X and LinkedIn.");
+  log("");
+  info("Check Gumroad referrers weekly to see which combo wins.");
+  info("After 2 weeks, double down on the winner.");
+  log("");
+  
+  log(`${COLORS.bright}Commands:${COLORS.reset}`);
+  log("  experiments:copy   - Get the actual copy variants");
+  log("  tracking:links     - Get UTM-tagged links");
+  log("  tracking:plan      - See the full posting routine");
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -1104,6 +1258,18 @@ async function main() {
       break;
     case "content:post":
       await cmdContentPost();
+      break;
+    case "tracking:links":
+      await cmdTrackingLinks();
+      break;
+    case "tracking:plan":
+      await cmdTrackingPlan();
+      break;
+    case "experiments:copy":
+      await cmdExperimentsCopy();
+      break;
+    case "experiments:status":
+      await cmdExperimentsStatus();
       break;
     default:
       fail(`Unknown command: ${command}`);
