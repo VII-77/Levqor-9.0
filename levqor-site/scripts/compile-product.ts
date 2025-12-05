@@ -675,11 +675,26 @@ async function main(): Promise<void> {
   console.log(`   Price: $${spec.priceUsd}`);
   console.log(`   Version: ${spec.version}\n`);
 
-  console.log("2. Generating pack structure...");
+  console.log("2. Preparing pack structure...");
   const productDistDir = path.join(DIST_DIR, slug);
-  const packDir = path.join(productDistDir, "ProductPack");
-  generatePackStructure(spec, productDistDir);
-  console.log(`   Generated: ${packDir}\n`);
+  fs.mkdirSync(productDistDir, { recursive: true });
+  
+  const contentFolderPath = path.join(PRODUCTS_DIR, `${slug}-pack`);
+  let packDir: string;
+  
+  if (fs.existsSync(contentFolderPath)) {
+    console.log(`   Found content folder: ${contentFolderPath}`);
+    const files = fs.readdirSync(contentFolderPath);
+    console.log(`   Content files: ${files.length} files`);
+    files.forEach(f => console.log(`     - ${f}`));
+    packDir = contentFolderPath;
+  } else {
+    console.log("   No content folder found, generating default pack...");
+    packDir = path.join(productDistDir, "ProductPack");
+    generatePackStructure(spec, productDistDir);
+    console.log(`   Generated: ${packDir}`);
+  }
+  console.log("");
 
   console.log("3. Creating ZIP archive...");
   const zipFilename = `Levqor_${slug.replace(/-/g, "_")}_v${spec.version}.zip`;
