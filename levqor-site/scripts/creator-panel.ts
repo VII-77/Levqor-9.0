@@ -9,6 +9,8 @@
  *   health:products    - Product pipeline health check
  *   health:site        - Site build/lint health check
  *   money:today        - Daily money action plan
+ *   money:ladder       - Show product ladder (front-end + upsell)
+ *   money:followup     - Show 3-email follow-up plan
  *   ops:summary        - Operations summary
  *   metrics:today      - Quick operational metrics snapshot
  *   costs:summary      - Config-driven cost overview
@@ -21,7 +23,7 @@
  * Examples:
  *   npm run creator:panel status
  *   npm run creator:panel health:products automation-accelerator
- *   npm run creator:panel money:today
+ *   npm run creator:panel money:ladder
  *   npm run creator:panel loops:referral-link
  */
 
@@ -84,6 +86,8 @@ function printUsage() {
   log("  health:products      Product pipeline health check");
   log("  health:site          Site build/lint health check");
   log("  money:today          Daily money action plan");
+  log("  money:ladder         Show product ladder (front-end + upsell)");
+  log("  money:followup       Show 3-email follow-up plan");
   log("  ops:summary          Operations summary");
   log("  metrics:today        Quick operational metrics snapshot");
   log("  costs:summary        Config-driven cost overview");
@@ -96,7 +100,7 @@ function printUsage() {
   log("Examples:");
   log("  npm run creator:panel status");
   log("  npm run creator:panel health:products automation-accelerator");
-  log("  npm run creator:panel money:today");
+  log("  npm run creator:panel money:ladder");
   log("  npm run creator:panel loops:referral-link");
 }
 
@@ -855,6 +859,100 @@ async function cmdLoopsShareKit() {
   log("");
 }
 
+async function cmdMoneyLadder() {
+  header("Money Ladder — Levqor");
+  
+  log(`${COLORS.bright}${COLORS.green}1) FRONT-END OFFER${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Name:${COLORS.reset} Automation Accelerator Pack`);
+  log(`${COLORS.bright}Price:${COLORS.reset} $47`);
+  log(`${COLORS.bright}Purpose:${COLORS.reset} Entry product — shows value quickly, easy to say yes to.`);
+  info("This is the door-opener. Low friction, high perceived value.");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.green}2) CORE UPSELL${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Name:${COLORS.reset} Automation Accelerator Pro Session`);
+  log(`${COLORS.bright}Price:${COLORS.reset} $147 (may offer at $97 as limited-time discount)`);
+  log(`${COLORS.bright}Purpose:${COLORS.reset} 1:1 implementation — higher LTV, deeper transformation.`);
+  info("After they see the pack, offer to build it with them live.");
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}STRATEGY NOTE${COLORS.reset}`);
+  log("");
+  info("1 pack sale per day = $47/day = ~$1,400/month.");
+  info("If even 20% upgrade to the Pro Session at $147, that's an extra ~$29/day.");
+  info("Every buyer should see at least one upgrade option.");
+  log("");
+  
+  log(`${COLORS.bright}Next Moves:${COLORS.reset}`);
+  success("Drive traffic to Automation Accelerator Pack.");
+  success("Let Gumroad upsell the Pro Session.");
+  success("Use money:followup to plan emails after each sale.");
+  log("");
+}
+
+async function cmdMoneyFollowup() {
+  header("Follow-up Plan — Automation Accelerator Buyers");
+  
+  log(`${COLORS.bright}${COLORS.cyan}EMAIL 1 — Welcome + Quick Win${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} Within 24 hours after purchase`);
+  log(`${COLORS.bright}Goal:${COLORS.reset} Help them get their first automation win from the pack.`);
+  log("");
+  log(`${COLORS.bright}Subject line idea:${COLORS.reset}`);
+  info("\"Your Automation Accelerator Pack is ready — here's your first win\"");
+  log("");
+  log(`${COLORS.bright}Message content:${COLORS.reset}`);
+  info("Welcome them and confirm the purchase.");
+  info("Point them to the Quick Start Guide in the pack.");
+  info("Suggest one specific workflow to try first (e.g., Lead Capture → CRM).");
+  log("");
+  log(`${COLORS.bright}CTA:${COLORS.reset}`);
+  info("\"If you'd like me to build this with you live, here's the Pro Session link.\"");
+  log(`${COLORS.dim}Link: https://your-pro-session-url-here${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}EMAIL 2 — Before / After${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} 3–4 days after purchase`);
+  log(`${COLORS.bright}Goal:${COLORS.reset} Show the contrast between stuck vs automated.`);
+  log("");
+  log(`${COLORS.bright}Subject line idea:${COLORS.reset}`);
+  info("\"Still copying data by hand? Here's the fix.\"");
+  log("");
+  log(`${COLORS.bright}Message content:${COLORS.reset}`);
+  info("Paint the 'before' picture — manual work, wasted hours, burnout.");
+  info("Paint the 'after' picture — automated flows, time freedom, scale.");
+  info("Remind them the templates are ready to use.");
+  log("");
+  log(`${COLORS.bright}CTA:${COLORS.reset}`);
+  info("\"If you've been procrastinating, let me help you get unstuck. Book a Pro Session.\"");
+  log(`${COLORS.dim}Link: https://your-pro-session-url-here${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.cyan}EMAIL 3 — Last Call for This Round${COLORS.reset}`);
+  log("");
+  log(`${COLORS.bright}Timing:${COLORS.reset} ~7 days after purchase`);
+  log(`${COLORS.bright}Tone:${COLORS.reset} Soft, non-pushy.`);
+  log("");
+  log(`${COLORS.bright}Subject line idea:${COLORS.reset}`);
+  info("\"Closing Pro Sessions for now — last chance at this price\"");
+  log("");
+  log(`${COLORS.bright}Message content:${COLORS.reset}`);
+  info("Explain you're closing this batch to focus on current clients.");
+  info("Mention the price will go up next round.");
+  info("Offer one last chance to join before you pause bookings.");
+  log("");
+  log(`${COLORS.bright}CTA:${COLORS.reset}`);
+  info("\"If you want in before I raise the price, here's the link.\"");
+  log(`${COLORS.dim}Link: https://your-pro-session-url-here${COLORS.reset}`);
+  log("");
+  
+  log(`${COLORS.bright}${COLORS.yellow}Tip:${COLORS.reset} Copy-paste these into Gmail or your email tool of choice.`);
+  log("");
+}
+
 async function main() {
   const command = process.argv[2];
   const arg1 = process.argv[3];
@@ -876,6 +974,12 @@ async function main() {
       break;
     case "money:today":
       await cmdMoneyToday();
+      break;
+    case "money:ladder":
+      await cmdMoneyLadder();
+      break;
+    case "money:followup":
+      await cmdMoneyFollowup();
       break;
     case "ops:summary":
       await cmdOpsSummary();
