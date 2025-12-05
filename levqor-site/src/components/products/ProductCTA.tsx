@@ -7,6 +7,7 @@ import { trackPrimaryCTA, trackBuyNow } from "@/lib/analytics";
 interface ProductCTAProps {
   product: ProductConfig;
   variant?: "sidebar" | "footer";
+  refParam?: string | null;
 }
 
 const IS_DEV = process.env.NODE_ENV === "development";
@@ -15,15 +16,22 @@ function hasValidDownloadUrl(url: string | undefined): boolean {
   return !!url && !url.includes("ERROR_") && !url.includes("PENDING_") && !url.includes("DRY_RUN_");
 }
 
-export default function ProductCTA({ product, variant = "sidebar" }: ProductCTAProps) {
+function buildGumroadUrlWithRef(baseUrl: string, refParam?: string | null): string {
+  if (!refParam) return baseUrl;
+  const separator = baseUrl.includes("?") ? "&" : "?";
+  return `${baseUrl}${separator}ref=${encodeURIComponent(refParam)}`;
+}
+
+export default function ProductCTA({ product, variant = "sidebar", refParam }: ProductCTAProps) {
   const gumroadUrl = product.gumroadUrl;
   const hasGumroadUrl = !!gumroadUrl;
   const hasDownload = hasValidDownloadUrl(product.driveDownloadUrl);
+  const finalGumroadUrl = gumroadUrl ? buildGumroadUrlWithRef(gumroadUrl, refParam) : null;
 
   const handleBuyClick = () => {
-    if (gumroadUrl) {
-      trackPrimaryCTA(product.slug, gumroadUrl);
-      window.open(gumroadUrl, "_blank");
+    if (finalGumroadUrl) {
+      trackPrimaryCTA(product.slug, finalGumroadUrl);
+      window.open(finalGumroadUrl, "_blank");
     }
   };
 
