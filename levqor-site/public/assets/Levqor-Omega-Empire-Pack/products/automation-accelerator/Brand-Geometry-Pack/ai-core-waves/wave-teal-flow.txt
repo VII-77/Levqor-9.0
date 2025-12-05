@@ -1,0 +1,13 @@
+# Placeholder for wave-teal-flow.png (automation-accelerator)
+Replace with Hybrid Flux Wave cover for this product.
+
+Style: HYBRID FLUX WAVE
+Colors:
+  - Deep Space Black #000000
+  - Midnight Graphite #0C0F14
+  - Neon Flux Blue #3A8CFF
+  - Aurora Pulse Teal #31F7D9
+  - Plasma Purple #8F5BFF
+
+Product: automation-accelerator
+Generated: 2025-12-05T22:53:17.711Z
