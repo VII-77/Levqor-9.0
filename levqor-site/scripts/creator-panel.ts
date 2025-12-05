@@ -100,7 +100,7 @@ function parseProductsFromConfig(): ProductData[] {
   const content = fs.readFileSync(CONFIG_FILE, "utf-8");
   const products: ProductData[] = [];
   
-  const productBlockRegex = /"([^"]+)":\s*\{[^}]*"slug":\s*"([^"]+)"[^}]*"name":\s*"([^"]+)"[^}]*"version":\s*"([^"]+)"[^}]*"status":\s*"([^"]+)"[^}]*"priceUsd":\s*(\d+)/gs;
+  const productBlockRegex = /"([^"]+)":\s*\{[^}]*"slug":\s*"([^"]+)"[^}]*"name":\s*"([^"]+)"[^}]*"version":\s*"([^"]+)"[^}]*"status":\s*"([^"]+)"[^}]*"priceUsd":\s*(\d+)/g;
   
   let match;
   while ((match = productBlockRegex.exec(content)) !== null) {

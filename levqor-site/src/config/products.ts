@@ -8,8 +8,6 @@
 
 export type ProductId = string;
 
-export type ProductTier = "core" | "pro" | "elite";
-
 export interface ProductConfig {
   id: ProductId;
   slug: string;
@@ -34,17 +32,13 @@ export interface ProductConfig {
   version: string;
   status: "active" | "draft" | "archived";
   lastUpdated: string;
-  tier?: ProductTier;
-  basePrice?: number;
-  compareAtPrice?: number;
-  upsellTo?: string;
 }
 
 export type ProductsMap = Record<ProductId, ProductConfig>;
 
 /**
  * PRODUCTS MAP — AUTO-GENERATED FROM JSON SPECS
- * Last updated: 2025-12-05T17:22:08.119Z
+ * Last updated: 2025-12-05T20:11:52.949Z
  */
 export const PRODUCTS: ProductsMap = {
   "automation-accelerator": {
@@ -54,7 +48,7 @@ export const PRODUCTS: ProductsMap = {
     "priceUsd": 47,
     "shortDescription": "25 workflow templates + SOPs + swipe files. Ship your first automation service in 48 hours.",
     "longDescription": "The complete toolkit for founders and agencies who want to ship automation fast. Includes 25 production-ready workflow templates, copy-paste SOPs for client onboarding, a swipe file with 50+ automation prompts, pricing calculator, client proposal template, onboarding checklists, and everything you need to go from zero to revenue.\n\nPerfect for:\n• Solo founders launching their first automation service\n• Agencies adding workflow automation to their offerings\n• Consultants who want productized templates\n• Anyone tired of building from scratch\n\nIncludes Quick Start Guide, video walkthrough, Notion dashboard template, and 5 email templates. Plus limited-time bonuses: 30-min strategy call booking, private Slack community access, and monthly template updates for 1 year.",
-    "driveDownloadUrl": "https://drive.google.com/uc?export=download&id=1B4Rufke1giGNNMLgWfGpqIjb8K2fKJ2g",
+    "driveDownloadUrl": "https://drive.google.com/file/d/DRY_RUN_Levqor_automation_accelerator_v1.0.2.zip/view",
     "gumroadUrl": "https://levqor.gumroad.com/l/automation-accelerator",
     "docsUrl": "/docs/automation-accelerator",
     "tags": [
@@ -109,7 +103,7 @@ export const PRODUCTS: ProductsMap = {
     ],
     "version": "1.0.2",
     "status": "active",
-    "lastUpdated": "2025-12-05T17:22:08.118Z"
+    "lastUpdated": "2025-12-05T20:11:52.948Z"
   }
 };
 
