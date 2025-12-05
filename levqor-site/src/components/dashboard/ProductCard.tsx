@@ -1,17 +1,39 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import type { ProductConfig } from "@/config/products";
+import { trackBuyNow, trackSecondaryCTA } from "@/lib/analytics";
 
 interface ProductCardProps {
   product: ProductConfig;
   variant?: "compact" | "full";
 }
 
-export default function ProductCard({ product, variant = "compact" }: ProductCardProps) {
-  const isCompact = variant === "compact";
+const IS_DEV = process.env.NODE_ENV === "development";
 
-  const buyUrl = product.gumroadUrl || "#";
+function hasValidGumroadUrl(url: string | undefined): boolean {
+  return !!url && url.startsWith("http");
+}
+
+export default function ProductCard({ product, variant = "compact" }: ProductCardProps) {
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
+  
+  const isCompact = variant === "compact";
+  const hasGumroad = hasValidGumroadUrl(product.gumroadUrl);
+  const productPageUrl = `/${locale}/products/${product.slug}`;
+
+  const handleBuyClick = () => {
+    if (product.gumroadUrl) {
+      trackBuyNow(product.slug, product.gumroadUrl, "dashboard_card");
+      window.open(product.gumroadUrl, "_blank");
+    }
+  };
+
+  const handleViewClick = () => {
+    trackSecondaryCTA(product.slug, "view_details");
+  };
 
   if (isCompact) {
     return (
@@ -21,6 +43,11 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
             {product.status === "active" && (
               <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">
                 Available
+              </span>
+            )}
+            {product.status === "draft" && (
+              <span className="inline-block bg-yellow-100 text-yellow-700 text-xs font-semibold px-2 py-0.5 rounded-full mb-2">
+                Coming Soon
               </span>
             )}
             <h3 className="font-semibold text-gray-900">{product.name}</h3>
@@ -37,19 +64,24 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
         </div>
         <div className="flex gap-2">
           <Link
-            href={`/products/${product.slug}`}
+            href={productPageUrl}
+            onClick={handleViewClick}
             className="flex-1 text-center py-2 px-4 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
           >
             Learn More
           </Link>
-          <a
-            href={buyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-          >
-            Buy Now
-          </a>
+          {hasGumroad ? (
+            <button
+              onClick={handleBuyClick}
+              className="py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            >
+              Buy Now
+            </button>
+          ) : (
+            <span className="py-2 px-4 border border-gray-200 rounded-lg text-sm font-medium text-gray-400 cursor-not-allowed">
+              {IS_DEV ? "No URL" : "Soon"}
+            </span>
+          )}
         </div>
       </div>
     );
@@ -63,6 +95,11 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
             {product.status === "active" && (
               <span className="inline-block bg-white/20 text-white text-xs font-semibold px-2 py-1 rounded-full mb-2">
                 Available Now
+              </span>
+            )}
+            {product.status === "draft" && (
+              <span className="inline-block bg-yellow-400/30 text-white text-xs font-semibold px-2 py-1 rounded-full mb-2">
+                Coming Soon
               </span>
             )}
             <h3 className="text-xl font-bold">{product.name}</h3>
@@ -97,19 +134,24 @@ export default function ProductCard({ product, variant = "compact" }: ProductCar
         )}
         <div className="flex gap-3">
           <Link
-            href={`/products/${product.slug}`}
+            href={productPageUrl}
+            onClick={handleViewClick}
             className="flex-1 text-center py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
           >
             View Details
           </Link>
-          <a
-            href={buyUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 text-center py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
-          >
-            Buy Now
-          </a>
+          {hasGumroad ? (
+            <button
+              onClick={handleBuyClick}
+              className="flex-1 text-center py-3 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            >
+              Buy Now
+            </button>
+          ) : (
+            <span className="flex-1 text-center py-3 border border-gray-200 rounded-lg font-medium text-gray-400 cursor-not-allowed">
+              {IS_DEV ? "gumroadUrl missing" : "Coming Soon"}
+            </span>
+          )}
         </div>
       </div>
     </div>

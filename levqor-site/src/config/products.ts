@@ -8,6 +8,8 @@
 
 export type ProductId = string;
 
+export type ProductTier = "core" | "pro" | "elite";
+
 export interface ProductConfig {
   id: ProductId;
   slug: string;
@@ -32,6 +34,10 @@ export interface ProductConfig {
   version: string;
   status: "active" | "draft" | "archived";
   lastUpdated: string;
+  tier?: ProductTier;
+  basePrice?: number;
+  compareAtPrice?: number;
+  upsellTo?: string;
 }
 
 export type ProductsMap = Record<ProductId, ProductConfig>;

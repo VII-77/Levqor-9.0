@@ -22,6 +22,22 @@ export function trackEvent(name: string, properties?: EventProperties) {
     }
   } catch (e) {
   }
+
+  sendToBackend(name, eventData).catch(() => {});
+}
+
+async function sendToBackend(eventName: string, eventData: Record<string, unknown>): Promise<void> {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!apiUrl || isDev) return;
+
+  try {
+    await fetch(`${apiUrl}/api/telemetry/event`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ eventName, ...eventData }),
+    });
+  } catch {
+  }
 }
 
 export function trackPageView(page: string) {
@@ -50,4 +66,20 @@ export function trackOnboarding(step: number, completed: boolean) {
 
 export function trackConversion(type: 'trial_start' | 'upgrade' | 'checkout_start', planId?: string) {
   trackEvent('conversion', { type, plan_id: planId });
+}
+
+export function trackProductView(slug: string, productName: string) {
+  trackEvent('view_product_page', { slug, product_name: productName });
+}
+
+export function trackPrimaryCTA(slug: string, gumroadUrl: string) {
+  trackEvent('click_primary_cta', { slug, gumroad_url: gumroadUrl });
+}
+
+export function trackBuyNow(slug: string, gumroadUrl: string, source: string) {
+  trackEvent('click_buy_now', { slug, gumroad_url: gumroadUrl, source });
+}
+
+export function trackSecondaryCTA(slug: string, action: string) {
+  trackEvent('click_secondary_cta', { slug, action });
 }
