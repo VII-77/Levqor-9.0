@@ -232,18 +232,38 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
     async redirect({ url, baseUrl }) {
       const origin = NEXTAUTH_URL;
-      if (url.startsWith("/")) {
-        const fullUrl = `${origin}${url}`;
-        console.debug("[AUTH] Redirect (relative):", fullUrl);
-        return fullUrl;
+      
+      try {
+        const targetUrl = url.startsWith("/") ? new URL(url, origin) : new URL(url);
+        const targetPath = targetUrl.pathname;
+        
+        const isSigninPath = targetPath === "/signin" || 
+          targetPath.match(/^\/[a-z]{2}(-[A-Za-z]+)?\/signin$/);
+        
+        if (isSigninPath) {
+          const dashboardUrl = `${origin}/en/dashboard`;
+          console.log("[AUTH_REDIRECT] Signin loop detected, redirecting to dashboard:", dashboardUrl);
+          return dashboardUrl;
+        }
+        
+        if (url.startsWith("/")) {
+          const fullUrl = `${origin}${url}`;
+          console.log("[AUTH_REDIRECT] Relative path:", fullUrl);
+          return fullUrl;
+        }
+        
+        if (targetUrl.origin === origin || targetUrl.origin === baseUrl) {
+          console.log("[AUTH_REDIRECT] Same origin:", url);
+          return url;
+        }
+        
+        const fallback = `${origin}/en/dashboard`;
+        console.log("[AUTH_REDIRECT] External URL blocked, fallback:", fallback);
+        return fallback;
+      } catch (err) {
+        console.error("[AUTH_REDIRECT] URL parse error:", err);
+        return `${origin}/en/dashboard`;
       }
-      if (url.startsWith(origin) || url.startsWith(baseUrl)) {
-        console.debug("[AUTH] Redirect (absolute):", url);
-        return url;
-      }
-      const fallback = `${origin}/en/post-auth`;
-      console.debug("[AUTH] Redirect (fallback):", fallback);
-      return fallback;
     },
   },
 
